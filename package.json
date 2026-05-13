@@ -1,0 +1,35 @@
+{
+  "name": "happy-feet-travellers",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Happy Feet Travellers — monorepo: Next.js frontend + Express/Prisma backend.",
+  "workspaces": [
+    "frontend",
+    "admin",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n FE,ADMIN,BE -c blue,magenta,green \"npm run dev -w frontend\" \"npm run dev -w admin\" \"npm run dev -w backend\"",
+    "dev:frontend": "npm run dev -w frontend",
+    "dev:admin": "npm run dev -w admin",
+    "dev:backend": "npm run dev -w backend",
+    "build": "npm run build -w frontend && npm run build -w admin",
+    "build:frontend": "npm run build -w frontend",
+    "build:admin": "npm run build -w admin",
+    "start": "concurrently -n FE,ADMIN,BE -c blue,magenta,green \"npm run start -w frontend\" \"npm run start -w admin\" \"npm run start -w backend\"",
+    "lint": "npm run lint -w frontend && npm run lint -w admin",
+    "lint:frontend": "npm run lint -w frontend",
+    "lint:admin": "npm run lint -w admin",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,css}\" --ignore-path .gitignore",
+    "prisma:generate": "npm run prisma:generate -w backend",
+    "prisma:migrate": "npm run prisma:migrate -w backend",
+    "prisma:seed": "npm run prisma:seed -w backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "prettier": "^3.3.3"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}

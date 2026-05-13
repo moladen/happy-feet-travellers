@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tour {
+  id                 String    @id @default(cuid())
+  title              String
+  slug               String    @unique
+  description        String    @db.Text
+  duration           Int
+  durationLabel      String?
+  price              Float
+  startingPrice      Float?
+  departureCity      String
+  category           String
+  subCategory        String?
+  startDate          DateTime?
+  endDate            DateTime?
+  dateLabel          String?
+  rating             Float?
+  reviewsCount       Int?
+  urgency            String?
+  offers             String?
+  meals              String?
+  stayType           String?
+  transport          String?
+  suitableFor        String?
+  coverImage         String?
+  images             String[]
+  highlights         String[]
+  itinerary          Json?
+  inclusions         String[]
+  exclusions         String[]
+  faqs               Json?
+  thingsToCarry      String[]
+  pickupPoints       Json?
+  supplements        Json?
+  cancellationPolicy String?   @db.Text
+  terms              Json?
+  bankDetails        String?   @db.Text
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([category])
+  @@index([subCategory])
+  @@index([slug])
+  @@index([startDate])
+}
+
+model Blog {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  excerpt         String?  @db.Text
+  category        String?
+  content         Json
+  coverImage      String
+  authorName      String
+  authorImage     String?
+  authorInstagram String?
+  seoTitle        String?
+  seoDescription  String?  @db.Text
+  publishedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([category])
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  city      String?
+  image     String?
+  review    String   @db.Text
+  rating    Int      @default(5)
+  createdAt DateTime @default(now())
+
+  @@index([rating])
+}
+
+model Enquiry {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String
+  message   String   @db.Text
+  source    String?
+  subject   String?
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model GalleryImage {
+  id        String   @id @default(cuid())
+  title     String?
+  altText   String
+  category  String?
+  image     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([createdAt])
+}
+
+model SiteSettings {
+  id             String   @id @default("site-settings")
+  whatsappNumber String?
+  email          String?
+  instagramUrl   String?
+  facebookUrl    String?
+  youtubeUrl     String?
+  officeAddress  String?  @db.Text
+  paymentLink    String?
+  footerTagline  String?
+  footerDetails  String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
