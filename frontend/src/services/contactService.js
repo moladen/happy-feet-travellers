@@ -9,11 +9,11 @@ export const submitContactForm = async (formData) => {
   const payload = {
     name: formData.name,
     phone: formData.phone || formData.whatsappNumber,
-    email: formData.email,
     message: formData.message,
     subject: formData.subject || null,
     source: formData.source || 'contact-form',
   };
+  if (formData.email?.trim()) payload.email = formData.email.trim();
 
   try {
     const res = await apiClient.post('/enquiry', payload);

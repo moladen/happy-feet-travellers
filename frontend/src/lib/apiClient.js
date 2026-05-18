@@ -37,8 +37,15 @@ export const unwrap = (response) => {
  */
 export const extractApiError = (error, fallback = 'Something went wrong, please try again.') => {
   const body = error?.response?.data;
-  const message = body?.message || error?.message || fallback;
-  const details = Array.isArray(body?.details) ? body.details : null;
+  const base = body?.message || error?.message || fallback;
+  let details = null;
+  if (Array.isArray(body?.details)) {
+    details = body.details;
+  } else if (Array.isArray(body?.details?.meta)) {
+    details = body.details.meta;
+  }
+  const message =
+    details?.length > 0 ? `${base} (${details.join('; ')})` : base;
   return { message, details };
 };
 

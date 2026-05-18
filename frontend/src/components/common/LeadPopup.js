@@ -13,7 +13,7 @@ export default function LeadPopup() {
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState(null);
   const [fieldError, setFieldError] = useState(null);
-  const [formData, setFormData] = useState({ name: '', phone: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -65,9 +65,7 @@ export default function LeadPopup() {
     const result = await submitContactForm({
       name: formData.name,
       whatsappNumber: formData.phone,
-      // Popup does not collect email — backend requires it; supply a sensible default so the
-      // user isn't blocked by validation. Admin can follow up on the phone number.
-      email: `${formData.phone.replace(/\D/g, '')}@lead.happyfeet.local`,
+      email: formData.email.trim() || undefined,
       message: formData.message,
       source: 'lead-popup',
       subject: 'Lead from popup',
@@ -127,6 +125,20 @@ export default function LeadPopup() {
                   onChange={handleChange}
                   className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary"
                   placeholder="Your full name"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-foreground">
+                  Email <span className="font-normal text-foreground/60">(optional)</span>
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary"
+                  placeholder="you@example.com"
                 />
               </div>
 

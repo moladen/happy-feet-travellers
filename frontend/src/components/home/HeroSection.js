@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import Typewriter from '@/components/common/Typewriter';
 
 const HERO_IMAGES = [
@@ -48,8 +48,11 @@ function MountainSilhouette() {
   );
 }
 
+const SLIDE_MS = 7000;
+
 export default function HeroSection() {
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const [slide, setSlide] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [travelMonth, setTravelMonth] = useState('');
@@ -58,16 +61,19 @@ export default function HeroSection() {
   useEffect(() => {
     const id = setInterval(() => {
       setSlide((s) => (s + 1) % HERO_IMAGES.length);
-    }, 7000);
+    }, SLIDE_MS);
     return () => clearInterval(id);
-  }, []);
+  }, [slide]);
 
   const runSearch = (rawDest) => {
     const dest = (rawDest ?? searchQuery).trim();
-    const parts = [dest, travelMonth.trim(), guests ? `${guests} guests` : ''].filter(Boolean);
-    const q = parts.join(' · ');
-    if (q.trim()) {
-      router.push(`/upcoming-departures?q=${encodeURIComponent(q)}`);
+    const params = new URLSearchParams();
+    if (dest) params.set('q', dest);
+    if (travelMonth.trim()) params.set('month', travelMonth.trim());
+    if (guests) params.set('guests', guests);
+
+    if (params.toString()) {
+      router.push(`/upcoming-departures?${params.toString()}`);
       return;
     }
     router.push('/upcoming-departures');
@@ -80,6 +86,21 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-[min(100dvh,920px)] overflow-hidden bg-[#0a1628] md:min-h-screen">
+      {!reduceMotion && (
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 z-[55] h-[3px] bg-black/20"
+          aria-hidden
+        >
+          <motion.div
+            key={slide}
+            className="h-full bg-gradient-to-r from-cta via-[#ffc078] to-cta"
+            initial={{ width: '0%' }}
+            animate={{ width: '100%' }}
+            transition={{ duration: SLIDE_MS / 1000, ease: 'linear' }}
+          />
+        </div>
+      )}
+
       <AnimatePresence initial={false} mode="popLayout">
         <motion.div
           key={slide}
@@ -102,6 +123,12 @@ export default function HeroSection() {
         aria-hidden
       />
 
+      {/* Soft spotlight toward bottom-right — guides eye to search without extra UI chrome */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[8] bg-[radial-gradient(ellipse_70%_50%_at_82%_58%,rgba(255,200,140,0.1),transparent_55%)] md:bg-[radial-gradient(ellipse_65%_48%_at_78%_56%,rgba(255,210,160,0.11),transparent_52%)]"
+        aria-hidden
+      />
+
       <MountainSilhouette />
 
       <div className="absolute inset-0 z-30 flex flex-col px-4 pb-8 pt-24 md:px-8 md:pb-10 md:pt-28">
@@ -114,23 +141,33 @@ export default function HeroSection() {
               transition={{ duration: 0.55 }}
               className="max-w-xl lg:max-w-lg xl:max-w-xl"
             >
-              <p className="mb-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-cta/95">
-                <span className="h-1.5 w-1.5 rounded-full bg-cta" />
-                Happy Feet Travellers · Pune
+              <p className="mb-2 inline-flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.85)]">
+                <span
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-cta ring-2 ring-black/40 shadow-[0_0_0_1px_rgba(255,255,255,0.25)]"
+                  aria-hidden
+                />
+                <span>Happy Feet Travellers</span>
+                <span className="font-bold tracking-[0.22em] text-[#FFE0C2] [text-shadow:0_1px_3px_rgba(0,0,0,0.9),0_0_12px_rgba(0,0,0,0.45)]">
+                  · Pune
+                </span>
               </p>
               <h1 className="text-[1.65rem] font-extrabold leading-[1.12] tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.45)] sm:text-3xl md:text-4xl lg:text-[2.35rem] xl:text-5xl">
                 <span className="block">
                   <Typewriter
                     parts={[
-                      { text: "Affordable Group Tours from ", className: "text-white" },
-                      { text: "Pune", className: "bg-gradient-to-r from-[#F4A261] via-[#FFC082] to-[#F4A261] bg-clip-text text-transparent" }
+                      { text: 'Affordable Group Tours from ', className: 'text-white' },
+                      {
+                        text: 'Pune',
+                        className:
+                          'font-extrabold text-[#FFD4A8] [text-shadow:0_1px_0_rgba(0,0,0,0.9),0_2px_14px_rgba(0,0,0,0.75),0_0_1px_rgba(0,0,0,0.9)] sm:text-[#FFE8CF]',
+                      },
                     ]}
                     speed={115}
                   />
                 </span>
                 <span className="mt-1.5 block sm:mt-2">
                   <span className="text-white/95">Trusted by </span>
-                  <span className="bg-gradient-to-r from-[#7BC4ED] via-[#EAF4FB] to-[#7BC4ED] bg-clip-text text-transparent">
+                  <span className="font-extrabold text-[#D4EDFF] [text-shadow:0_1px_0_rgba(0,0,0,0.75),0_2px_12px_rgba(0,0,0,0.65)]">
                     1000+ Travelers
                   </span>
                 </span>
@@ -139,17 +176,26 @@ export default function HeroSection() {
                 Small-group departures from Pune, honest pricing, and custom trips planned by people who&apos;ve travelled
                 the route. You bring the dates — we&apos;ll handle the rest.
               </p>
-              <div className="mt-4 flex flex-wrap gap-2.5 sm:mt-5 sm:gap-3">
+              <div className="mt-4 flex flex-wrap items-center gap-2.5 sm:mt-5 sm:gap-3">
                 <Link
                   href="/upcoming-departures"
-                  className="inline-flex items-center gap-2 rounded-full bg-cta px-5 py-2.5 text-sm font-semibold text-[#1F4E79] shadow-md transition hover:bg-[#E76F51] hover:text-white sm:px-6 sm:py-3"
+                  className="inline-flex items-center gap-2 rounded-full bg-cta px-5 py-2.5 text-sm font-semibold text-[#1F4E79] shadow-md ring-2 ring-black/10 transition hover:bg-[#E76F51] hover:text-white hover:ring-white/20 sm:px-6 sm:py-3"
                 >
                   View Tours
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M7 7h10v10" />
                   </svg>
                 </Link>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white/95 shadow-sm backdrop-blur-sm transition hover:border-white/55 hover:bg-white/12 sm:px-5 sm:py-3"
+                >
+                  Talk to us
+                </Link>
               </div>
+              <p className="mt-2.5 hidden max-w-sm text-[11px] leading-snug text-white/55 sm:block lg:mt-3">
+                Have dates in mind? Use the search on the right — we&apos;ll match departures from Pune.
+              </p>
             </motion.div>
 
             <motion.div
@@ -159,15 +205,40 @@ export default function HeroSection() {
               transition={{ duration: 0.55, delay: 0.08 }}
               className="w-full min-w-0 lg:justify-self-end"
             >
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75 lg:sr-only">
-                Search trips
-              </p>
-              <form
-                onSubmit={onSubmitSearch}
-                className="rounded-2xl bg-white shadow-[0_16px_40px_-12px_rgba(0,0,0,0.4)] ring-1 ring-black/5 lg:rounded-3xl lg:shadow-2xl"
-                role="search"
-                aria-label="Search trips"
-              >
+              <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 lg:mb-3">
+                <div className="flex items-center gap-2">
+                  <motion.span
+                    className="inline-flex h-2 w-2 shrink-0 rounded-full bg-cta shadow-[0_0_14px_rgba(247,147,30,0.9)]"
+                    animate={
+                      reduceMotion
+                        ? false
+                        : { opacity: [0.65, 1, 0.65], scale: [1, 1.08, 1] }
+                    }
+                    transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+                    aria-hidden
+                  />
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white [text-shadow:0_1px_10px_rgba(0,0,0,0.55)]">
+                    Find your trip
+                  </p>
+                </div>
+                <p className="max-w-[14rem] text-[11px] font-medium leading-snug tracking-wide text-white/65 sm:max-w-none lg:ml-auto lg:text-right">
+                  Step 1: place &amp; month · Step 2: guests · Step 3: search trips.
+                </p>
+              </div>
+              <div className="relative">
+                <div
+                  className="pointer-events-none absolute -inset-[2px] rounded-[1.1rem] bg-gradient-to-br from-cta/45 via-white/25 to-[#1F4E79]/35 opacity-80 blur-[1.5px] lg:-inset-[3px] lg:rounded-[1.65rem]"
+                  aria-hidden
+                />
+                <motion.form
+                  onSubmit={onSubmitSearch}
+                  initial={{ boxShadow: '0 12px 32px -14px rgba(0,0,0,0.35)' }}
+                  animate={{ boxShadow: '0 22px 50px -18px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.12)' }}
+                  transition={{ duration: 0.85, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative rounded-2xl bg-white shadow-[0_16px_40px_-12px_rgba(0,0,0,0.4)] ring-1 ring-black/5 transition-shadow duration-300 focus-within:ring-2 focus-within:ring-cta/55 focus-within:ring-offset-2 focus-within:ring-offset-[#0a1628]/80 lg:rounded-3xl lg:shadow-2xl"
+                  role="search"
+                  aria-label="Search trips"
+                >
                 {/* Below lg: vertical stack. lg+: balanced columns — avoid max(8rem) on guests (was clipping words). */}
                 <div className="grid grid-cols-1 divide-y divide-[#e8edf2] overflow-hidden rounded-2xl lg:grid-cols-[minmax(12rem,1.55fr)_minmax(10rem,1.05fr)_minmax(11.5rem,0.95fr)_minmax(10.5rem,max-content)] lg:divide-x lg:divide-y-0 lg:items-stretch lg:rounded-3xl">
                   <label className="group flex min-h-[3.9rem] cursor-text items-center gap-3 px-4 py-3 transition-colors focus-within:bg-[#f8fbff] sm:px-5 lg:min-h-[4.25rem] lg:pl-6 lg:pr-4">
@@ -182,13 +253,17 @@ export default function HeroSection() {
                         Location
                       </span>
                       <input
-                        type="search"
+                        type="text"
                         name="q"
+                        role="searchbox"
+                        inputMode="search"
+                        enterKeyHint="search"
                         placeholder="Where do you want to go?"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full min-w-0 border-0 bg-transparent p-0 text-[0.95rem] font-semibold text-[#18324b] placeholder:font-normal placeholder:text-[#8ba0b2] focus:outline-none focus:ring-0"
+                        className="w-full min-w-0 appearance-none border-0 bg-transparent p-0 text-[0.95rem] font-semibold text-[#18324b] placeholder:font-normal placeholder:text-[#8ba0b2] focus:outline-none focus:ring-0"
                         autoComplete="off"
+                        spellCheck={false}
                       />
                     </span>
                   </label>
@@ -249,21 +324,27 @@ export default function HeroSection() {
                     </button>
                   </div>
                 </div>
-              </form>
+                </motion.form>
+              </div>
 
-              <div className="mt-3 flex flex-wrap gap-2 sm:mt-3.5">
+              <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-3.5">
+                <span className="mr-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/45">
+                  Popular
+                </span>
                 {QUICK_SEARCH.map((chip) => (
-                  <button
+                  <motion.button
                     key={chip.value}
                     type="button"
+                    whileHover={reduceMotion ? undefined : { y: -1 }}
+                    whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                     onClick={() => {
                       setSearchQuery(chip.value);
                       runSearch(chip.value);
                     }}
-                    className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur-sm transition hover:bg-white/20"
+                    className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur-sm transition hover:border-white/40 hover:bg-white/20"
                   >
                     {chip.label}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </motion.div>
@@ -276,7 +357,21 @@ export default function HeroSection() {
             transition={{ delay: 0.35, duration: 0.5 }}
             className="mt-5 flex flex-col gap-4 border-t border-white/15 pt-5 text-white/85 md:mt-6 md:flex-row md:items-center md:justify-between md:gap-6 md:pt-6"
           >
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 md:gap-4">
+              <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/20 px-2 py-1 backdrop-blur-sm">
+                {HERO_IMAGES.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSlide(i)}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === slide ? 'w-5 bg-cta' : 'w-1.5 bg-white/35 hover:bg-white/55'
+                    }`}
+                    aria-label={`Show hero image ${i + 1}`}
+                    aria-current={i === slide ? 'true' : undefined}
+                  />
+                ))}
+              </div>
               <p className="text-xs font-semibold text-white sm:text-sm">1000+ travellers · 35+ routes</p>
               <div className="flex -space-x-2">
                 {['🏔️', '🚌', '🏖️', '🛕'].map((emoji) => (

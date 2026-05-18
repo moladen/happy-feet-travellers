@@ -1,6 +1,7 @@
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import AppChrome from "@/components/common/AppChrome";
+import { getPublicSettings } from "@/services/settingsService";
 
 const outfit = Outfit({
   variable: "--font-body",
@@ -14,14 +15,16 @@ export const metadata = {
   keywords: "group tours, travel packages, tour operator, Pune tours, affordable travel",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const settings = await getPublicSettings();
+
   return (
     <html
       lang="en"
       className={`${outfit.variable} h-full antialiased`}
     >
       <body className="page-canvas min-h-full flex flex-col font-sans text-foreground">
-        <AppChrome>{children}</AppChrome>
+        <AppChrome settings={settings}>{children}</AppChrome>
       </body>
     </html>
   );

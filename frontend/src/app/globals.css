@@ -10,6 +10,12 @@
   --cta-secondary: #2E7D32;
   --cta-secondary-hover: #1B5E20;
   --section-alt: #e8f2fa;
+  --admin-sidebar: #1f4e79;
+  --admin-sidebar-active: #4fa3d1;
+  --admin-cta: #f4a261;
+  --admin-bg: #f7f3ec;
+  --admin-card: #ffffff;
+  --admin-text: #2b2b2b;
 }
 
 @theme inline {
@@ -269,4 +275,58 @@ textarea {
 .card-shimmer-hover:hover::after {
   opacity: 1;
   animation: card-shimmer 0.85s ease forwards;
+}
+
+.prose h2,
+.prose blockquote,
+.prose ul {
+  margin: 0 0 1rem;
+}
+
+.prose h2 {
+  color: #17324d;
+  font-size: 1.25rem;
+}
+
+.prose blockquote {
+  border-left: 3px solid rgba(79, 163, 209, 0.5);
+  padding-left: 1rem;
+  color: #607386;
+}
+
+.prose ul {
+  padding-left: 1.1rem;
+}
+
+.prose p {
+  margin: 0 0 0.85rem;
+}
+
+.glass-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(31, 78, 121, 0.32) transparent;
+}
+
+.testimonial-marquee-track {
+  animation: testimonial-marquee 48s linear infinite;
+  will-change: transform;
+}
+
+.testimonial-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes testimonial-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-marquee-track {
+    animation: none;
+  }
 }

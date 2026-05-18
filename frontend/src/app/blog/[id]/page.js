@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getBlogById, getBlogs } from '@/services/api';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const blog = await getBlogById(id);

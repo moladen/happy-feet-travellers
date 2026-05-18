@@ -12,7 +12,54 @@ export const metadata = {
 /** Always fetch fresh tours from the API (not a static build snapshot). */
 export const dynamic = 'force-dynamic';
 
-export default async function UpcomingDeparturesPage() {
+function normaliseSearch(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function monthLabel(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }).toLowerCase();
+}
+
+function tourMatchesSearch(tour, query, month) {
+  const q = normaliseSearch(query);
+  const m = normaliseSearch(month);
+  const haystack = [
+    tour.title,
+    tour.slug,
+    tour.description,
+    tour.category,
+    tour.subCategory,
+    tour.departureCity,
+    tour.date,
+    tour.dateLabel,
+    tour.duration,
+    tour.durationLabel,
+    tour.urgency,
+    tour.offers,
+    tour.meals,
+    tour.stayType,
+    tour.transport,
+    tour.suitableFor,
+    monthLabel(tour.startDate),
+    ...(Array.isArray(tour.highlights) ? tour.highlights : []),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  const words = q ? q.split(/\s+/).filter(Boolean) : [];
+  const queryMatch =
+    words.length === 0 || words.every((w) => haystack.includes(w));
+  return queryMatch && (!m || haystack.includes(m));
+}
+
+export default async function UpcomingDeparturesPage({ searchParams }) {
+  const params = await searchParams;
+  const query = params?.q || '';
+  const month = params?.month || '';
   const raw = await getTours();
   const tours = Array.isArray(raw) ? raw : [];
 
@@ -28,6 +75,8 @@ export default async function UpcomingDeparturesPage() {
   if (upcomingTours.length === 0 && tours.length > 0) {
     upcomingTours = tours;
   }
+
+  upcomingTours = upcomingTours.filter((tour) => tourMatchesSearch(tour, query, month));
 
   const groupedTours = upcomingTours.reduce((acc, tour) => {
     const date = tour.startDate ? new Date(tour.startDate) : new Date();

@@ -1,6 +1,8 @@
 import { getBlogs } from '@/services/api';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Blog - Happy Feet Travellers',
   description: 'Travel tips, destination guides, and stories from Happy Feet Travellers',

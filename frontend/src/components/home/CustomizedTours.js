@@ -1,54 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
+import { getTours } from '@/services/api';
+import { mapTourToPackageCard } from '@/lib/tourDisplay';
 
 export default function CustomizedTours() {
   const [expandedId, setExpandedId] = useState(null);
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const packages = [
-    {
-      id: 1,
-      title: '5N6D Gangtok–Darjeeling (FIT sample)',
-      duration: '5N6D · Flexible dates',
-      price: 'Starting from ₹25,000 / person',
-      highlights: ['Sample package—tell us your dates', 'Curated stays & transfers', 'We tailor the final plan to you'],
-      detail:
-        'Ideal for first-timers to the East. We can stretch rest days, swap viewpoints for cafés, or tighten the pace — share your travel style and we draft a version that fits.',
-      image: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=900&q=80',
-    },
-    {
-      id: 2,
-      title: '10N11D Essence of Sikkim (FIT sample)',
-      duration: '10N11D · Flexible dates',
-      price: 'Starting from ₹40,000 / person',
-      highlights: ['Sample package—contact us to customise', 'Route paced for comfort', 'Clear inclusions before you pay'],
-      detail:
-        'A slower, deeper Sikkim arc with room for weather windows. Perfect if you want monasteries, lakes, and local food without rushing ridge to ridge every day.',
-      image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=900&q=80',
-    },
-    {
-      id: 3,
-      title: 'Corporate Offsite · Lonavala',
-      duration: '2N3D · Pune-area',
-      price: 'From ₹9,999 / person',
-      highlights: ['Resort takeover', 'Activity day', 'AV-ready halls'],
-      detail:
-        'Team-building blocks, awards night layouts, and transport from Pune — we coordinate with your HR lead so the schedule feels intentional, not generic.',
-      image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=900&q=80',
-    },
-    {
-      id: 4,
-      title: 'Solo · Spiti Valley Circuit',
-      duration: '7N8D · Small group',
-      price: 'From ₹24,500 / person',
-      highlights: ['High-altitude monasteries', 'Verified homestays', 'Fixed budget'],
-      detail:
-        'Fixed-seat departures with clear altitude pacing. We match you with a cohort that signed up for the same difficulty band so expectations stay aligned.',
-      image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=900&q=80',
-    },
-  ];
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const tours = await getTours('customized');
+      if (cancelled) return;
+      const cards = (Array.isArray(tours) ? tours : [])
+        .map(mapTourToPackageCard)
+        .filter(Boolean)
+        .slice(0, 4);
+      setPackages(cards);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const sectionVariants = {
     hidden: { opacity: 0, y: 50 },
@@ -119,6 +97,17 @@ export default function CustomizedTours() {
         </motion.div>
 
         <motion.div className="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-4 lg:gap-5" variants={gridVariants}>
+          {loading ? (
+            <p className="col-span-full text-center text-sm text-foreground/70">Loading customized packages…</p>
+          ) : packages.length === 0 ? (
+            <p className="col-span-full text-center text-sm text-foreground/70">
+              Custom packages coming soon —{' '}
+              <Link href="/contact" className="font-semibold text-primary underline">
+                contact us
+              </Link>{' '}
+              for a quote.
+            </p>
+          ) : null}
           {packages.map((pkg) => {
             const open = expandedId === pkg.id;
             return (
@@ -204,10 +193,10 @@ export default function CustomizedTours() {
                   <div className="mt-auto border-t border-[#eaf4fb]/90 pt-4">
                     <div className="mb-4 text-lg font-bold text-primary md:text-xl">{pkg.price}</div>
                     <Link
-                      href="/contact"
+                      href={pkg.slug ? `/tours/${pkg.slug}` : '/contact'}
                       className="block w-full rounded-xl bg-cta py-3 text-center text-sm font-semibold text-primary shadow-sm transition hover:bg-cta-hover hover:text-white hover:shadow-md"
                     >
-                      Contact Us
+                      {pkg.slug ? 'View package' : 'Contact Us'}
                     </Link>
                   </div>
                 </div>

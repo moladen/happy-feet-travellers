@@ -8,6 +8,7 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import FAQAccordion from '@/components/common/FAQAccordion';
 import { openTourItineraryPrint } from '@/lib/tourItineraryPrint';
+import { resolveTourPriceAmount } from '@/lib/tourPrice';
 
 const WA = 'https://wa.me/919876543210';
 
@@ -82,7 +83,7 @@ export default function TourDetails({ tour }) {
               <div className="text-right sm:mr-2">
                 <div className="text-xs text-foreground/70">{isCustomized ? 'Starting from' : 'Per traveller'}</div>
                 <div className="text-2xl font-bold text-primary">
-                  ₹{Number(tour.price || 0).toLocaleString('en-IN')}
+                  ₹{resolveTourPriceAmount(tour.startingPrice, tour.price).toLocaleString('en-IN')}
                 </div>
                 {isCustomized && <p className="text-xs text-foreground/65">Contact us to curate your package</p>}
               </div>

@@ -1,7 +1,7 @@
-import apiClient, { unwrap } from '@/lib/apiClient';
 import { mockBlogs } from '@/data/mockData';
+import { publicFetch, shouldUseMockFallback } from '@/lib/publicApi';
 
-const pickList = (data) => data?.blogs ?? data ?? [];
+const pickList = (data) => data?.blogs ?? (Array.isArray(data) ? data : []);
 
 const formatDate = (value) => {
   if (!value) return null;
@@ -25,18 +25,26 @@ const normaliseList = (list) => (Array.isArray(list) ? list.map(normaliseBlog) :
 
 export const getBlogs = async () => {
   try {
-    const res = await apiClient.get('/blogs');
-    return normaliseList(pickList(unwrap(res)));
-  } catch {
-    return mockBlogs.map(normaliseBlog);
+    const data = await publicFetch('/blogs');
+    return normaliseList(pickList(data));
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[getBlogs]', err?.message || err);
+    }
+    return shouldUseMockFallback() ? mockBlogs.map(normaliseBlog) : [];
   }
 };
 
 export const getBlogById = async (idOrSlug) => {
   try {
-    const res = await apiClient.get(`/blogs/${idOrSlug}`);
-    return normaliseBlog(unwrap(res));
-  } catch {
+    const id = encodeURIComponent(String(idOrSlug));
+    const data = await publicFetch(`/blogs/${id}`);
+    return normaliseBlog(data);
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[getBlogById]', err?.message || err);
+    }
+    if (!shouldUseMockFallback()) return null;
     const match = mockBlogs.find(
       (blog) => String(blog.id) === String(idOrSlug) || blog.slug === idOrSlug
     );

@@ -1,0 +1,117 @@
+const DEFAULT_WHATSAPP = '919876543210';
+const DEFAULT_EMAIL = 'info@happyfeet.com';
+
+export function digitsOnly(value) {
+  return String(value || '').replace(/\D/g, '');
+}
+
+export function formatIndianPhone(value) {
+  const d = digitsOnly(value);
+  if (!d) return null;
+  if (d.length === 10) return `+91 ${d.slice(0, 5)} ${d.slice(5)}`;
+  if (d.length === 12 && d.startsWith('91')) return `+91 ${d.slice(2, 7)} ${d.slice(7)}`;
+  return `+${d}`;
+}
+
+export function whatsappHref(number, text) {
+  const d = digitsOnly(number) || DEFAULT_WHATSAPP;
+  const wa = d.length === 10 ? `91${d}` : d.startsWith('91') ? d : `91${d}`;
+  const q = text ? `?text=${encodeURIComponent(text)}` : '';
+  return `https://wa.me/${wa}${q}`;
+}
+
+export function telHref(number) {
+  const d = digitsOnly(number);
+  if (!d) return `tel:+${DEFAULT_WHATSAPP}`;
+  if (d.length === 10) return `tel:+91${d}`;
+  return `tel:+${d}`;
+}
+
+export const DEFAULT_SITE_CONTACT = {
+  whatsappNumber: DEFAULT_WHATSAPP,
+  email: DEFAULT_EMAIL,
+  officeAddress: 'Pune, Maharashtra, India',
+  instagramUrl: 'https://www.instagram.com/',
+  facebookUrl: 'https://www.facebook.com/',
+  youtubeUrl: 'https://www.youtube.com/',
+  paymentLink: 'https://www.fundayoption.com/pay-online/',
+};
+
+/** Empty string = admin cleared; null/undefined = fall back to default on public site. */
+function resolveSocialField(value, fallback) {
+  if (value === null || value === undefined) return fallback;
+  const trimmed = String(value).trim();
+  return trimmed || null;
+}
+
+export function mergeSiteSettings(settings) {
+  if (!settings || typeof settings !== 'object') return { ...DEFAULT_SITE_CONTACT };
+  return {
+    ...DEFAULT_SITE_CONTACT,
+    ...settings,
+    whatsappNumber: settings.whatsappNumber || DEFAULT_SITE_CONTACT.whatsappNumber,
+    email: settings.email || DEFAULT_SITE_CONTACT.email,
+    officeAddress: settings.officeAddress || DEFAULT_SITE_CONTACT.officeAddress,
+    facebookUrl: resolveSocialField(settings.facebookUrl, DEFAULT_SITE_CONTACT.facebookUrl),
+    instagramUrl: resolveSocialField(settings.instagramUrl, DEFAULT_SITE_CONTACT.instagramUrl),
+    youtubeUrl: resolveSocialField(settings.youtubeUrl, DEFAULT_SITE_CONTACT.youtubeUrl),
+  };
+}
+
+/** Admin / strict mode — only non-empty saved values. */
+export function buildSocialLinks(settings) {
+  const s = settings && typeof settings === 'object' ? settings : {};
+  const links = [];
+
+  const facebook = String(s.facebookUrl || '').trim();
+  if (facebook) {
+    links.push({
+      label: 'Facebook',
+      href: facebook,
+      icon: 'facebook',
+      hover:
+        'hover:border-[#1877F2]/70 hover:bg-[#1877F2]/20 hover:text-white hover:shadow-[0_8px_24px_-8px_rgba(24,119,242,0.45)]',
+    });
+  }
+
+  const instagram = String(s.instagramUrl || '').trim();
+  if (instagram) {
+    links.push({
+      label: 'Instagram',
+      href: instagram,
+      icon: 'instagram',
+      hover:
+        'hover:border-pink-300/60 hover:bg-gradient-to-br hover:from-[#f09433]/25 hover:via-[#dc2743]/20 hover:to-[#bc1888]/25 hover:text-white hover:shadow-[0_8px_24px_-8px_rgba(220,39,67,0.35)]',
+    });
+  }
+
+  const youtube = String(s.youtubeUrl || '').trim();
+  if (youtube) {
+    links.push({
+      label: 'YouTube',
+      href: youtube,
+      icon: 'youtube',
+      hover:
+        'hover:border-[#FF0000]/55 hover:bg-[#FF0000]/18 hover:text-white hover:shadow-[0_8px_24px_-8px_rgba(255,0,0,0.35)]',
+    });
+  }
+
+  const whatsapp = String(s.whatsappNumber || '').trim();
+  if (whatsapp) {
+    links.push({
+      label: 'WhatsApp',
+      href: whatsappHref(whatsapp, "Hi, I'm interested in your tours"),
+      icon: 'whatsapp',
+      hover:
+        'hover:border-[#25D366]/70 hover:bg-[#25D366]/22 hover:text-white hover:shadow-[0_8px_24px_-8px_rgba(37,211,102,0.4)]',
+    });
+  }
+
+  return links;
+}
+
+/** Public footer — uses admin URLs, with sensible defaults until configured. */
+export function buildFooterSocialLinks(settings) {
+  const merged = mergeSiteSettings(settings);
+  return buildSocialLinks(merged);
+}

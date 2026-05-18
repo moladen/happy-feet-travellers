@@ -71,14 +71,18 @@ const schemas = {
     slug: Joi.string().pattern(slugPattern).allow('', null),
     excerpt: Joi.string().allow('', null),
     category: Joi.string().allow('', null),
-    content: Joi.alternatives().try(Joi.string().min(20), Joi.array().items(Joi.string()), Joi.object()),
-    coverImage: Joi.string(),
+    content: Joi.alternatives().try(
+      Joi.string().min(20),
+      Joi.array().items(Joi.string().min(1)),
+      Joi.object()
+    ),
+    coverImage: Joi.string().min(1),
     authorName: Joi.string().min(2),
     authorImage: Joi.string().allow('', null),
     authorInstagram: Joi.string().allow('', null),
     seoTitle: Joi.string().allow('', null),
     seoDescription: Joi.string().allow('', null),
-    publishedAt: Joi.date(),
+    publishedAt: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()),
   }).min(1),
 
   createTestimonial: Joi.object({
@@ -106,16 +110,29 @@ const schemas = {
     whatsappNumber: Joi.string().pattern(phonePattern).messages({
       'string.pattern.base': 'whatsappNumber must be a valid Indian mobile number',
     }),
-    email: Joi.string().required().email(),
+    email: Joi.string().email().allow('', null),
     message: Joi.string().required().min(5).max(2000),
     subject: Joi.string().allow('', null),
     source: Joi.string().allow('', null),
   })
     .or('phone', 'whatsappNumber')
-    .custom((value) => {
-      const { phone, whatsappNumber, ...rest } = value;
-      return { ...rest, phone: (phone || whatsappNumber).replace(/[\s-]/g, '') };
-    }, 'normalise phone'),
+    .custom((value, helpers) => {
+      const { phone, whatsappNumber, email, ...rest } = value;
+      const normalisedPhone = (phone || whatsappNumber || '').replace(/[\s-]/g, '');
+      const normalisedEmail = (email || '').trim();
+      if (!normalisedPhone && !normalisedEmail) {
+        return helpers.error('any.custom', {
+          message: 'Provide a phone number or email address',
+        });
+      }
+      return {
+        ...rest,
+        phone: normalisedPhone,
+        email:
+          normalisedEmail ||
+          (normalisedPhone ? `lead+${normalisedPhone}@happyfeet.in` : 'enquiry@happyfeet.in'),
+      };
+    }, 'normalise enquiry contact'),
 
   createSubscriber: Joi.object({
     email: Joi.string().required().email(),
@@ -137,15 +154,35 @@ const schemas = {
   }).min(1),
 
   updateSettings: Joi.object({
-    whatsappNumber: Joi.string().allow('', null),
-    email: Joi.string().allow('', null).email(),
-    instagramUrl: Joi.string().allow('', null),
-    facebookUrl: Joi.string().allow('', null),
-    youtubeUrl: Joi.string().allow('', null),
-    officeAddress: Joi.string().allow('', null),
-    paymentLink: Joi.string().allow('', null),
-    footerTagline: Joi.string().allow('', null),
-    footerDetails: Joi.string().allow('', null),
+    whatsappNumber: Joi.string().allow('', null).max(30),
+    email: Joi.alternatives().try(
+      Joi.string().email({ tlds: { allow: false } }),
+      Joi.string().valid(''),
+      Joi.valid(null)
+    ),
+    instagramUrl: Joi.alternatives().try(
+      Joi.string().uri({ scheme: ['http', 'https'] }),
+      Joi.string().valid(''),
+      Joi.valid(null)
+    ),
+    facebookUrl: Joi.alternatives().try(
+      Joi.string().uri({ scheme: ['http', 'https'] }),
+      Joi.string().valid(''),
+      Joi.valid(null)
+    ),
+    youtubeUrl: Joi.alternatives().try(
+      Joi.string().uri({ scheme: ['http', 'https'] }),
+      Joi.string().valid(''),
+      Joi.valid(null)
+    ),
+    officeAddress: Joi.string().allow('', null).max(2000),
+    paymentLink: Joi.alternatives().try(
+      Joi.string().uri({ scheme: ['http', 'https'] }),
+      Joi.string().valid(''),
+      Joi.valid(null)
+    ),
+    footerTagline: Joi.string().allow('', null).max(300),
+    footerDetails: Joi.string().allow('', null).max(2000),
   }),
 
   adminLogin: Joi.object({

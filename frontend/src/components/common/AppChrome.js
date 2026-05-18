@@ -2,18 +2,21 @@ import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import LeadPopup from "@/components/common/LeadPopup";
 import ExitIntentPopup from "@/components/common/ExitIntentPopup";
+import { whatsappHref } from "@/lib/siteContact";
 
-export default function AppChrome({ children }) {
+export default function AppChrome({ children, settings }) {
+  const waLink = whatsappHref(settings?.whatsappNumber, "Hi, I'm interested in your tours");
+
   return (
     <>
-      <Navbar />
+      <Navbar settings={settings} />
       <main className="flex-grow">{children}</main>
-      <Footer />
+      <Footer settings={settings} />
       <LeadPopup />
       <ExitIntentPopup />
 
       <a
-        href="https://wa.me/919876543210?text=Hi, I'm interested in your tours"
+        href={waLink}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full border border-white/25 bg-[#25D366]/95 text-white shadow-[0_12px_40px_-8px_rgba(46,125,50,0.55)] backdrop-blur-md transition hover:scale-[1.03] hover:bg-[#20bd5a] hover:shadow-[0_16px_48px_-8px_rgba(46,125,50,0.65)] md:bottom-28"

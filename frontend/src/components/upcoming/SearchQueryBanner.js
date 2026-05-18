@@ -3,8 +3,18 @@
 import { useSearchParams } from 'next/navigation';
 
 export default function SearchQueryBanner() {
-  const q = useSearchParams().get('q');
-  if (!q?.trim()) return null;
+  const params = useSearchParams();
+  const q = params.get('q');
+  const month = params.get('month');
+  const guests = params.get('guests');
+
+  const terms = [
+    q?.trim() ? `Destination: "${q.trim()}"` : '',
+    month?.trim() ? `When: ${month.trim()}` : '',
+    guests?.trim() ? `Guests: ${guests.trim()}` : '',
+  ].filter(Boolean);
+
+  if (!terms.length) return null;
 
   return (
     <div
@@ -13,8 +23,7 @@ export default function SearchQueryBanner() {
     >
       <p className="text-sm">
         <span className="font-semibold text-primary">Search:</span>{' '}
-        <span className="text-primary">&quot;{q.trim()}&quot;</span> — use filters below to narrow departures (full search
-        plugs into your API later).
+        <span className="text-primary">{terms.join(' · ')}</span>
       </p>
     </div>
   );

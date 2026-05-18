@@ -37,12 +37,14 @@ const errorHandler = (err, req, res, _next) => {
     logger.warn(`${req.method} ${req.originalUrl} →`, message);
   }
 
-  return sendError(
-    res,
-    message,
-    statusCode,
-    env.isDevelopment ? { stack: err.stack, ...(details ? { meta: details } : {}) } : details
-  );
+  const errorDetails =
+    Array.isArray(details) && details.length
+      ? details
+      : env.isDevelopment
+        ? { stack: err.stack, ...(details ? { meta: details } : {}) }
+        : null;
+
+  return sendError(res, message, statusCode, errorDetails);
 };
 
 const notFoundHandler = (req, _res, next) => {

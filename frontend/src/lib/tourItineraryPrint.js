@@ -1,3 +1,5 @@
+import { resolveTourPriceAmount } from '@/lib/tourPrice';
+
 function esc(s) {
   return String(s ?? '')
     .replace(/&/g, '&amp;')
@@ -51,7 +53,7 @@ export function openTourItineraryPrint(tour) {
     <div><strong>Dates:</strong> ${esc(tour.date || tour.startDate || '')}</div>
     <div><strong>Duration:</strong> ${esc(tour.duration)}</div>
     <div><strong>Departure city:</strong> ${esc(tour.departureCity || 'Pune')}</div>
-    <div><strong>Price:</strong> ${tour.category === 'customized' ? 'Starting from ' : ''}₹${Number(tour.price || 0).toLocaleString('en-IN')} ${tour.category === 'customized' ? '(contact to customise)' : 'per traveller'}</div>
+    <div><strong>Price:</strong> ${tour.category === 'customized' ? 'Starting from ' : ''}₹${resolveTourPriceAmount(tour.startingPrice, tour.price).toLocaleString('en-IN')} ${tour.category === 'customized' ? '(contact to customise)' : 'per traveller'}</div>
   </div>
   <h2 style="color:#1F4E79;font-size:16px">Day-wise itinerary</h2>
   <table><tbody>${itineraryRows}</tbody></table>

@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { resolveTourPriceAmount } from '@/lib/tourPrice';
 
 export default function TourCard({ tour }) {
-  const price = Number(tour?.price ?? tour?.startingPrice ?? 0);
-  const safePrice = Number.isFinite(price) ? price : 0;
+  const safePrice = resolveTourPriceAmount(tour?.startingPrice, tour?.price);
   const imageSrc = tour?.image || tour?.coverImage || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=80';
   const rating = tour?.rating != null ? tour.rating : '—';
 

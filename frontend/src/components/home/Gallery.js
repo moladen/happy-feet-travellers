@@ -1,40 +1,31 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { getGalleryImages } from '@/services/galleryService';
+
+const PLACEHOLDER = [
+  {
+    id: 'ph-1',
+    src: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=900&q=80',
+    alt: 'Houseboat in the Kerala backwaters',
+  },
+];
 
 export default function Gallery() {
-  const images = [
-    {
-      id: 1,
-      src: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=900&q=80',
-      alt: 'Houseboat in the Kerala backwaters',
-    },
-    {
-      id: 2,
-      src: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=900&q=80',
-      alt: 'High-altitude lake in the Himalayas',
-    },
-    {
-      id: 3,
-      src: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=900&q=80',
-      alt: 'Hawa Mahal facade, Jaipur',
-    },
-    {
-      id: 4,
-      src: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=900&q=80',
-      alt: 'Quiet Goa shoreline at sunset',
-    },
-    {
-      id: 5,
-      src: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=900&q=80',
-      alt: 'Monasteries and prayer flags in Sikkim',
-    },
-    {
-      id: 6,
-      src: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=80',
-      alt: 'Group sunset at a Rajasthan dune',
-    },
-  ];
+  const [images, setImages] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const rows = await getGalleryImages();
+      if (cancelled) return;
+      setImages(rows.length > 0 ? rows : PLACEHOLDER);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const sectionVariants = {
     hidden: { opacity: 0, y: 50 },

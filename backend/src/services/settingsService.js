@@ -23,33 +23,30 @@ async function getSettings() {
   });
 }
 
+const trimOrNull = (value) => {
+  if (value == null) return null;
+  const s = String(value).trim();
+  return s || null;
+};
+
 async function upsertSettings(payload) {
+  const data = {
+    whatsappNumber: trimOrNull(payload.whatsappNumber),
+    email: trimOrNull(payload.email),
+    instagramUrl: trimOrNull(payload.instagramUrl),
+    facebookUrl: trimOrNull(payload.facebookUrl),
+    youtubeUrl: trimOrNull(payload.youtubeUrl),
+    officeAddress: trimOrNull(payload.officeAddress),
+    paymentLink: trimOrNull(payload.paymentLink),
+    footerTagline: trimOrNull(payload.footerTagline),
+    footerDetails: trimOrNull(payload.footerDetails),
+  };
+
   return withDatabaseErrors(() =>
     prisma.siteSettings.upsert({
       where: { id: SETTINGS_ID },
-      update: {
-        whatsappNumber: payload.whatsappNumber || null,
-        email: payload.email || null,
-        instagramUrl: payload.instagramUrl || null,
-        facebookUrl: payload.facebookUrl || null,
-        youtubeUrl: payload.youtubeUrl || null,
-        officeAddress: payload.officeAddress || null,
-        paymentLink: payload.paymentLink || null,
-        footerTagline: payload.footerTagline || null,
-        footerDetails: payload.footerDetails || null,
-      },
-      create: {
-        id: SETTINGS_ID,
-        whatsappNumber: payload.whatsappNumber || null,
-        email: payload.email || null,
-        instagramUrl: payload.instagramUrl || null,
-        facebookUrl: payload.facebookUrl || null,
-        youtubeUrl: payload.youtubeUrl || null,
-        officeAddress: payload.officeAddress || null,
-        paymentLink: payload.paymentLink || null,
-        footerTagline: payload.footerTagline || null,
-        footerDetails: payload.footerDetails || null,
-      },
+      update: data,
+      create: { id: SETTINGS_ID, ...data },
     })
   );
 }

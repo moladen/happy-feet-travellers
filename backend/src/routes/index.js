@@ -1,4 +1,5 @@
 const express = require('express');
+const prisma = require('@/config/database');
 
 const tourRoutes = require('@/routes/tourRoutes');
 const blogRoutes = require('@/routes/blogRoutes');
@@ -11,14 +12,26 @@ const settingsRoutes = require('@/routes/settingsRoutes');
 
 const router = express.Router();
 
-router.get('/health', (_req, res) =>
-  res.status(200).json({
+router.get('/health', async (_req, res) => {
+  const payload = {
     success: true,
     message: 'Server is running',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
-  })
-);
+    database: { ok: false },
+  };
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    payload.database = { ok: true };
+  } catch (e) {
+    payload.database = {
+      ok: false,
+      hint: 'Check DATABASE_URL in backend/.env and that PostgreSQL is running.',
+      error: process.env.NODE_ENV === 'development' ? String(e.message || e) : undefined,
+    };
+  }
+  res.status(200).json(payload);
+});
 
 router.use('/tours', tourRoutes);
 router.use('/blogs', blogRoutes);
