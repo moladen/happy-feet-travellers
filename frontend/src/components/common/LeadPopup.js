@@ -54,10 +54,12 @@ export default function LeadPopup() {
       setFieldError('Enter a valid 10-digit Indian mobile number.');
       return;
     }
-    if (!formData.message.trim() || formData.message.trim().length < 5) {
-      setFieldError('A short message helps us reply faster.');
+    if (!formData.message.trim() || formData.message.trim().length < 10) {
+      setFieldError('Please add a few more details (at least 10 characters).');
       return;
     }
+
+    if (loading || isSubmitted) return;
 
     setLoading(true);
     setServerError(null);

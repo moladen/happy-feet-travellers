@@ -104,6 +104,72 @@ export const updateGalleryItem = (id, payload) =>
 export const deleteGalleryItem = (id) =>
   run(() => apiClient.delete(`/gallery/${id}`), "Could not delete gallery image.");
 
+export const listHeroSlides = (params = {}) =>
+  run(
+    () => apiClient.get("/hero-slides", { params: { all: "1", ...params } }),
+    "Could not load hero slides."
+  );
+
+export const createHeroSlide = (formData) =>
+  run(
+    () =>
+      apiClient.post("/hero-slides", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
+    "Could not upload hero slide."
+  );
+
+export const updateHeroSlide = (id, formData) =>
+  run(
+    () =>
+      apiClient.put(`/hero-slides/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
+    "Could not update hero slide."
+  );
+
+export const deleteHeroSlide = (id) =>
+  run(() => apiClient.delete(`/hero-slides/${id}`), "Could not delete hero slide.");
+
+export const reorderHeroSlides = (order) =>
+  run(
+    () => apiClient.patch("/hero-slides/reorder", { order }),
+    "Could not reorder hero slides."
+  );
+
+export const listTeamMembers = (params = {}) =>
+  run(
+    () => apiClient.get("/team-members", { params: { all: "1", ...params } }),
+    "Could not load team members."
+  );
+
+export const createTeamMember = (formData) =>
+  run(
+    () =>
+      apiClient.post("/team-members", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
+    "Could not add team member."
+  );
+
+export const updateTeamMember = (id, formData) =>
+  run(
+    () =>
+      apiClient.put(`/team-members/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
+    "Could not update team member."
+  );
+
+export const deleteTeamMember = (id) =>
+  run(() => apiClient.delete(`/team-members/${id}`), "Could not delete team member.");
+
+export const reorderTeamMembers = (order) =>
+  run(
+    () => apiClient.patch("/team-members/reorder", { order }),
+    "Could not reorder team members."
+  );
+
 export const listEnquiries = (params = {}) =>
   run(() => apiClient.get("/enquiry", { params }), "Could not load enquiries.");
 

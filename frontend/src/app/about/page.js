@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import TeamSection from '@/components/about/TeamSection';
+import { travelIconClassForEmoji } from '@/lib/travelIconAnimations';
 
 export const metadata = {
   title: 'About Us - Happy Feet Travellers',
@@ -29,37 +31,14 @@ const VALUES = [
   },
 ];
 
-const TEAM = [
-  {
-    name: 'Aniket Patil',
-    role: 'Founder · Trip planning',
-    image:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    name: 'Sneha Kelkar',
-    role: 'Operations · Stays & transfers',
-    image:
-      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    name: 'Vivek Joshi',
-    role: 'Trip captain · Northeast & Spiti',
-    image:
-      'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=400&q=80',
-  },
-];
-
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary via-[#235a8a] to-secondary text-white py-14">
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#0f1c2e] via-primary to-[#3d6a8a] py-14 text-white">
         <div className="container mx-auto px-4">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-white/80">
-            About us
-          </p>
-          <h1 className="mb-3 text-4xl font-bold text-white md:text-5xl">Our story</h1>
+          <p className="section-eyebrow mb-3 text-white/80">About us</p>
+          <h1 className="font-display mb-3 text-4xl font-bold text-white md:text-5xl">Our story</h1>
           <p className="max-w-2xl text-lg text-white/85">
             We started with a simple idea: organise the kind of trips we&apos;d want to take with friends—clear costs,
             small groups, and someone reliable to call when things change.
@@ -82,7 +61,7 @@ export default function AboutPage() {
             <h2 className="mb-3 text-xl font-bold text-primary">Vision</h2>
             <p className="text-foreground/85 leading-relaxed">
               Become the first name families and solo travellers think of when they want affordable, well-run departures
-              and bespoke FIT holidays—without the stress of planning alone.
+              and personalized holidays—without the stress of planning alone.
             </p>
           </div>
         </div>
@@ -121,7 +100,7 @@ export default function AboutPage() {
                 key={value.title}
                 className="bg-white rounded-2xl border border-[#eaf4fb] shadow-sm p-6 text-center hover:shadow-md transition"
               >
-                <div className="text-4xl mb-4">{value.icon}</div>
+                <div className={`mb-4 inline-block text-4xl ${travelIconClassForEmoji(value.icon)}`}>{value.icon}</div>
                 <h3 className="text-lg font-bold text-primary mb-2">{value.title}</h3>
                 <p className="text-foreground/80 text-sm leading-relaxed">{value.desc}</p>
               </div>
@@ -129,29 +108,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Team */}
-        <div className="bg-section-alt rounded-2xl p-8 mb-12">
-          <h2 className="text-3xl font-bold text-primary mb-2 text-center">The team in Pune</h2>
-          <p className="text-foreground/80 text-center mb-8">
-            Travel-obsessed folks you’ll actually be talking to over WhatsApp.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TEAM.map((member) => (
-              <div
-                key={member.name}
-                className="bg-white rounded-2xl p-6 text-center border border-[#dceaf7] shadow-sm"
-              >
-                <img
-                  src={member.image}
-                  alt={member.name}
-                  className="w-28 h-28 rounded-full mx-auto mb-4 object-cover ring-4 ring-section-alt"
-                />
-                <h3 className="text-lg font-bold text-primary">{member.name}</h3>
-                <p className="text-foreground/80 text-sm">{member.role}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <TeamSection />
 
         {/* Numbers (per brand brief) */}
         <div className="mb-12">

@@ -20,7 +20,10 @@
     "prisma:generate": "npm run prisma:generate -w backend",
     "prisma:migrate": "npm run prisma:migrate -w backend",
     "prisma:seed": "npm run prisma:seed -w backend",
-    "smoke": "npm run smoke -w backend"
+    "smoke": "npm run smoke -w backend",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",

@@ -16,6 +16,10 @@ function toQuery(params) {
 const DEFAULT_TOUR_IMAGE =
   'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=80';
 
+const API_ASSET_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api')
+  .replace(/\/api\/?$/, '')
+  .replace(/\/$/, '');
+
 const pickList = (data) => {
   if (Array.isArray(data)) return data;
   if (data && Array.isArray(data.tours)) return data.tours;
@@ -32,16 +36,66 @@ const formatDateRange = (start, end) => {
   return `${s.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} - ${e.toLocaleDateString('en-GB', fmt)}`;
 };
 
+const resolveImageUrl = (value) => {
+  const src = String(value || '').trim();
+  if (!src) return '';
+  if (/^(data:|blob:|https?:\/\/)/i.test(src)) return src;
+  if (src.startsWith('/images/') || src.startsWith('/videos/') || src.startsWith('/happy-feet-logo')) return src;
+  if (src.startsWith('/')) return `${API_ASSET_BASE}${src}`;
+  return `${API_ASSET_BASE}/${src}`;
+};
+
+const imageFromValue = (value) => {
+  if (typeof value === 'string') return resolveImageUrl(value);
+  if (!value || typeof value !== 'object') return '';
+  return resolveImageUrl(
+    value.image ||
+      value.url ||
+      value.src ||
+      value.path ||
+      value.imageUrl ||
+      value.imageURL ||
+      value.secure_url ||
+      value.coverImage ||
+      value.thumbnail ||
+      ''
+  );
+};
+
+const parseImageList = (value) => {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== 'string') return value ? [value] : [];
+  const trimmed = value.trim();
+  if (!trimmed) return [];
+  if (trimmed.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      // Use comma/single parsing below.
+    }
+  }
+  return trimmed.includes(',') ? trimmed.split(',') : [trimmed];
+};
+
 const normaliseTour = (tour) => {
   if (!tour || typeof tour !== 'object') return tour;
-  const images = Array.isArray(tour.images) ? tour.images : [];
+  const images = [
+    ...parseImageList(tour.gallery),
+    ...parseImageList(tour.images),
+    tour.coverImage,
+    tour.image,
+  ]
+    .map(imageFromValue)
+    .filter(Boolean);
+  const gallery = [...new Set(images)];
   const price = resolveTourPriceAmount(tour.startingPrice, tour.price);
   return {
     ...tour,
     price,
     startingPrice: price,
-    image: tour.image || tour.coverImage || images[0] || DEFAULT_TOUR_IMAGE,
-    gallery: tour.gallery || (images.length ? images : tour.coverImage ? [tour.coverImage] : []),
+    image: gallery[0] || DEFAULT_TOUR_IMAGE,
+    gallery,
     date: tour.date || tour.dateLabel || formatDateRange(tour.startDate, tour.endDate) || 'Dates on request',
     duration: tour.durationLabel || tour.duration,
     reviews: tour.reviews ?? tour.reviewsCount ?? 0,

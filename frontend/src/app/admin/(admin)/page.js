@@ -147,7 +147,7 @@ export default function DashboardPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         <DashboardCard label="Total tours" value={stats.totalTours} note="All published travel products" accent="blue" />
         <DashboardCard label="Upcoming tours" value={stats.upcomingTours} note="Fixed departures ready to sell" accent="teal" />
-        <DashboardCard label="Customized tours" value={stats.customizedTours} note="Flexible FIT-style offerings" accent="slate" />
+        <DashboardCard label="Customized tours" value={stats.customizedTours} note="Trips tailored to your dates & pace" accent="slate" />
         <DashboardCard label="Total blogs" value={stats.totalBlogs} note="Editorial content in the CMS" accent="amber" />
         <DashboardCard label="Total enquiries" value={stats.totalEnquiries} note="Leads collected from website forms" accent="blue" />
         <DashboardCard label="Testimonials" value={stats.totalTestimonials} note="Trust signals ready for the site" accent="teal" />

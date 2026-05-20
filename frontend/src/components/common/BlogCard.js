@@ -10,7 +10,7 @@ export default function BlogCard({ blog }) {
       className="group block h-full rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <motion.article
-        className="relative flex h-full flex-col overflow-hidden rounded-3xl glass-card transition-[box-shadow,border-color] duration-500 hover:border-secondary/30 hover:shadow-[0_24px_48px_-16px_rgba(31,78,121,0.18)]"
+        className="relative flex h-full flex-col overflow-hidden rounded-3xl glass-card transition-[box-shadow,border-color] duration-500 hover:border-cta/25 hover:shadow-[0_24px_48px_-16px_rgba(15,28,46,0.18)]"
         whileHover={{ y: -5 }}
         transition={{ type: 'spring', stiffness: 380, damping: 28 }}
       >

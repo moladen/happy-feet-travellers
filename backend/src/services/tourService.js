@@ -98,6 +98,11 @@ function normaliseTourPayload(payload) {
   const data = { ...payload };
   if (data.startDate) data.startDate = new Date(data.startDate);
   if (data.endDate) data.endDate = new Date(data.endDate);
+  if (data.bookingDeposit !== undefined) {
+    const amount = Number(data.bookingDeposit);
+    data.bookingDeposit =
+      Number.isFinite(amount) && amount > 0 ? Math.round(amount) : null;
+  }
   for (const f of ARRAY_FIELDS) {
     if (data[f] === undefined) continue;
     if (!Array.isArray(data[f])) data[f] = [];

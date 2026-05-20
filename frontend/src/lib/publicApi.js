@@ -1,6 +1,9 @@
 import { API_BASE_URL } from '@/constants/site';
 
 export function apiBase() {
+  const isServer = typeof window === 'undefined';
+  const internal = process.env.API_INTERNAL_URL?.replace(/\/$/, '');
+  if (isServer && internal) return internal;
   return (API_BASE_URL || 'http://127.0.0.1:5000/api').replace(/\/$/, '');
 }
 

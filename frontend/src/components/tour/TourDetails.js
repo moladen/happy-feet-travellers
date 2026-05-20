@@ -7,10 +7,75 @@ import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import FAQAccordion from '@/components/common/FAQAccordion';
+import TripGalleryReel from '@/components/tour/TripGalleryReel';
+import { API_BASE_URL } from '@/constants/site';
 import { openTourItineraryPrint } from '@/lib/tourItineraryPrint';
 import { resolveTourPriceAmount } from '@/lib/tourPrice';
+import {
+  buildReserveSeatHref,
+  formatReserveDepositInr,
+  formatReserveSeatLabel,
+  isGroupDepartureTour,
+  resolveReserveDepositAmount,
+} from '@/lib/tourReserve';
+import { whatsappHref } from '@/lib/siteContact';
+const FALLBACK_TOUR_IMAGE =
+  'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=80';
+const API_ASSET_BASE = (API_BASE_URL || '').replace(/\/api\/?$/, '').replace(/\/$/, '');
 
-const WA = 'https://wa.me/919876543210';
+function resolveImageUrl(value) {
+  const src = String(value || '').trim();
+  if (!src) return '';
+  if (/^(data:|blob:|https?:\/\/)/i.test(src)) return src;
+  if (src.startsWith('/images/') || src.startsWith('/videos/') || src.startsWith('/happy-feet-logo')) return src;
+  if (src.startsWith('/')) return API_ASSET_BASE ? `${API_ASSET_BASE}${src}` : src;
+  return API_ASSET_BASE ? `${API_ASSET_BASE}/${src}` : `/${src}`;
+}
+
+function parseImageList(value) {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== 'string') return value ? [value] : [];
+  const trimmed = value.trim();
+  if (!trimmed) return [];
+  if (trimmed.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      // Fall through to single/comma parsing.
+    }
+  }
+  return trimmed.includes(',') ? trimmed.split(',') : [trimmed];
+}
+
+function getImageUrl(image) {
+  if (typeof image === 'string') return resolveImageUrl(image);
+  if (!image || typeof image !== 'object') return '';
+  return resolveImageUrl(
+    image.image ||
+      image.url ||
+      image.src ||
+      image.path ||
+      image.imageUrl ||
+      image.imageURL ||
+      image.secure_url ||
+      image.coverImage ||
+      image.thumbnail ||
+      ''
+  );
+}
+
+function getTourGalleryImages(tour) {
+  if (Array.isArray(tour?.gallery) && tour.gallery.length) {
+    return [...new Set(tour.gallery.map(getImageUrl).filter(Boolean))];
+  }
+  const values = [
+    ...parseImageList(tour?.images),
+    tour?.coverImage,
+    tour?.image,
+  ];
+  return [...new Set(values.map(getImageUrl).filter(Boolean))];
+}
 
 function Modal({ open, title, onClose, children }) {
   if (!open) return null;
@@ -38,7 +103,7 @@ function Modal({ open, title, onClose, children }) {
   );
 }
 
-export default function TourDetails({ tour }) {
+export default function TourDetails({ tour, whatsappNumber }) {
   const [pickupOpen, setPickupOpen] = useState(false);
   const [inclusionsOpen, setInclusionsOpen] = useState(false);
   const [exclusionsOpen, setExclusionsOpen] = useState(false);
@@ -46,7 +111,8 @@ export default function TourDetails({ tour }) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
 
-  const gallery = tour.gallery?.length ? tour.gallery : [tour.image];
+  const gallery = getTourGalleryImages(tour);
+  const displayGallery = gallery.length ? gallery : [FALLBACK_TOUR_IMAGE];
   const inclusions = tour.inclusions || [];
   const exclusions = tour.exclusions || [];
   const faqs = tour.faqs || [];
@@ -56,11 +122,16 @@ export default function TourDetails({ tour }) {
   const supplements = tour.supplements || [];
   const pickupPoints = tour.pickupPoints || [];
   const isCustomized = tour.category === 'customized';
-
-  const waTour = `${WA}?text=${encodeURIComponent(`Hi, I'm interested in: ${tour.title} (${tour.date || ''})`)}`;
+  const showReserve = isGroupDepartureTour(tour);
+  const reserveDeposit = resolveReserveDepositAmount(tour);
+  const reserveHref = buildReserveSeatHref(tour, whatsappNumber);
+  const waEnquiry = whatsappHref(
+    whatsappNumber,
+    `Hi, I'm interested in: ${tour.title} (${tour.date || tour.dateLabel || ''})`
+  );
 
   return (
-    <section className="relative pb-28">
+    <section className={`relative ${showReserve ? 'pb-28' : 'pb-12'}`}>
       <div className="sticky top-0 z-40 border-b border-[#dceaf7] bg-white/95 shadow-sm backdrop-blur">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -88,21 +159,23 @@ export default function TourDetails({ tour }) {
                 {isCustomized && <p className="text-xs text-foreground/65">Contact us to curate your package</p>}
               </div>
               <div className="flex flex-wrap gap-2">
+                {showReserve ? (
+                  <a
+                    href={reserveHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border-2 border-[#2E7D32] bg-white px-5 py-2.5 text-center text-sm font-semibold text-[#2E7D32] transition hover:bg-[#1B5E20] hover:text-white"
+                  >
+                    {formatReserveSeatLabel(tour)}
+                  </a>
+                ) : null}
                 <a
-                  href={waTour}
+                  href={waEnquiry}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-full bg-cta px-5 py-2.5 text-center text-sm font-semibold text-primary transition hover:bg-[#E76F51] hover:text-white"
+                  className="rounded-full border-2 border-primary/25 bg-white px-5 py-2.5 text-center text-sm font-semibold text-primary transition hover:bg-primary hover:text-white"
                 >
-                  Book now
-                </a>
-                <a
-                  href={waTour}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full border-2 border-[#2E7D32] bg-white px-5 py-2.5 text-center text-sm font-semibold text-[#2E7D32] transition hover:bg-[#1B5E20] hover:text-white"
-                >
-                  Check availability
+                  Ask on WhatsApp
                 </a>
               </div>
             </div>
@@ -114,17 +187,24 @@ export default function TourDetails({ tour }) {
         <div className="mb-8 lg:hidden">
           <Swiper
             modules={[Autoplay, Pagination]}
-            loop={gallery.length > 1}
+            loop={displayGallery.length > 1}
             autoplay={{ delay: 3200, disableOnInteraction: false }}
             pagination={{ clickable: true }}
             spaceBetween={12}
             slidesPerView={1}
             className="overflow-hidden rounded-2xl border border-[#dceaf7] shadow-sm [&_.swiper-pagination-bullet-active]:bg-primary"
           >
-            {gallery.map((img, idx) => (
+            {displayGallery.map((img, idx) => (
               <SwiperSlide key={`m-${idx}`}>
                 <div className="aspect-[16/10] w-full bg-section-alt">
-                  <img src={img} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={img}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    onError={(event) => {
+                      event.currentTarget.src = FALLBACK_TOUR_IMAGE;
+                    }}
+                  />
                 </div>
               </SwiperSlide>
             ))}
@@ -214,7 +294,7 @@ export default function TourDetails({ tour }) {
             </div>
           </aside>
 
-          <div className="lg:col-span-6">
+          <div className="lg:col-span-9">
             <div className="rounded-2xl border border-[#dceaf7] bg-white p-6 shadow-sm">
               <h2 className="mb-6 text-2xl font-bold text-primary">Itinerary</h2>
               <div className="relative space-y-0 border-l-2 border-[#dceaf7] pl-6">
@@ -227,6 +307,18 @@ export default function TourDetails({ tour }) {
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="mt-8 rounded-2xl border border-[#dceaf7] bg-white p-5 shadow-sm">
+              <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-secondary">Moments</p>
+                  <h2 className="mt-1 text-xl font-bold text-primary">Trip gallery</h2>
+                </div>
+                <p className="text-sm font-medium text-foreground/65">Auto-scrolling photo reel</p>
+              </div>
+
+              <TripGalleryReel images={displayGallery} />
             </div>
 
             {supplements.length > 0 && (
@@ -290,29 +382,6 @@ export default function TourDetails({ tour }) {
             </div>
           </div>
 
-          <aside className="hidden lg:col-span-3 lg:block">
-            <div className="sticky top-28">
-              <h2 className="mb-3 text-lg font-bold text-primary">Trip gallery</h2>
-              <Swiper
-                modules={[Autoplay, Pagination]}
-                direction="vertical"
-                loop={gallery.length > 1}
-                autoplay={{ delay: 3000, disableOnInteraction: false }}
-                pagination={{ clickable: true }}
-                spaceBetween={12}
-                slidesPerView={1}
-                className="h-[min(520px,calc(100vh-220px))] overflow-hidden rounded-2xl border border-[#dceaf7] shadow-sm [&_.swiper-pagination]:!text-center [&_.swiper-pagination-bullet-active]:bg-primary"
-              >
-                {gallery.map((img, idx) => (
-                  <SwiperSlide key={`d-${idx}`}>
-                    <div className="flex h-full min-h-[200px] items-center justify-center bg-section-alt">
-                      <img src={img} alt="" className="max-h-full w-full object-cover" />
-                    </div>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            </div>
-          </aside>
         </div>
       </div>
 
@@ -391,31 +460,39 @@ export default function TourDetails({ tour }) {
         </div>
       </Modal>
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#dceaf7] bg-white/95 py-3 shadow-[0_-4px_20px_rgba(31,78,121,0.12)] backdrop-blur">
-        <div className="container mx-auto flex flex-col items-stretch justify-between gap-3 px-4 sm:flex-row sm:items-center">
-          <p className="text-center text-sm font-semibold text-primary sm:text-left">
-            Book your seat — <span className="text-cta">₹2,000</span> advance
-          </p>
-          <div className="flex flex-wrap justify-center gap-2 sm:justify-end">
-            <a
-              href={`${WA}?text=${encodeURIComponent(`I want to book: ${tour.title}. Advance ₹2000.`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full bg-cta px-5 py-2 text-sm font-semibold text-primary transition hover:bg-[#E76F51] hover:text-white"
-            >
-              WhatsApp us
-            </a>
-            <a
-              href={waTour}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full bg-[#2E7D32] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#1B5E20]"
-            >
-              I’m interested
-            </a>
+      {showReserve ? (
+        <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#dceaf7] bg-white/95 py-3 shadow-[0_-4px_20px_rgba(31,78,121,0.12)] backdrop-blur">
+          <div className="container mx-auto flex flex-col items-stretch justify-between gap-3 px-4 sm:flex-row sm:items-center">
+            <div className="text-center sm:text-left">
+              <p className="text-sm font-semibold text-primary">
+                Reserve your seat — <span className="text-cta">{formatReserveDepositInr(reserveDeposit)}</span> booking
+                amount
+              </p>
+              <p className="mt-0.5 text-xs text-foreground/65">
+                Pay the balance before the tour or while travelling · availability confirmed on WhatsApp or call
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2 sm:justify-end">
+              <a
+                href={reserveHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border-2 border-[#2E7D32] bg-[#2E7D32] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#1B5E20]"
+              >
+                {formatReserveSeatLabel(tour)}
+              </a>
+              <a
+                href={waEnquiry}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border-2 border-primary/20 bg-white px-5 py-2 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white"
+              >
+                General enquiry
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }

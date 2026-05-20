@@ -5,6 +5,21 @@ const { CATEGORIES } = require('@/constants/tourCategories');
 const phonePattern = /^(?:\+?91[\s-]?)?[6-9]\d{9}$/;
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+/** Optional phone — empty is OK; non-empty must match Indian mobile format. */
+const optionalIndianPhone = Joi.string()
+  .trim()
+  .allow('', null)
+  .custom((value, helpers) => {
+    const normalised = String(value ?? '').replace(/[\s-]/g, '');
+    if (!normalised) return '';
+    if (!phonePattern.test(normalised)) {
+      return helpers.error('any.custom', {
+        message: 'Enter a valid 10-digit Indian mobile number',
+      });
+    }
+    return normalised;
+  });
+
 const createTourSchema = Joi.object({
   title: Joi.string().required().min(3).max(150),
   slug: Joi.string().pattern(slugPattern).allow('', null),
@@ -22,6 +37,7 @@ const createTourSchema = Joi.object({
   rating: Joi.number().min(0).max(5),
   reviewsCount: Joi.number().integer().min(0),
   urgency: Joi.string().allow('', null),
+  bookingDeposit: Joi.number().integer().min(0).allow(null),
   offers: Joi.string().allow('', null),
   meals: Joi.string().allow('', null),
   stayType: Joi.string().allow('', null),
@@ -103,21 +119,19 @@ const schemas = {
 
   // Accepts either `phone` or `whatsappNumber` (renamed → phone) for FE compatibility.
   createEnquiry: Joi.object({
-    name: Joi.string().required().min(2).max(100),
-    phone: Joi.string().pattern(phonePattern).messages({
-      'string.pattern.base': 'phone must be a valid Indian mobile number',
-    }),
-    whatsappNumber: Joi.string().pattern(phonePattern).messages({
-      'string.pattern.base': 'whatsappNumber must be a valid Indian mobile number',
-    }),
-    email: Joi.string().email().allow('', null),
-    message: Joi.string().required().min(5).max(2000),
-    subject: Joi.string().allow('', null),
-    source: Joi.string().allow('', null),
-  })
-    .or('phone', 'whatsappNumber')
-    .custom((value, helpers) => {
-      const { phone, whatsappNumber, email, ...rest } = value;
+    name: Joi.string().required().trim().min(2).max(100),
+    phone: optionalIndianPhone,
+    whatsappNumber: optionalIndianPhone,
+    email: Joi.string().email({ tlds: { allow: false } }).allow('', null),
+    message: Joi.string().required().trim().min(10).max(2000),
+    subject: Joi.string().trim().max(200).allow('', null),
+    destination: Joi.string().trim().max(200).allow('', null),
+    source: Joi.string().trim().max(80).allow('', null),
+    website: Joi.string().max(0).allow('', null),
+    _honeypot: Joi.string().max(0).allow('', null),
+  }).custom((value, helpers) => {
+      const { phone, whatsappNumber, email, destination, subject, website, _honeypot, ...rest } =
+        value;
       const normalisedPhone = (phone || whatsappNumber || '').replace(/[\s-]/g, '');
       const normalisedEmail = (email || '').trim();
       if (!normalisedPhone && !normalisedEmail) {
@@ -125,12 +139,17 @@ const schemas = {
           message: 'Provide a phone number or email address',
         });
       }
+      const resolvedSubject =
+        (subject || '').trim() || (destination || '').trim() || null;
       return {
         ...rest,
         phone: normalisedPhone,
         email:
           normalisedEmail ||
           (normalisedPhone ? `lead+${normalisedPhone}@happyfeet.in` : 'enquiry@happyfeet.in'),
+        subject: resolvedSubject,
+        website: website || '',
+        _honeypot: _honeypot || '',
       };
     }, 'normalise enquiry contact'),
 
@@ -152,6 +171,66 @@ const schemas = {
     category: Joi.string().allow('', null),
     image: Joi.string(),
   }).min(1),
+
+  createHeroSlide: Joi.object({
+    altText: Joi.string().required().min(3).max(240),
+    tag: Joi.string().allow('', null).max(80),
+    emoji: Joi.string().allow('', null).max(8),
+    sortOrder: Joi.alternatives().try(Joi.number().integer().min(0), Joi.string().pattern(/^\d+$/)),
+    active: Joi.alternatives().try(Joi.boolean(), Joi.string().valid('true', 'false', '1', '0')),
+  }),
+
+  updateHeroSlide: Joi.object({
+    altText: Joi.string().min(3).max(240),
+    tag: Joi.string().allow('', null).max(80),
+    emoji: Joi.string().allow('', null).max(8),
+    sortOrder: Joi.alternatives().try(Joi.number().integer().min(0), Joi.string().pattern(/^\d+$/)),
+    active: Joi.alternatives().try(Joi.boolean(), Joi.string().valid('true', 'false', '1', '0')),
+  }),
+
+  reorderHeroSlides: Joi.object({
+    order: Joi.array().items(Joi.string().required()).min(1).required(),
+  }),
+
+  createTeamMember: Joi.object({
+    fullName: Joi.string().required().min(2).max(120),
+    role: Joi.string().required().min(2).max(120),
+    bio: Joi.string().required().min(10).max(2000),
+    instagramUrl: Joi.alternatives().try(
+      Joi.string().uri({ scheme: ['http', 'https'] }),
+      Joi.string().valid(''),
+      Joi.valid(null)
+    ),
+    linkedinUrl: Joi.alternatives().try(
+      Joi.string().uri({ scheme: ['http', 'https'] }),
+      Joi.string().valid(''),
+      Joi.valid(null)
+    ),
+    sortOrder: Joi.alternatives().try(Joi.number().integer().min(0), Joi.string().pattern(/^\d+$/)),
+    active: Joi.alternatives().try(Joi.boolean(), Joi.string().valid('true', 'false', '1', '0')),
+  }),
+
+  updateTeamMember: Joi.object({
+    fullName: Joi.string().min(2).max(120),
+    role: Joi.string().min(2).max(120),
+    bio: Joi.string().min(10).max(2000),
+    instagramUrl: Joi.alternatives().try(
+      Joi.string().uri({ scheme: ['http', 'https'] }),
+      Joi.string().valid(''),
+      Joi.valid(null)
+    ),
+    linkedinUrl: Joi.alternatives().try(
+      Joi.string().uri({ scheme: ['http', 'https'] }),
+      Joi.string().valid(''),
+      Joi.valid(null)
+    ),
+    sortOrder: Joi.alternatives().try(Joi.number().integer().min(0), Joi.string().pattern(/^\d+$/)),
+    active: Joi.alternatives().try(Joi.boolean(), Joi.string().valid('true', 'false', '1', '0')),
+  }),
+
+  reorderTeamMembers: Joi.object({
+    order: Joi.array().items(Joi.string().required()).min(1).required(),
+  }),
 
   updateSettings: Joi.object({
     whatsappNumber: Joi.string().allow('', null).max(30),

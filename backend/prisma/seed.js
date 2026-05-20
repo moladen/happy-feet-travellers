@@ -46,6 +46,7 @@ const tours = [
     duration: 6,
     durationLabel: '5N6D',
     urgency: 'Only 4 seats left',
+    bookingDeposit: 2000,
     rating: 4.8,
     reviewsCount: 234,
     description:
@@ -125,6 +126,7 @@ const tours = [
     duration: 5,
     durationLabel: '4N5D',
     urgency: 'Booking fast',
+    bookingDeposit: 5000,
     rating: 4.7,
     reviewsCount: 180,
     description:
@@ -216,7 +218,7 @@ const tours = [
       { name: 'Ayurveda session', price: 'From ₹1,800 / person', note: 'Partner spa in Kochi' },
     ],
     cancellationPolicy:
-      'FIT packages: cancellation terms shared on final quotation. Typically 25% advance is non-refundable once hotels are blocked; balance refund depends on supplier policies.',
+      'Customized tours: cancellation terms shared on final quotation. Typically 25% advance is non-refundable once hotels are blocked; balance refund depends on supplier policies.',
     bankDetails:
       'Happy Feet Travellers\nA/c: 40123456789 · ICICI Bank\nIFSC: ICIC0001234\nUPI: happyfeet@icici\n(Use only after you receive a formal quotation from us.)',
   },
@@ -337,10 +339,97 @@ const siteSettings = {
     "Pune-based small-group travel. Fixed departures and customised trips across India — run by people who've actually been there.",
 };
 
+const heroSlides = [
+  {
+    imageUrl: '/hero/tropical-paradise.jpg',
+    altText: 'Crystal-clear turquoise beach and palm-lined coast',
+    tag: 'Beach escapes',
+    emoji: '🏖️',
+    sortOrder: 0,
+  },
+  {
+    imageUrl: '/hero/mountain-golden.jpg',
+    altText: 'Dramatic mountain peaks above a sea of clouds at sunrise',
+    tag: 'Hill stations',
+    emoji: '⛰️',
+    sortOrder: 1,
+  },
+  {
+    imageUrl: '/hero/desert-road-trip.jpg',
+    altText: 'Open highway through bold desert and canyon landscapes',
+    tag: 'Road trips',
+    emoji: '🛣️',
+    sortOrder: 2,
+  },
+  {
+    imageUrl: '/hero/backpacker-sunset.jpg',
+    altText: 'Solo traveller admiring a lake and mountain horizon',
+    tag: 'Adventure tours',
+    emoji: '🥾',
+    sortOrder: 3,
+  },
+  {
+    imageUrl: '/hero/resort-pool.jpg',
+    altText: 'Infinity pool overlooking a vibrant tropical coastline',
+    tag: 'Luxury getaways',
+    emoji: '✨',
+    sortOrder: 4,
+  },
+  {
+    imageUrl: '/hero/starry-peaks.jpg',
+    altText: 'Starry night sky over snow-capped mountain silhouettes',
+    tag: 'Himalayan nights',
+    emoji: '🌌',
+    sortOrder: 5,
+  },
+  {
+    imageUrl: '/hero/travel-passport.jpg',
+    altText: 'Passport, map and camera ready for the next journey',
+    tag: 'Plan your trip',
+    emoji: '🧳',
+    sortOrder: 6,
+  },
+];
+
+const teamMembers = [
+  {
+    fullName: 'Aniket Patil',
+    role: 'Founder · Trip planning',
+    bio: 'Designs fixed departures and custom routes from Pune — obsessed with honest pricing and small-group pacing.',
+    instagramUrl: 'https://instagram.com/',
+    linkedinUrl: 'https://linkedin.com/',
+    imageUrl:
+      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+    sortOrder: 0,
+  },
+  {
+    fullName: 'Sneha Kelkar',
+    role: 'Operations · Stays & transfers',
+    bio: 'Coordinates hotels, drivers and on-ground vendors so every batch runs smoothly from pickup to drop-off.',
+    instagramUrl: 'https://instagram.com/',
+    linkedinUrl: 'https://linkedin.com/',
+    imageUrl:
+      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=400&q=80',
+    sortOrder: 1,
+  },
+  {
+    fullName: 'Vivek Joshi',
+    role: 'Trip captain · Northeast & Spiti',
+    bio: 'Leads high-altitude batches with a calm, safety-first style — the person you message when plans change on the road.',
+    instagramUrl: 'https://instagram.com/',
+    linkedinUrl: 'https://linkedin.com/',
+    imageUrl:
+      'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=400&q=80',
+    sortOrder: 2,
+  },
+];
+
 async function main() {
   console.log('🌱 Seeding database...');
 
   await prisma.siteSettings.deleteMany();
+  await prisma.teamMember.deleteMany();
+  await prisma.heroSlide.deleteMany();
   await prisma.galleryImage.deleteMany();
   await prisma.subscriber.deleteMany();
   await prisma.enquiry.deleteMany();
@@ -368,6 +457,16 @@ async function main() {
     await prisma.galleryImage.create({ data: image });
   }
   console.log(`  ✓ Gallery images seeded (${galleryImages.length})`);
+
+  for (const slide of heroSlides) {
+    await prisma.heroSlide.create({ data: slide });
+  }
+  console.log(`  ✓ Hero slides seeded (${heroSlides.length})`);
+
+  for (const member of teamMembers) {
+    await prisma.teamMember.create({ data: member });
+  }
+  console.log(`  ✓ Team members seeded (${teamMembers.length})`);
 
   await prisma.siteSettings.create({ data: siteSettings });
   console.log('  ✓ Site settings seeded');

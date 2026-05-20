@@ -69,6 +69,8 @@ async function run() {
       ['GET /api/testimonials', '/api/testimonials'],
       ['GET /api/gallery', '/api/gallery'],
       ['GET /api/settings', '/api/settings'],
+      ['GET /api/hero-slides', '/api/hero-slides'],
+      ['GET /api/team-members', '/api/team-members'],
     ]) {
       const r = await request('GET', path);
       if (r.status === 200 && r.json?.success !== false) pass(name);
@@ -115,7 +117,7 @@ async function run() {
         name: 'Smoke Test',
         phone: '9876543210',
         email: 'smoke@example.com',
-        message: 'Automated smoke test enquiry',
+        message: 'Automated smoke test enquiry with enough detail.',
         source: 'smoke',
       },
     });
@@ -126,7 +128,7 @@ async function run() {
       body: {
         name: 'Phone Lead',
         phone: '9123456780',
-        message: 'Phone-only enquiry from smoke test',
+        message: 'Phone-only enquiry from smoke test with detail.',
         source: 'smoke',
       },
     });

@@ -13,6 +13,7 @@ const rateLimit = require('express-rate-limit');
 
 const apiRoutes = require('@/routes');
 const { errorHandler, notFoundHandler } = require('@/middlewares/errorHandler');
+const { uploadsPublicPath } = require('@/utils/heroMedia');
 
 const app = express();
 
@@ -28,7 +29,7 @@ app.use(
   cors({
     origin: (origin, cb) => {
       if (!origin || env.cors.origins.includes(origin)) return cb(null, true);
-      return cb(new Error(`CORS: origin ${origin} not allowed`));
+      return cb(null, false);
     },
     credentials: true,
   })
@@ -50,6 +51,15 @@ const apiLimiter = rateLimit({
 if (!env.isDevelopment) {
   app.use('/api', apiLimiter);
 }
+
+app.use(
+  '/uploads',
+  express.static(uploadsPublicPath(), {
+    maxAge: env.isProduction ? '7d' : 0,
+    etag: true,
+    fallthrough: false,
+  })
+);
 
 app.get('/', (req, res) => {
   res.status(200).json({

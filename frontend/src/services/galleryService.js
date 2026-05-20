@@ -1,4 +1,9 @@
-import { publicFetch } from '@/lib/publicApi';
+import { mockGalleryImages } from '@/data/mockData';
+import { publicFetch, shouldUseMockFallback } from '@/lib/publicApi';
+
+const API_ASSET_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api')
+  .replace(/\/api\/?$/, '')
+  .replace(/\/$/, '');
 
 const pickItems = (data) => {
   if (Array.isArray(data)) return data;
@@ -6,9 +11,21 @@ const pickItems = (data) => {
   return [];
 };
 
+function resolveImageUrl(value) {
+  const src = String(value || '').trim();
+  if (!src) return '';
+  if (/^(data:|blob:|https?:\/\/)/i.test(src)) return src;
+  if (src.startsWith('/images/') || src.startsWith('/videos/') || src.startsWith('/happy-feet-logo')) {
+    return src;
+  }
+  if (src.startsWith('/')) return API_ASSET_BASE ? `${API_ASSET_BASE}${src}` : src;
+  return API_ASSET_BASE ? `${API_ASSET_BASE}/${src}` : `/${src}`;
+}
+
 const normalise = (item) => {
   if (!item || typeof item !== 'object') return null;
-  const src = item.image || item.src || item.url;
+  const raw = item.image || item.src || item.url;
+  const src = resolveImageUrl(raw);
   if (!src) return null;
   return {
     id: item.id,
@@ -22,11 +39,16 @@ const normalise = (item) => {
 export async function getGalleryImages() {
   try {
     const data = await publicFetch('/gallery');
-    return pickItems(data).map(normalise).filter(Boolean);
+    const rows = pickItems(data).map(normalise).filter(Boolean);
+    if (rows.length) return rows;
+    if (shouldUseMockFallback()) {
+      return mockGalleryImages.map(normalise).filter(Boolean);
+    }
+    return [];
   } catch (err) {
     if (process.env.NODE_ENV !== 'production') {
       console.warn('[getGalleryImages]', err?.message || err);
     }
-    return [];
+    return shouldUseMockFallback() ? mockGalleryImages.map(normalise).filter(Boolean) : [];
   }
 }

@@ -1,0 +1,95 @@
+# Happy Feet Travellers — full stack (Postgres + API + Next.js frontend)
+#
+# From repo root:
+#   cp backend/.env.docker.example backend/.env
+#   docker compose up --build -d
+#   docker compose logs -f
+#
+# Site:  http://localhost:3000
+# API:   http://localhost:5000/api
+# Admin: http://localhost:3000/admin
+
+name: happy-feet-travellers
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: happy-feet-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-happy_feet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-happy_feet}
+      POSTGRES_DB: ${POSTGRES_DB:-happy_feet}
+    ports:
+      - "${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-happy_feet} -d ${POSTGRES_DB:-happy_feet}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: happy-feet-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-5000}:5000"
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-happy_feet}:${POSTGRES_PASSWORD:-happy_feet}@postgres:5432/${POSTGRES_DB:-happy_feet}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRY: ${JWT_EXPIRY:-7d}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@happyfeet.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@123}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-200}
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+      RUN_SEED: ${RUN_SEED:-false}
+      ENQUIRY_NOTIFY_EMAIL: ${ENQUIRY_NOTIFY_EMAIL:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_VERIFY_ON_START: ${SMTP_VERIFY_ON_START:-false}
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000/api}
+    container_name: happy-feet-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000/api}
+      API_INTERNAL_URL: http://api:5000/api
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  uploads_data:

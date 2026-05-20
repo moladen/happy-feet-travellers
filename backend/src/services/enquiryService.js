@@ -1,9 +1,47 @@
 const prisma = require('@/config/database');
 const AppError = require('@/utils/AppError');
 const { withDatabaseErrors } = require('@/utils/databaseErrors');
+const logger = require('@/utils/logger');
+const settingsService = require('@/services/settingsService');
+const emailService = require('@/services/emailService');
+
+const SPAM_MARKERS = [/https?:\/\//gi, /www\./gi];
+
+function looksLikeSpam(payload) {
+  if (payload.website?.trim() || payload._honeypot?.trim()) return true;
+  const message = String(payload.message || '');
+  const linkHits = (message.match(SPAM_MARKERS[0]) || []).length;
+  if (linkHits > 3) return true;
+  if (message.length > 2000) return true;
+  return false;
+}
+
+async function notifyCompanyByEmail(enquiry) {
+  try {
+    const recipient = await emailService.resolveNotifyRecipient(settingsService);
+    await emailService.sendEnquiryNotification(enquiry, recipient);
+  } catch (err) {
+    logger.error('[enquiry] Failed to send notification email:', err.message);
+  }
+}
 
 async function createEnquiry(payload) {
-  return withDatabaseErrors(async () =>
+  if (looksLikeSpam(payload)) {
+    logger.warn('[enquiry] Spam submission filtered (honeypot or heuristics).');
+    return {
+      id: 'filtered',
+      name: payload.name,
+      phone: payload.phone || '',
+      email: payload.email,
+      message: payload.message,
+      subject: payload.subject || null,
+      source: payload.source || null,
+      status: 'new',
+      createdAt: new Date(),
+    };
+  }
+
+  const enquiry = await withDatabaseErrors(async () =>
     prisma.enquiry.create({
       data: {
         name: payload.name,
@@ -15,6 +53,9 @@ async function createEnquiry(payload) {
       },
     })
   );
+
+  notifyCompanyByEmail(enquiry);
+  return enquiry;
 }
 
 async function listEnquiries(query) {

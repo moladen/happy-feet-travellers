@@ -40,6 +40,18 @@ export const navigationItems = [
     icon: "gallery",
   },
   {
+    href: "/admin/hero",
+    label: "Hero Section",
+    caption: "Homepage banner slides",
+    icon: "hero",
+  },
+  {
+    href: "/admin/team",
+    label: "Team Management",
+    caption: "About us · introductions",
+    icon: "team",
+  },
+  {
     href: "/admin/enquiries",
     label: "Enquiries",
     caption: "Lead pipeline",
@@ -73,9 +85,32 @@ export const enquiryStatusOptions = [
 export const dashboardQuickActions = [
   { href: "/admin/tours/new", label: "Add tour" },
   { href: "/admin/blogs/new", label: "Publish blog" },
+  { href: "/admin/hero", label: "Hero banners" },
   { href: "/admin/gallery", label: "Upload gallery" },
   { href: "/admin/settings", label: "Update settings" },
 ];
+
+export const emptyHeroSlideForm = {
+  altText: "",
+  tag: "",
+  emoji: "✨",
+  sortOrder: "",
+  active: true,
+  imageFile: null,
+  previewUrl: "",
+};
+
+export const emptyTeamMemberForm = {
+  fullName: "",
+  role: "",
+  bio: "",
+  instagramUrl: "",
+  linkedinUrl: "",
+  sortOrder: "",
+  active: true,
+  imageFile: null,
+  previewUrl: "",
+};
 
 export const emptyTourForm = {
   title: "",
@@ -92,6 +127,7 @@ export const emptyTourForm = {
   endDate: "",
   dateLabel: "",
   urgency: "",
+  bookingDeposit: "",
   offers: "",
   meals: "",
   stayType: "",
@@ -239,6 +275,10 @@ export function buildTourPayload(form) {
     endDate: form.endDate || null,
     dateLabel: form.dateLabel.trim(),
     urgency: form.urgency.trim(),
+    bookingDeposit: (() => {
+      const amount = Number(String(form.bookingDeposit || "").replace(/,/g, ""));
+      return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : null;
+    })(),
     offers: form.offers.trim(),
     meals: form.meals.trim(),
     stayType: form.stayType.trim(),
@@ -274,6 +314,10 @@ export function createTourForm(record) {
     })(),
     startDate: record.startDate ? String(record.startDate).slice(0, 10) : "",
     endDate: record.endDate ? String(record.endDate).slice(0, 10) : "",
+    bookingDeposit:
+      record.bookingDeposit != null && Number(record.bookingDeposit) > 0
+        ? String(record.bookingDeposit)
+        : "",
     coverImage: record.coverImage || record.image || "",
     images: Array.isArray(record.images)
       ? record.images

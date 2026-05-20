@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { travelIconClassForEmoji } from '@/lib/travelIconAnimations';
 
 export default function WhyChooseUs() {
   const reasons = [
@@ -98,7 +99,7 @@ export default function WhyChooseUs() {
 
   return (
     <motion.section
-      className="section-ambient relative overflow-hidden border-y border-white/60 bg-white/85 py-14 backdrop-blur-sm md:py-16"
+      className="section-ambient section-tone-white relative overflow-hidden py-14 md:py-16"
       variants={sectionVariants}
       initial="hidden"
       whileInView="visible"
@@ -106,11 +107,11 @@ export default function WhyChooseUs() {
     >
       <div className="container relative z-10 mx-auto px-4">
         <motion.div className="mb-8 text-center md:mb-10" variants={headerVariants}>
-          <h2 className="text-3xl font-bold text-primary md:text-4xl lg:text-5xl">Why Choose Us</h2>
+          <h2 className="section-title text-3xl md:text-4xl lg:text-5xl">Why Choose Us</h2>
         </motion.div>
 
         <motion.div
-          className="mx-auto mb-8 max-w-6xl rounded-[2rem] bg-[#f5f6f8] p-4 md:mb-10 md:p-6"
+          className="mx-auto mb-8 max-w-6xl rounded-[2rem] bg-sand/40 p-4 md:mb-10 md:p-6"
           variants={gridVariants}
         >
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -118,9 +119,15 @@ export default function WhyChooseUs() {
               <motion.div
                 key={idx}
                 variants={cardVariants}
-                className="rounded-[1.6rem] border border-[#eef2f5] bg-white px-6 py-8 text-center shadow-[0_10px_28px_-18px_rgba(15,23,42,0.22)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_-18px_rgba(15,23,42,0.28)]"
+                className="rounded-[1.6rem] border border-white/80 bg-white px-6 py-8 text-center shadow-[0_12px_32px_-16px_rgba(15,28,46,0.18)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-14px_rgba(15,28,46,0.24)]"
               >
-                <div className="mb-4 text-4xl leading-none md:text-[2.6rem]">{reason.icon}</div>
+                <span
+                  className={`mb-4 inline-block text-4xl leading-none md:text-[2.6rem] ${travelIconClassForEmoji(reason.icon)}`}
+                  role="img"
+                  aria-hidden
+                >
+                  {reason.icon}
+                </span>
                 <h3 className="mb-3 text-xl font-bold text-[#1a1a1a]">{reason.title}</h3>
                 <p className="mx-auto max-w-[15rem] text-sm leading-7 text-[#5f6368]">{reason.description}</p>
               </motion.div>
@@ -129,7 +136,7 @@ export default function WhyChooseUs() {
         </motion.div>
 
         <motion.div
-          className="relative mt-10 overflow-hidden rounded-3xl bg-gradient-to-r from-primary via-[#235a8a] to-secondary p-6 text-white shadow-xl md:mt-12 md:p-8"
+          className="relative mt-10 overflow-hidden rounded-3xl bg-gradient-to-r from-[#1a2b3c] via-primary to-[#3d6a8a] p-6 text-white shadow-xl md:mt-12 md:p-8"
           variants={statsVariants}
         >
           <div

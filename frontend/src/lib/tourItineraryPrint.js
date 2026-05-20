@@ -1,4 +1,5 @@
 import { resolveTourPriceAmount } from '@/lib/tourPrice';
+import { buildReserveSeatHref, isGroupDepartureTour } from '@/lib/tourReserve';
 
 function esc(s) {
   return String(s ?? '')
@@ -18,7 +19,9 @@ function nl2br(s) {
 export function openTourItineraryPrint(tour) {
   if (typeof window === 'undefined') return;
 
-  const bookingUrl = `https://wa.me/919876543210?text=${encodeURIComponent(`Booking / enquiry: ${tour.title} (${tour.date || ''})`)}`;
+  const bookingUrl = isGroupDepartureTour(tour)
+    ? buildReserveSeatHref(tour)
+    : `https://wa.me/919876543210?text=${encodeURIComponent(`Booking / enquiry: ${tour.title} (${tour.date || ''})`)}`;
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(bookingUrl)}`;
 
   const itineraryRows = (tour.itinerary || [])

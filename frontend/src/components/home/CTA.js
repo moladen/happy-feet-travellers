@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 export default function CTA() {
   return (
     <motion.section
-      className="relative overflow-hidden bg-gradient-to-br from-primary via-[#2a6094] to-secondary py-14 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] md:py-16"
+      className="relative overflow-hidden bg-gradient-to-br from-[#0f1c2e] via-primary to-[#2d4f6e] py-14 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] md:py-16"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true, amount: 0.35 }}
@@ -18,7 +18,7 @@ export default function CTA() {
 
       <div className="container relative z-10 mx-auto px-4 text-center">
         <motion.h2
-          className="text-3xl font-bold leading-[1.15] tracking-tight text-white drop-shadow-sm md:text-4xl lg:text-5xl"
+          className="section-title !text-white text-3xl leading-[1.15] drop-shadow-sm md:text-4xl lg:text-5xl"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -44,7 +44,7 @@ export default function CTA() {
         >
           <Link
             href="/contact"
-            className="inline-flex rounded-full bg-cta px-10 py-4 text-base font-semibold text-primary shadow-[0_14px_36px_-8px_rgba(0,0,0,0.35)] ring-2 ring-white/25 transition hover:-translate-y-0.5 hover:bg-[#E76F51] hover:text-white hover:shadow-[0_18px_44px_-8px_rgba(0,0,0,0.4)]"
+            className="btn-travel-primary px-10 py-4 text-base"
           >
             Contact Us
           </Link>

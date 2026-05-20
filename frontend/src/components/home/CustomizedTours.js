@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { getTours } from '@/services/api';
-import { mapTourToPackageCard } from '@/lib/tourDisplay';
+import { getTourDetailHref, mapTourToPackageCard } from '@/lib/tourDisplay';
 
 export default function CustomizedTours() {
   const [expandedId, setExpandedId] = useState(null);
@@ -81,7 +81,7 @@ export default function CustomizedTours() {
 
   return (
     <motion.section
-      className="section-ambient relative overflow-hidden bg-section-alt/80 py-14 backdrop-blur-[2px] md:py-16"
+      className="section-ambient section-tone-sand relative overflow-hidden py-14 md:py-16"
       variants={sectionVariants}
       initial="hidden"
       whileInView="visible"
@@ -89,8 +89,8 @@ export default function CustomizedTours() {
     >
       <div className="container relative z-10 mx-auto px-4">
         <motion.div className="mb-8 text-center" variants={headerVariants}>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-secondary">Popular customized tours</p>
-          <h2 className="mb-3 text-3xl font-bold text-primary md:text-4xl lg:text-5xl">FIT tours — sample ideas</h2>
+          <p className="section-eyebrow mb-2">Popular customized tours</p>
+          <h2 className="section-title mb-3 text-3xl md:text-4xl lg:text-5xl">Personalized tour ideas</h2>
           <p className="mx-auto max-w-2xl text-base text-foreground/85 md:text-lg">
             These are sample packages to inspire your trip. Share your details and we&apos;ll draft a plan around your dates, pace, and budget—fully customised for you.
           </p>
@@ -193,10 +193,10 @@ export default function CustomizedTours() {
                   <div className="mt-auto border-t border-[#eaf4fb]/90 pt-4">
                     <div className="mb-4 text-lg font-bold text-primary md:text-xl">{pkg.price}</div>
                     <Link
-                      href={pkg.slug ? `/tours/${pkg.slug}` : '/contact'}
+                      href={getTourDetailHref(pkg)}
                       className="block w-full rounded-xl bg-cta py-3 text-center text-sm font-semibold text-primary shadow-sm transition hover:bg-cta-hover hover:text-white hover:shadow-md"
                     >
-                      {pkg.slug ? 'View package' : 'Contact Us'}
+                      {pkg.slug || pkg.id ? 'View package' : 'Contact Us'}
                     </Link>
                   </div>
                 </div>
@@ -208,7 +208,7 @@ export default function CustomizedTours() {
         <motion.div className="text-center" variants={ctaVariants}>
           <Link
             href="/customized-trips"
-            className="inline-flex rounded-full border-2 border-primary/90 bg-white/95 px-8 py-3 text-sm font-semibold text-primary shadow-[0_8px_24px_-6px_rgba(31,78,121,0.2)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_32px_-8px_rgba(31,78,121,0.25)]"
+            className="inline-flex rounded-full border-2 border-primary/80 bg-white/95 px-8 py-3 text-sm font-semibold text-primary shadow-[0_8px_24px_-6px_rgba(15,28,46,0.15)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-cta hover:text-cta hover:shadow-[0_14px_32px_-8px_rgba(231,111,81,0.2)]"
           >
             View all customized packages
           </Link>

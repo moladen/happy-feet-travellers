@@ -1,12 +1,18 @@
-import { Outfit } from "next/font/google";
+import { Oswald, Poppins } from "next/font/google";
 import "./globals.css";
 import AppChrome from "@/components/common/AppChrome";
 import { getPublicSettings } from "@/services/settingsService";
 
-const outfit = Outfit({
+const poppins = Poppins({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const oswald = Oswald({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
 export const metadata = {
@@ -21,7 +27,7 @@ export default async function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${outfit.variable} h-full antialiased`}
+      className={`${poppins.variable} ${oswald.variable} h-full antialiased`}
     >
       <body className="page-canvas min-h-full flex flex-col font-sans text-foreground">
         <AppChrome settings={settings}>{children}</AppChrome>

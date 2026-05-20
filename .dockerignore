@@ -1,0 +1,12 @@
+**/node_modules
+**/.next
+**/.git
+**/.env
+**/.env.*
+!**/.env.example
+!backend/.env.docker.example
+**/npm-debug.log*
+**/.DS_Store
+_legacy
+backend/uploads/*
+!backend/uploads/**/.gitkeep

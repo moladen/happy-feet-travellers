@@ -5,3 +5,8 @@ node_modules/
 dist/
 build/
 .DS_Store
+uploads/*
+!uploads/hero/
+!uploads/hero/.gitkeep
+!uploads/team/
+!uploads/team/.gitkeep

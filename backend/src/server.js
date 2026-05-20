@@ -2,11 +2,13 @@ const app = require('./app');
 const env = require('@/config/env');
 const logger = require('@/utils/logger');
 const prisma = require('@/config/database');
+const emailService = require('@/services/emailService');
 
 const server = app.listen(env.port, () => {
   logger.success(`Server running on http://localhost:${env.port}`);
   logger.info(`Health check: http://localhost:${env.port}/api/health`);
   logger.info(`Environment: ${env.nodeEnv}`);
+  emailService.verifyMailTransport().catch(() => {});
 });
 
 server.on('error', (err) => {

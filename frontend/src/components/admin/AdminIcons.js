@@ -53,6 +53,24 @@ export function Icon({ name, className = "h-5 w-5" }) {
           <path d="m21 15-4.5-4.5L8 19" />
         </svg>
       );
+    case "hero":
+      return (
+        <svg {...common}>
+          <rect x="2" y="5" width="20" height="14" rx="3" />
+          <path d="M2 10h20" />
+          <path d="M8 15h8" />
+          <circle cx="17" cy="8" r="1.5" fill="currentColor" stroke="none" />
+        </svg>
+      );
+    case "team":
+      return (
+        <svg {...common}>
+          <circle cx="9" cy="8" r="3.2" />
+          <circle cx="17" cy="9" r="2.6" />
+          <path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5" />
+          <path d="M14 20c0-2.5 1.8-4 5-4" />
+        </svg>
+      );
     case "enquiries":
       return (
         <svg {...common}>

@@ -28,6 +28,7 @@ model Tour {
   rating             Float?
   reviewsCount       Int?
   urgency            String?
+  bookingDeposit     Int?
   offers             String?
   meals              String?
   stayType           String?
@@ -125,6 +126,36 @@ model GalleryImage {
 
   @@index([category])
   @@index([createdAt])
+}
+
+model HeroSlide {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  altText   String
+  tag       String?
+  emoji     String?  @default("✨")
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, sortOrder])
+}
+
+model TeamMember {
+  id            String   @id @default(cuid())
+  fullName      String
+  role          String
+  bio           String   @db.Text
+  instagramUrl  String?
+  linkedinUrl   String?
+  imageUrl      String
+  sortOrder     Int      @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([active, sortOrder])
 }
 
 model SiteSettings {

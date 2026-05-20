@@ -37,6 +37,16 @@ export const DEFAULT_SITE_CONTACT = {
   paymentLink: 'https://www.fundayoption.com/pay-online/',
 };
 
+/** On-site payment section (Contact page) — footer & nav link here first. */
+export const SITE_PAYMENT_PAGE = '/contact#pay';
+
+/** External gateway URL from admin settings (used on Contact → Pay online button). */
+export function resolveGatewayPaymentUrl(settings) {
+  const merged = mergeSiteSettings(settings);
+  const url = String(merged.paymentLink || '').trim();
+  return url || DEFAULT_SITE_CONTACT.paymentLink;
+}
+
 /** Empty string = admin cleared; null/undefined = fall back to default on public site. */
 function resolveSocialField(value, fallback) {
   if (value === null || value === undefined) return fallback;
@@ -55,6 +65,9 @@ export function mergeSiteSettings(settings) {
     facebookUrl: resolveSocialField(settings.facebookUrl, DEFAULT_SITE_CONTACT.facebookUrl),
     instagramUrl: resolveSocialField(settings.instagramUrl, DEFAULT_SITE_CONTACT.instagramUrl),
     youtubeUrl: resolveSocialField(settings.youtubeUrl, DEFAULT_SITE_CONTACT.youtubeUrl),
+    paymentLink: settings.paymentLink?.trim()
+      ? settings.paymentLink.trim()
+      : DEFAULT_SITE_CONTACT.paymentLink,
   };
 }
 

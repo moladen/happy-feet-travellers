@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getTours } from '@/services/api';
-import { mapTourToPackageCard } from '@/lib/tourDisplay';
+import { getTourDetailHref, mapTourToPackageCard } from '@/lib/tourDisplay';
 
 export default function CustomizedTripsGrid() {
   const [packages, setPackages] = useState([]);
@@ -63,10 +63,10 @@ export default function CustomizedTripsGrid() {
             <div className="flex items-center justify-between border-t border-gray-200 pt-4">
               <div className="text-lg font-bold text-green-600">{pkg.price}</div>
               <Link
-                href={pkg.slug ? `/tours/${pkg.slug}` : '/contact'}
+                href={getTourDetailHref(pkg)}
                 className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700"
               >
-                {pkg.slug ? 'View details' : 'Customize'}
+                {pkg.slug || pkg.id ? 'View details' : 'Customize'}
               </Link>
             </div>
           </div>

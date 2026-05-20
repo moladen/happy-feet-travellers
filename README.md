@@ -141,6 +141,30 @@ npm run start -w backend    # listens on PORT from .env
 
 Or use your host’s process manager (PM2, Docker, Railway, Render, etc.) with the same commands.
 
+### Docker (full stack)
+
+Runs **PostgreSQL**, **Express API**, and **Next.js frontend** together.
+
+```bash
+# From repo root
+cp backend/.env.docker.example backend/.env
+# Edit backend/.env — set JWT_SECRET; optional RUN_SEED=true on first run
+
+npm run docker:up
+# Site http://localhost:3000 · API http://localhost:5000/api
+```
+
+| Service    | Container port | Host port (default) |
+| ---------- | -------------- | ------------------- |
+| Frontend   | 3000           | 3000                |
+| API        | 5000           | 5000                |
+| PostgreSQL | 5432           | 5434                |
+
+- **Uploads** (hero/team images) persist in Docker volume `uploads_data`.
+- **Migrations** run on API start (`RUN_MIGRATIONS=true`).
+- First-time sample data: set `RUN_SEED=true` in `backend/.env`, then `docker compose up -d` once (re-seed wipes CMS data).
+- Backend-only Docker (no frontend): `cd backend && docker compose up --build -d`
+
 ### 4. Automated API check
 
 With the backend running and `DATABASE_URL` set:
@@ -149,7 +173,7 @@ With the backend running and `DATABASE_URL` set:
 cd backend && node scripts/smoke-api.js
 ```
 
-Expect **25/25** checks (health, public reads, auth, enquiry, subscribers, gallery/blog/testimonial CRUD, settings).
+Expect **27/27** checks (health, public reads incl. hero slides & team, auth, enquiry, subscribers, gallery/blog/testimonial CRUD, settings).
 
 ### 5. Manual checklist (before go-live)
 
@@ -175,6 +199,8 @@ Use this in the browser after deploy:
 - [ ] **Gallery** — upload/edit/delete; home gallery updates
 - [ ] **Testimonials** — CRUD; home section updates
 - [ ] **Settings** — WhatsApp, email, social URLs, footer text → reflected in footer
+- [ ] **Hero slides** — upload/reorder; homepage hero carousel updates
+- [ ] **Team** — add members; About page team section updates
 - [ ] **Enquiries** — status change + delete
 
 **Common production issues**

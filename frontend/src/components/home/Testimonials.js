@@ -63,7 +63,7 @@ export default function Testimonials() {
   return (
     <motion.section
       id="testimonials"
-      className="section-ambient scroll-mt-24 relative overflow-hidden bg-section-alt/75 py-10 backdrop-blur-[2px] md:py-12"
+      className="section-ambient section-tone-sand-soft scroll-mt-24 relative overflow-hidden py-10 md:py-12"
       initial={{ opacity: 0, y: 42 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -77,20 +77,20 @@ export default function Testimonials() {
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.45 }}
         >
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-secondary">Social proof</p>
-          <h2 className="mb-2 text-2xl font-bold text-primary md:text-3xl lg:text-4xl">Testimonials</h2>
+          <p className="section-eyebrow mb-2">Social proof</p>
+          <h2 className="section-title mb-2 text-2xl md:text-3xl lg:text-4xl">Testimonials</h2>
           <p className="text-sm text-foreground/80 md:text-base">
             Honest words from Pune travellers who came back smiling.
           </p>
         </motion.div>
 
-        <div className="relative -mx-1 overflow-hidden rounded-2xl border border-[#dceaf5]/80 bg-white/25 py-1 shadow-inner md:-mx-0 md:rounded-3xl">
+        <div className="relative -mx-1 overflow-hidden rounded-2xl border border-[#dceaf5]/80 bg-white/25 py-1 md:-mx-0 md:rounded-3xl">
           <div
-            className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-[#f0f6fb] via-[#f0f6fb]/90 to-transparent sm:w-16 md:w-20"
+            className="pointer-events-none absolute inset-y-0 left-0 z-10 w-4 bg-gradient-to-r from-[#f0f6fb] from-55% to-transparent sm:w-6 md:w-8"
             aria-hidden
           />
           <div
-            className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[#f0f6fb] via-[#f0f6fb]/90 to-transparent sm:w-16 md:w-20"
+            className="pointer-events-none absolute inset-y-0 right-0 z-10 w-4 bg-gradient-to-l from-[#f0f6fb] from-55% to-transparent sm:w-6 md:w-8"
             aria-hidden
           />
 
@@ -102,10 +102,10 @@ export default function Testimonials() {
               <article
                 key={`${item.id}-${index}`}
                 aria-hidden={index >= items.length}
-                className="glass-card flex w-[min(78vw,260px)] shrink-0 flex-col gap-2.5 overflow-hidden rounded-xl border border-white/60 p-3 shadow-sm ring-1 ring-primary/[0.04] sm:w-[280px] sm:rounded-2xl sm:p-3.5 md:w-[300px] md:gap-3 md:p-4"
+                className="flex w-[min(78vw,260px)] shrink-0 flex-col gap-2.5 overflow-hidden rounded-xl border border-[#eaf4fb] bg-white p-3 sm:w-[280px] sm:rounded-2xl sm:p-3.5 md:w-[300px] md:gap-3 md:p-4"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-white shadow-md ring-1 ring-primary/10 sm:h-12 sm:w-12">
+                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-white ring-1 ring-primary/10 sm:h-12 sm:w-12">
                     {item.image ? (
                       <Image
                         src={item.image}

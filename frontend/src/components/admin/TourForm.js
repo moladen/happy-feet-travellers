@@ -247,6 +247,22 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
             </Field>
           </div>
 
+          {form.category === "upcoming" ? (
+            <div className="mt-5 max-w-xs">
+              <Field
+                label="Reserve deposit (₹)"
+                hint="Reserve Seat button & WhatsApp. Leave blank for site default ₹5,000."
+              >
+                <TextInput
+                  inputMode="numeric"
+                  value={form.bookingDeposit}
+                  onChange={(event) => updateField("bookingDeposit", event.target.value)}
+                  placeholder="5000"
+                />
+              </Field>
+            </div>
+          ) : null}
+
           <div className="mt-5 grid gap-5 md:grid-cols-3 md:items-end">
             <Field label="Start date">
               <TextInput

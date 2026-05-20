@@ -1,8 +1,15 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import TourCard from '@/components/tour/TourCard';
+import DepartureFilters from '@/components/upcoming/DepartureFilters';
 import SearchQueryBanner from '@/components/upcoming/SearchQueryBanner';
+import {
+  buildApiTourQuery,
+  parseDepartureSearchParams,
+  tourMatchesDepartureSearch,
+} from '@/lib/departureSearch';
 import { getTours } from '@/services/api';
+import { getPublicSettings } from '@/services/settingsService';
 
 export const metadata = {
   title: 'Upcoming Departures - Happy Feet Travellers',
@@ -12,55 +19,13 @@ export const metadata = {
 /** Always fetch fresh tours from the API (not a static build snapshot). */
 export const dynamic = 'force-dynamic';
 
-function normaliseSearch(value) {
-  return String(value || '').trim().toLowerCase();
-}
-
-function monthLabel(value) {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }).toLowerCase();
-}
-
-function tourMatchesSearch(tour, query, month) {
-  const q = normaliseSearch(query);
-  const m = normaliseSearch(month);
-  const haystack = [
-    tour.title,
-    tour.slug,
-    tour.description,
-    tour.category,
-    tour.subCategory,
-    tour.departureCity,
-    tour.date,
-    tour.dateLabel,
-    tour.duration,
-    tour.durationLabel,
-    tour.urgency,
-    tour.offers,
-    tour.meals,
-    tour.stayType,
-    tour.transport,
-    tour.suitableFor,
-    monthLabel(tour.startDate),
-    ...(Array.isArray(tour.highlights) ? tour.highlights : []),
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
-
-  const words = q ? q.split(/\s+/).filter(Boolean) : [];
-  const queryMatch =
-    words.length === 0 || words.every((w) => haystack.includes(w));
-  return queryMatch && (!m || haystack.includes(m));
-}
-
 export default async function UpcomingDeparturesPage({ searchParams }) {
   const params = await searchParams;
-  const query = params?.q || '';
-  const month = params?.month || '';
-  const raw = await getTours();
+  const search = parseDepartureSearchParams(params);
+  const [raw, settings] = await Promise.all([
+    getTours(buildApiTourQuery(search)),
+    getPublicSettings(),
+  ]);
   const tours = Array.isArray(raw) ? raw : [];
 
   const matchesDeparture = (tour) => {
@@ -76,7 +41,7 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
     upcomingTours = tours;
   }
 
-  upcomingTours = upcomingTours.filter((tour) => tourMatchesSearch(tour, query, month));
+  upcomingTours = upcomingTours.filter((tour) => tourMatchesDepartureSearch(tour, search));
 
   const groupedTours = upcomingTours.reduce((acc, tour) => {
     const date = tour.startDate ? new Date(tour.startDate) : new Date();
@@ -102,44 +67,9 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
           <SearchQueryBanner />
         </Suspense>
 
-        <div className="mb-8 rounded-2xl bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-xl font-bold text-primary">Quick Filters (UI ready)</h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-foreground">Category</label>
-              <select className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary">
-                <option>All Categories</option>
-                <option>Beaches</option>
-                <option>Mountains</option>
-                <option>Cultural</option>
-                <option>Adventure</option>
-              </select>
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-foreground">Price Range</label>
-              <select className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary">
-                <option>Any Price</option>
-                <option>Under ₹10,000</option>
-                <option>₹10,000 - ₹20,000</option>
-                <option>₹20,000+</option>
-              </select>
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-foreground">Duration</label>
-              <select className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary">
-                <option>Any Duration</option>
-                <option>3-4 Days</option>
-                <option>5-6 Days</option>
-                <option>7+ Days</option>
-              </select>
-            </div>
-            <div className="flex items-end">
-              <button className="w-full rounded-lg bg-primary px-6 py-2 text-white transition hover:opacity-90">
-                Search
-              </button>
-            </div>
-          </div>
-        </div>
+        <Suspense fallback={<div className="mb-8 h-40 animate-pulse rounded-2xl bg-white/80" />}>
+          <DepartureFilters />
+        </Suspense>
 
         <div className="space-y-16">
           {Object.entries(groupedTours).map(([monthYear, monthTours]) => (
@@ -149,9 +79,9 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
                 <h2 className="shrink-0 text-2xl font-bold text-primary md:text-3xl">{monthYear}</h2>
                 <span className="hidden h-px flex-1 bg-gradient-to-r from-transparent via-[#dceaf7] to-transparent sm:block" />
               </div>
-              <div className="rounded-2xl border border-[#eaf4fb] bg-white/80 p-6 shadow-sm md:p-8">
+              <div className="rounded-2xl border border-[#eaf4fb] bg-white/80 p-6 md:p-8">
                 <p className="mb-8 text-sm text-foreground/75 md:hidden">
-                  Scroll the list—each card shows dates, price, urgency and a link to full details.
+                  Each card shows price, full itinerary, and Reserve Seat on WhatsApp — we confirm availability before you pay.
                 </p>
                 <div className="relative">
                   <div
@@ -167,7 +97,7 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
                         >
                           <span className="h-2 w-2 rounded-full bg-white" />
                         </span>
-                        <TourCard tour={tour} />
+                        <TourCard tour={tour} whatsappNumber={settings?.whatsappNumber} variant="list" />
                       </li>
                     ))}
                   </ul>
@@ -178,7 +108,7 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
         </div>
 
         {upcomingTours.length === 0 && (
-          <div className="text-center py-16">
+          <div className="py-16 text-center">
             <p className="mb-4 text-xl text-foreground">No tours found. Please try different filters.</p>
             <Link href="/contact" className="rounded-full bg-cta px-5 py-3 font-semibold text-primary">
               Contact Us

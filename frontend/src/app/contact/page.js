@@ -1,4 +1,12 @@
-import ContactForm from '@/components/forms/ContactForm';
+import ContactReachSection from '@/components/contact/ContactReachSection';
+import { getPublicSettings } from '@/services/settingsService';
+import {
+  formatIndianPhone,
+  mergeSiteSettings,
+  resolveGatewayPaymentUrl,
+  telHref,
+  whatsappHref,
+} from '@/lib/siteContact';
 
 export const metadata = {
   title: 'Contact Us - Happy Feet Travellers',
@@ -63,173 +71,163 @@ function ContactDetailIcon({ name, className = 'h-5 w-5' }) {
   }
 }
 
-const detailRows = [
-  {
-    icon: 'phone',
-    label: 'Phone',
-    hint: 'Mon–Sun · 9 AM – 10 PM IST',
-    value: (
-      <a href="tel:+919876543210" className="font-semibold text-secondary underline-offset-2 hover:text-primary hover:underline">
-        +91 98765 43210
-      </a>
-    ),
-  },
-  {
-    icon: 'email',
-    label: 'Email',
-    hint: 'Replies usually within a few hours',
-    value: (
-      <a href="mailto:info@happyfeet.com" className="font-semibold text-secondary underline-offset-2 hover:text-primary hover:underline">
-        info@happyfeet.com
-      </a>
-    ),
-  },
-  {
-    icon: 'whatsapp',
-    label: 'WhatsApp',
-    hint: 'Fastest way to reach us',
-    value: (
-      <a
-        href="https://wa.me/919876543210"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="font-semibold text-secondary underline-offset-2 hover:text-primary hover:underline"
-      >
-        Open chat
-      </a>
-    ),
-  },
-  {
-    icon: 'office',
-    label: 'Office',
-    hint: 'Walk-ins by appointment',
-    value: (
-      <span className="block max-w-xs text-foreground/90">
-        Happy Feet Travellers
-        <br />
-        Baner Road, Pune – 411045
-        <br />
-        Maharashtra, India
-      </span>
-    ),
-  },
-  {
-    icon: 'clock',
-    label: 'Hours',
-    hint: 'All times IST',
-    value: (
-      <span className="block space-y-1 text-foreground/90">
-        <span className="block">Mon – Fri · 9:00 AM – 6:00 PM</span>
-        <span className="block">Sat – Sun · 9:00 AM – 10:00 PM</span>
-      </span>
-    ),
-  },
-];
+const cardShell =
+  'rounded-2xl border border-[#e8dfd0] bg-white shadow-[0_12px_32px_-16px_rgba(15,28,46,0.12)] ring-1 ring-primary/[0.04] md:rounded-3xl';
 
-const cardShell = 'rounded-2xl border border-[#dceaf5] bg-white shadow-md ring-1 ring-primary/[0.04] md:rounded-3xl';
+export default async function ContactPage() {
+  const settings = mergeSiteSettings(await getPublicSettings());
+  const phoneDisplay = formatIndianPhone(settings.whatsappNumber);
+  const phoneHref = telHref(settings.whatsappNumber);
+  const email = settings.email || 'info@happyfeet.com';
+  const payHref = resolveGatewayPaymentUrl(settings);
+  const office = settings.officeAddress || 'Baner Road, Pune – 411045, Maharashtra, India';
 
-export default function ContactPage() {
+  const detailRows = [
+    {
+      icon: 'phone',
+      label: 'Phone',
+      hint: 'Mon–Sun · 9 AM – 10 PM IST',
+      value: (
+        <a href={phoneHref} className="font-semibold text-secondary underline-offset-2 hover:text-primary hover:underline">
+          {phoneDisplay || '+91 98765 43210'}
+        </a>
+      ),
+    },
+    {
+      icon: 'email',
+      label: 'Email',
+      hint: 'Replies usually within a few hours',
+      value: (
+        <a href={`mailto:${email}`} className="font-semibold text-secondary underline-offset-2 hover:text-primary hover:underline">
+          {email}
+        </a>
+      ),
+    },
+    {
+      icon: 'whatsapp',
+      label: 'WhatsApp',
+      hint: 'Fastest way to reach us',
+      value: (
+        <a
+          href={whatsappHref(settings.whatsappNumber, 'Hi, I would like to enquire about a tour.')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-secondary underline-offset-2 hover:text-primary hover:underline"
+        >
+          Open chat
+        </a>
+      ),
+    },
+    {
+      icon: 'office',
+      label: 'Office',
+      hint: 'Walk-ins by appointment',
+      value: <span className="block max-w-xs whitespace-pre-line text-foreground/90">{office}</span>,
+    },
+    {
+      icon: 'clock',
+      label: 'Hours',
+      hint: 'All times IST',
+      value: (
+        <span className="block space-y-1 text-foreground/90">
+          <span className="block">Mon – Fri · 9:00 AM – 6:00 PM</span>
+          <span className="block">Sat – Sun · 9:00 AM – 10:00 PM</span>
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#143454] via-primary to-[#5b7fa8] text-white">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_85%_70%_at_20%_15%,rgba(255,255,255,0.14),transparent_55%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,18,32,0.12),rgba(5,18,32,0.28))]" />
-        <div className="container relative z-10 mx-auto max-w-6xl px-4 py-12 md:px-6 md:py-16">
-          <p className="mb-3 inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/90 backdrop-blur-sm">
-            Get in touch
-          </p>
-          <h1 className="mb-3 max-w-3xl text-3xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_10px_24px_rgba(0,0,0,0.22)] md:text-4xl lg:text-5xl">
-            Talk to a real human
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#0f1c2e] via-primary to-[#2d4f6e] text-white">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_85%_70%_at_20%_15%,rgba(255,255,255,0.12),transparent_55%)]" />
+        <div className="container relative z-10 mx-auto max-w-6xl px-4 py-10 md:px-6 md:py-12">
+          <p className="section-eyebrow mb-3 text-white/80">Contact</p>
+          <h1 className="font-display mb-3 max-w-3xl text-3xl font-bold leading-tight text-white md:text-4xl lg:text-5xl">
+            We&apos;re here to help you travel
           </h1>
-          <p className="max-w-2xl text-base leading-relaxed text-white/90 md:text-lg">
-            Have a date in mind or a destination on your wishlist? Drop a message — we usually reply within a few hours, often on WhatsApp.
+          <p className="max-w-2xl text-base leading-relaxed text-white/88 md:text-lg">
+            Fixed departures, customized holidays, or payment questions — reach out and a real person from Pune will
+            reply.
           </p>
         </div>
       </div>
 
-      <div className="container mx-auto max-w-6xl px-4 py-10 md:px-6 md:py-14">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start lg:gap-10 xl:gap-12">
-          <div className="space-y-8 lg:col-span-7">
-            <ContactForm />
+      <ContactReachSection />
 
-            <section id="pay" className={`scroll-mt-28 ${cardShell} p-6 md:p-8`}>
-              <h2 className="mb-2 text-xl font-bold text-primary md:text-2xl">Pay online</h2>
-              <p className="mb-6 max-w-2xl text-sm leading-relaxed text-foreground/80 md:text-base">
-                Complete your payment on our secure partner page. For booking references or payment help, call or WhatsApp us.
-              </p>
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <a
-                  href="https://www.fundayoption.com/pay-online/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex justify-center rounded-full bg-cta px-6 py-3 text-center text-sm font-semibold text-primary transition hover:bg-[#E76F51] hover:text-white md:min-w-[10rem]"
-                >
-                  Pay online
-                </a>
-                <a
-                  href="https://wa.me/919876543210?text=Hi%2C%20I%20need%20help%20with%20online%20payment"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex justify-center rounded-full border-2 border-[#2E7D32] bg-white px-6 py-3 text-center text-sm font-semibold text-[#2E7D32] transition hover:bg-[#1B5E20] hover:text-white md:min-w-[12rem]"
-                >
-                  Payment help on WhatsApp
-                </a>
-              </div>
-            </section>
-
-            <section className={`overflow-hidden ${cardShell}`}>
-              <div className="border-b border-[#eaf4fb] px-6 py-5 md:px-8 md:py-6">
-                <h2 className="text-xl font-bold text-primary md:text-2xl">Find us in Pune</h2>
-                <p className="mt-1 text-sm text-foreground/75 md:text-base">Walk-ins are by appointment — please call first.</p>
-              </div>
-              <div className="aspect-[21/9] min-h-[220px] w-full md:min-h-[280px] lg:aspect-auto lg:h-80">
-                <iframe
-                  title="Happy Feet Travellers — Pune location"
-                  src="https://www.google.com/maps?q=Baner,Pune,Maharashtra&output=embed"
-                  className="h-full w-full border-0"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  allowFullScreen
-                />
-              </div>
-            </section>
-          </div>
-
-          <aside className="lg:col-span-5 lg:sticky lg:top-24">
-            <div className={cardShell}>
-              <div className="border-b border-[#eaf4fb] px-6 py-4 md:px-8 md:py-5">
-                <h2 className="text-lg font-bold text-primary md:text-xl">Contact details</h2>
-                <p className="mt-1 text-sm text-foreground/70">Everything in one place — tap to call or mail.</p>
-              </div>
-              <div className="divide-y divide-[#eaf4fb]" role="list">
-                {detailRows.map((row) => (
-                  <div
-                    key={row.label}
-                    role="listitem"
-                    className="flex gap-4 px-6 py-4 sm:gap-5 sm:px-8 sm:py-5"
+      <div className="section-tone-cream py-10 md:py-14">
+        <div className="container mx-auto max-w-6xl px-4 md:px-6">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
+            <div className="space-y-8 lg:col-span-7">
+              <section id="pay" className={`scroll-mt-28 ${cardShell} p-6 md:p-8`}>
+                <h2 className="section-title mb-2 text-xl md:text-2xl">Pay online</h2>
+                <p className="mb-6 max-w-2xl text-sm leading-relaxed text-foreground/80 md:text-base">
+                  Complete your payment on our secure partner page. For booking references or payment help, call or
+                  WhatsApp us.
+                </p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                  <a href={payHref} target="_blank" rel="noopener noreferrer" className="btn-travel-primary px-6 py-3">
+                    Pay online
+                  </a>
+                  <a
+                    href={whatsappHref(settings.whatsappNumber, 'Hi, I need help with online payment.')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex justify-center rounded-full border-2 border-[#2E7D32] bg-white px-6 py-3 text-center text-sm font-semibold text-[#2E7D32] transition hover:bg-[#1B5E20] hover:text-white"
                   >
-                    <div
-                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 sm:h-12 sm:w-12 ${
-                        row.icon === 'whatsapp'
-                          ? 'bg-[#e8f5e9] text-[#1B5E20] ring-[#c8e6c9]'
-                          : 'bg-[#eaf4fb] text-primary ring-[#dceaf7]'
-                      }`}
-                      aria-hidden
-                    >
-                      <ContactDetailIcon name={row.icon} className="h-5 w-5 sm:h-[22px] sm:w-[22px]" />
-                    </div>
-                    <div className="min-w-0 flex-1 pt-0.5">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/50">{row.label}</p>
-                      <div className="mt-1 min-w-0 text-sm leading-relaxed text-foreground md:text-[15px]">
-                        <div className="font-medium text-foreground">{row.value}</div>
-                        <p className="mt-1 text-xs leading-normal text-foreground/60">{row.hint}</p>
+                    Payment help on WhatsApp
+                  </a>
+                </div>
+              </section>
+
+              <section className={`overflow-hidden ${cardShell}`}>
+                <div className="border-b border-[#eaf4fb] px-6 py-5 md:px-8">
+                  <h2 className="section-title text-xl md:text-2xl">Find us in Pune</h2>
+                  <p className="mt-1 text-sm text-foreground/75">Walk-ins are by appointment — please call first.</p>
+                </div>
+                <div className="aspect-[21/9] min-h-[220px] w-full md:min-h-[280px] lg:h-80">
+                  <iframe
+                    title="Happy Feet Travellers — Pune location"
+                    src="https://www.google.com/maps?q=Baner,Pune,Maharashtra&output=embed"
+                    className="h-full w-full border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    allowFullScreen
+                  />
+                </div>
+              </section>
+            </div>
+
+            <aside className="lg:col-span-5 lg:sticky lg:top-24">
+              <div className={cardShell}>
+                <div className="border-b border-[#eaf4fb] px-6 py-4 md:px-8 md:py-5">
+                  <h2 className="section-title text-lg md:text-xl">Contact details</h2>
+                  <p className="mt-1 text-sm text-foreground/70">Tap to call, email, or chat.</p>
+                </div>
+                <div className="divide-y divide-[#eaf4fb]" role="list">
+                  {detailRows.map((row) => (
+                    <div key={row.label} role="listitem" className="flex gap-4 px-6 py-4 sm:px-8 sm:py-5">
+                      <div
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 sm:h-12 sm:w-12 ${
+                          row.icon === 'whatsapp'
+                            ? 'bg-[#e8f5e9] text-[#1B5E20] ring-[#c8e6c9]'
+                            : 'bg-section-alt text-primary ring-[#e8dfd0]'
+                        }`}
+                        aria-hidden
+                      >
+                        <ContactDetailIcon name={row.icon} />
+                      </div>
+                      <div className="min-w-0 flex-1 pt-0.5">
+                        <p className="section-eyebrow text-[10px] text-foreground/50">{row.label}</p>
+                        <div className="mt-1 text-sm leading-relaxed md:text-[15px]">{row.value}</div>
+                        <p className="mt-1 text-xs text-foreground/60">{row.hint}</p>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </aside>
+            </aside>
+          </div>
         </div>
       </div>
     </div>

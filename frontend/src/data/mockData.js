@@ -36,6 +36,7 @@ export const mockTours = [
     gallery: [IMG.sikkim, IMG.himalayas, IMG.snowMtn],
     duration: "5N6D",
     urgency: "Only 4 seats left",
+    bookingDeposit: 2000,
     rating: 4.8,
     reviews: 234,
     description:
@@ -151,6 +152,7 @@ export const mockTours = [
     gallery: [IMG.goa, IMG.goaSunset, IMG.forest],
     duration: "4N5D",
     urgency: "Booking fast",
+    bookingDeposit: 5000,
     rating: 4.7,
     reviews: 180,
     description:
@@ -245,7 +247,7 @@ export const mockTours = [
       { name: "Ayurveda session", price: "From ₹1,800 / person", note: "Partner spa in Kochi" },
     ],
     cancellationPolicy:
-      "FIT packages: cancellation terms shared on final quotation. Typically 25% advance is non-refundable once hotels are blocked; balance refund depends on supplier policies.",
+      "Customized tours: cancellation terms shared on final quotation. Typically 25% advance is non-refundable once hotels are blocked; balance refund depends on supplier policies.",
     bankDetails:
       "Happy Feet Travellers\nA/c: 40123456789 · ICICI Bank\nIFSC: ICIC0001234\nUPI: happyfeet@icici\n(Use only after you receive a formal quotation from us.)",
   },
@@ -308,25 +310,41 @@ export const mockBlogs = [
   },
 ];
 
-export const mockTestimonials = [
+export const mockGalleryImages = [
   {
-    id: 1,
-    name: "Aditi Joshi",
-    city: "Kothrud, Pune",
-    rating: 5,
-    text:
-      "Booked the Sikkim group with friends. Pune pickup was on time, the captain was patient, and pricing matched the brochure exactly.",
-    image:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+    id: "g1",
+    image: IMG.goa,
+    altText: "Sunset at a Goa beach",
+    title: "Goa",
   },
   {
-    id: 2,
-    name: "Sameer Deshpande",
-    city: "Baner, Pune",
-    rating: 5,
-    text:
-      "Family Goa trip was sorted end-to-end. No upselling on-trip and the WhatsApp support was genuinely quick.",
-    image:
-      "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=200&q=80",
+    id: "g2",
+    image: IMG.sikkim,
+    altText: "Mountain valley in Sikkim",
+    title: "Sikkim",
+  },
+  {
+    id: "g3",
+    image: IMG.kerala,
+    altText: "Kerala backwaters",
+    title: "Kerala",
+  },
+  {
+    id: "g4",
+    image: IMG.rajasthan,
+    altText: "Rajasthan fort at golden hour",
+    title: "Rajasthan",
+  },
+  {
+    id: "g5",
+    image: IMG.himalayas,
+    altText: "Himalayan peaks above the clouds",
+    title: "Himalayas",
+  },
+  {
+    id: "g6",
+    image: IMG.snowMtn,
+    altText: "Snow-covered mountain trail",
+    title: "Winter trails",
   },
 ];

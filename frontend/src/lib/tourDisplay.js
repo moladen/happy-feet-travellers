@@ -21,3 +21,9 @@ export function mapTourToPackageCard(tour) {
     image: tour.image || tour.coverImage,
   };
 }
+
+/** Public tour detail page (App Router: /tour/[id]) */
+export function getTourDetailHref(tourOrCard) {
+  const key = tourOrCard?.slug || tourOrCard?.id;
+  return key ? `/tour/${encodeURIComponent(key)}` : '/contact';
+}
