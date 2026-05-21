@@ -118,7 +118,7 @@ export default function HeroSection() {
   if (!current) return null;
 
   return (
-    <section className="relative min-h-[min(100dvh,900px)] overflow-x-hidden overflow-y-hidden bg-[#0a1628] sm:min-h-[min(100dvh,920px)] md:min-h-screen">
+    <section className="relative min-h-[min(100dvh,900px)] overflow-x-hidden bg-[#0a1628] sm:min-h-[min(100dvh,920px)] md:min-h-screen">
       {!reduceMotion && (
         <div
           className="pointer-events-none absolute inset-x-0 top-0 z-[55] h-[3px] bg-black/20"
@@ -188,8 +188,8 @@ export default function HeroSection() {
         </motion.div>
       </div>
 
-      <div className="absolute inset-0 z-30 flex flex-col px-4 pb-6 pt-[5.5rem] sm:px-5 sm:pb-8 sm:pt-24 md:px-8 md:pb-10 md:pt-28">
-        <div className="container mx-auto flex max-w-6xl flex-1 flex-col justify-end">
+      <div className="absolute inset-0 z-30 flex flex-col px-4 pb-10 pt-[5.5rem] sm:px-5 sm:pb-12 sm:pt-24 md:px-8 md:pb-10 md:pt-28">
+        <div className="container mx-auto flex max-w-6xl min-h-0 flex-1 flex-col justify-end">
           <div className="mb-5 grid gap-5 sm:mb-6 sm:gap-6 lg:mb-8 lg:grid-cols-2 lg:items-end lg:gap-8 xl:gap-10">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
@@ -268,7 +268,7 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.08 }}
-              className="w-full min-w-0 lg:justify-self-end"
+              className="w-full min-w-0 overflow-visible lg:justify-self-end"
             >
               <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 lg:mb-3">
                 <div className="flex items-center gap-2">
@@ -389,25 +389,32 @@ export default function HeroSection() {
                 </motion.form>
               </div>
 
-              <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-3.5">
-                <span className="mr-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/45">
+              <div
+                className="mt-3 w-full min-w-0 sm:mt-3.5 lg:flex lg:flex-wrap lg:items-center lg:gap-2"
+                role="group"
+                aria-label="Popular destinations"
+              >
+                <p className="mb-2 shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45 sm:mb-2.5 lg:mb-0 lg:mr-0.5 lg:tracking-wider">
                   Popular
-                </span>
-                {QUICK_SEARCH.map((chip) => (
-                  <motion.button
-                    key={chip.value}
-                    type="button"
-                    whileHover={reduceMotion ? undefined : { y: -1 }}
-                    whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                    onClick={() => {
-                      setSearchQuery(chip.value);
-                      runSearch(chip.value);
-                    }}
-                    className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur-sm transition hover:border-cta/50 hover:bg-cta/25"
-                  >
-                    {chip.label}
-                  </motion.button>
-                ))}
+                </p>
+                <ul className="flex max-w-full flex-wrap items-center gap-1.5 sm:gap-2">
+                  {QUICK_SEARCH.map((chip) => (
+                    <li key={chip.value} className="flex shrink-0">
+                      <motion.button
+                        type="button"
+                        whileHover={reduceMotion ? undefined : { y: -1 }}
+                        whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                        onClick={() => {
+                          setSearchQuery(chip.value);
+                          runSearch(chip.value);
+                        }}
+                        className="rounded-full border border-white/30 bg-white/12 px-2.5 py-1 text-[11px] font-medium leading-none text-white/90 backdrop-blur-md transition hover:border-cta/50 hover:bg-cta/25 sm:px-3 sm:py-1 sm:text-xs lg:border-white/25 lg:bg-white/10 lg:backdrop-blur-sm"
+                      >
+                        {chip.label}
+                      </motion.button>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </motion.div>
           </div>
