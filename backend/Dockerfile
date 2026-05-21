@@ -21,7 +21,7 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-RUN apk add --no-cache openssl dumb-init wget
+RUN apk add --no-cache openssl dumb-init wget su-exec
 
 ENV NODE_ENV=production
 ENV PORT=5000
@@ -40,9 +40,11 @@ COPY src ./src
 COPY docker-entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh \
+  && mkdir -p uploads/hero uploads/team \
   && chown -R node:node /app
 
-USER node
+# Entrypoint fixes volume permissions, then drops to node via su-exec
+USER root
 
 EXPOSE 5000
 
