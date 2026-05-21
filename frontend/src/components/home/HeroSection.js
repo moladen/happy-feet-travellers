@@ -46,6 +46,28 @@ function HeroWaveFooter() {
 
 const SLIDE_MS = 7000;
 
+function HeroDestinationBadge({ current, slide }) {
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={current.id || slide}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ duration: 0.35 }}
+        className="inline-flex max-w-full items-center gap-2 rounded-2xl border border-white/25 bg-black/40 px-3.5 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-md sm:gap-2.5 sm:px-4 sm:py-2.5"
+      >
+        <span className="text-lg sm:text-xl" aria-hidden>
+          {current.emoji}
+        </span>
+        <span className="truncate text-[10px] font-bold uppercase tracking-[0.18em] text-white/95 sm:text-xs sm:tracking-[0.2em]">
+          {current.tag}
+        </span>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 export default function HeroSection() {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
@@ -152,37 +174,30 @@ export default function HeroSection() {
 
       <HeroWaveFooter />
 
-      {/* Destination tag — slides with background */}
-      <div className="pointer-events-none absolute right-4 top-28 z-40 md:right-8 md:top-32">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={current.id || slide}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -12 }}
-            transition={{ duration: 0.35 }}
-            className="flex items-center gap-2.5 rounded-2xl border border-white/20 bg-black/35 px-4 py-2.5 backdrop-blur-md"
-          >
-            <span className="text-xl" aria-hidden>
-              {current.emoji}
-            </span>
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/90">
-              {current.tag}
-            </span>
-          </motion.div>
-        </AnimatePresence>
+      {/* Destination tag — desktop: floating right; hidden on smaller screens */}
+      <div
+        className="pointer-events-none absolute right-6 top-[7.5rem] z-40 hidden lg:block xl:right-10 xl:top-32"
+        aria-hidden
+      >
+        <motion.div
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.35 }}
+        >
+          <HeroDestinationBadge current={current} slide={slide} />
+        </motion.div>
       </div>
 
       <div className="absolute inset-0 z-30 flex flex-col px-4 pb-8 pt-24 md:px-8 md:pb-10 md:pt-28">
         <div className="container mx-auto flex max-w-6xl flex-1 flex-col justify-end">
-          <div className="mb-6 grid gap-6 lg:mb-8 lg:grid-cols-2 lg:items-end lg:gap-8 xl:gap-10">
+          <div className="mb-5 grid gap-5 sm:mb-6 sm:gap-6 lg:mb-8 lg:grid-cols-2 lg:items-end lg:gap-8 xl:gap-10">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55 }}
-              className="max-w-xl lg:max-w-lg xl:max-w-xl"
+              className="min-w-0 max-w-xl lg:max-w-lg xl:max-w-xl"
             >
-              <p className="mb-2 inline-flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.85)]">
+              <p className="mb-2 inline-flex max-w-full flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.85)] sm:text-[11px] sm:tracking-[0.28em]">
                 <span
                   className="h-1.5 w-1.5 shrink-0 rounded-full bg-cta ring-2 ring-black/40 shadow-[0_0_12px_rgba(231,111,81,0.85)]"
                   aria-hidden
@@ -192,8 +207,8 @@ export default function HeroSection() {
                   Pune
                 </span>
               </p>
-              <h1 className="font-display text-[1.65rem] font-bold leading-[1.12] tracking-wide text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.45)] sm:text-3xl md:text-4xl lg:text-[2.35rem] xl:text-5xl">
-                <span className="block">
+              <h1 className="font-display text-[1.5rem] font-bold leading-[1.14] tracking-wide text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.45)] sm:text-3xl md:text-4xl lg:pr-4 lg:text-[2.35rem] xl:text-5xl">
+                <span className="block break-words">
                   {reduceMotion ? (
                     <>
                       Travel Beyond{' '}
@@ -215,22 +230,34 @@ export default function HeroSection() {
                     />
                   )}
                 </span>
-                <span className="mt-1.5 block text-[1.05rem] font-semibold leading-snug text-[#EAF4FB] sm:mt-2 sm:text-xl md:text-2xl lg:text-[1.65rem] xl:text-3xl">
+                <span className="mt-1.5 block text-base font-semibold leading-snug text-[#EAF4FB] sm:mt-2 sm:text-xl md:text-2xl lg:text-[1.65rem] xl:text-3xl">
                   Premium Group Tours &amp; Customized Holidays Across India &amp; Beyond
                 </span>
               </h1>
-              <p className="mt-3 max-w-md text-sm leading-relaxed text-[#EAF4FB]/95 sm:mt-4 sm:text-base">
+
+              {/* Mobile / tablet — in-flow badge below title (no overlap) */}
+              <div className="mt-3 sm:mt-3.5 lg:hidden" aria-live="polite">
+                <HeroDestinationBadge current={current} slide={slide} />
+              </div>
+
+              <p className="mt-3 max-w-md text-[0.9375rem] leading-relaxed text-[#EAF4FB]/95 sm:mt-4 sm:text-base">
                 Small-group departures from Pune, honest pricing, and custom trips planned by people who&apos;ve travelled
                 the route. You bring the dates — we&apos;ll handle the rest.
               </p>
-              <div className="mt-4 flex flex-wrap items-center gap-2.5 sm:mt-5 sm:gap-3">
-                <Link href="/upcoming-departures" className="btn-travel-primary px-5 py-2.5 sm:px-6 sm:py-3">
+              <div className="mt-4 flex w-full flex-wrap items-stretch gap-2.5 sm:mt-5 sm:items-center sm:gap-3">
+                <Link
+                  href="/upcoming-departures"
+                  className="btn-travel-primary min-h-[2.75rem] flex-1 justify-center px-4 py-2.5 sm:flex-none sm:px-6 sm:py-3"
+                >
                   View Tours
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M7 7h10v10" />
                   </svg>
                 </Link>
-                <Link href="/contact" className="btn-travel-outline px-4 py-2.5 sm:px-5 sm:py-3">
+                <Link
+                  href="/contact"
+                  className="btn-travel-outline min-h-[2.75rem] flex-1 justify-center px-4 py-2.5 sm:flex-none sm:px-5 sm:py-3"
+                >
                   Talk to us
                 </Link>
               </div>
