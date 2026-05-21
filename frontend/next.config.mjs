@@ -5,9 +5,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const monorepoRoot = path.resolve(__dirname, '..');
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+/** VPS/backend origin for Vercel proxy (no public HTTPS domain required). */
+const apiProxyTarget = (process.env.API_PROXY_TARGET || '').replace(/\/$/, '');
+
 let apiHostname = 'localhost';
 try {
-  apiHostname = new URL(apiUrl.replace(/\/api\/?$/, '/')).hostname;
+  if (apiUrl.startsWith('http')) {
+    apiHostname = new URL(apiUrl.replace(/\/api\/?$/, '/')).hostname;
+  }
 } catch {
   /* keep default */
 }
@@ -19,6 +24,14 @@ const nextConfig = {
   outputFileTracingRoot: monorepoRoot,
   turbopack: {
     root: monorepoRoot,
+  },
+
+  async rewrites() {
+    if (!apiProxyTarget) return [];
+    return [
+      { source: '/api/:path*', destination: `${apiProxyTarget}/api/:path*` },
+      { source: '/uploads/:path*', destination: `${apiProxyTarget}/uploads/:path*` },
+    ];
   },
 
   images: {
