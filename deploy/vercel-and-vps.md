@@ -36,9 +36,10 @@ In `backend/.env` on the server, set:
 
 ```env
 CORS_ORIGINS=https://happy-feet-travellers-frontend.vercel.app
+CORS_ALLOW_VERCEL=true
 ```
 
-When you add a custom domain on Vercel, append it (comma-separated, **no trailing slashes**):
+`CORS_ALLOW_VERCEL=true` allows Vercel preview URLs (`https://*-*.vercel.app`). When you add a custom domain on Vercel, append it (comma-separated, **no trailing slashes**):
 
 ```env
 CORS_ORIGINS=https://happy-feet-travellers-frontend.vercel.app,https://happyfeet.com,https://www.happyfeet.com

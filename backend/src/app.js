@@ -25,10 +25,31 @@ app.use(compression());
 app.use(express.json({ limit: '12mb' }));
 app.use(express.urlencoded({ extended: true, limit: '12mb' }));
 
+const isAllowedCorsOrigin = (origin) => {
+  if (!origin) return true;
+  if (env.cors.origins.includes(origin)) return true;
+  // Vercel production + preview deployments (*.vercel.app)
+  if (process.env.CORS_ALLOW_VERCEL === 'true') {
+    try {
+      const { hostname, protocol } = new URL(origin);
+      if (protocol === 'https:' && (hostname === 'vercel.app' || hostname.endsWith('.vercel.app'))) {
+        return true;
+      }
+    } catch {
+      /* invalid origin */
+    }
+  }
+  return false;
+};
+
 app.use(
   cors({
     origin: (origin, cb) => {
-      if (!origin || env.cors.origins.includes(origin)) return cb(null, true);
+      if (isAllowedCorsOrigin(origin)) return cb(null, true);
+      if (env.isDevelopment && origin) {
+        // eslint-disable-next-line no-console
+        console.warn(`[cors] Blocked origin: ${origin}`);
+      }
       return cb(null, false);
     },
     credentials: true,
