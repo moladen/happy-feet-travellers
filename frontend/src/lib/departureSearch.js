@@ -5,6 +5,32 @@ const MONTH_NAMES = [
   'july', 'august', 'september', 'october', 'november', 'december',
 ];
 
+const MONTH_LABELS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+/** `2026-05` → `May 2026` for departures URL / API */
+export function monthInputToLabel(value) {
+  if (!value || !/^\d{4}-\d{2}$/.test(value)) return '';
+  const [year, mm] = value.split('-');
+  const index = parseInt(mm, 10) - 1;
+  if (index < 0 || index > 11) return '';
+  return `${MONTH_LABELS[index]} ${year}`;
+}
+
+/** `May 2026` → `2026-05` for `<input type="month" />` */
+export function monthLabelToInput(label) {
+  const raw = String(label || '').trim().toLowerCase();
+  if (!raw) return '';
+  const tokens = raw.split(/\s+/).filter(Boolean);
+  const monthToken = tokens.find((t) => MONTH_NAMES.includes(t));
+  const yearToken = tokens.find((t) => /^\d{4}$/.test(t));
+  if (!monthToken || !yearToken) return '';
+  const index = MONTH_NAMES.indexOf(monthToken);
+  return `${yearToken}-${String(index + 1).padStart(2, '0')}`;
+}
+
 export function normaliseSearch(value) {
   return String(value || '').trim().toLowerCase();
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { buildDeparturesUrl } from '@/lib/departureSearch';
+import { buildDeparturesUrl, monthInputToLabel } from '@/lib/departureSearch';
 import { FALLBACK_HERO_SLIDES } from '@/lib/heroSlides';
 import { fetchPublicHeroSlides } from '@/services/heroSlidesService';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -16,6 +16,33 @@ const QUICK_SEARCH = [
   { label: 'Kerala', value: 'Kerala' },
   { label: 'Sikkim', value: 'Sikkim' },
 ];
+
+function buildHeroMonthOptions() {
+  const options = [{ value: '', label: 'Select month' }];
+  const start = new Date();
+  start.setDate(1);
+  for (let i = 0; i < 24; i += 1) {
+    const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    options.push({ value, label });
+  }
+  return options;
+}
+
+const HERO_MONTH_OPTIONS = buildHeroMonthOptions();
+
+const HERO_SEARCH_ICON =
+  'grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#f0f6fc] text-primary ring-1 ring-[#dceaf7] sm:h-12 sm:w-12';
+const HERO_SEARCH_LABEL =
+  'mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[#5f7b94]';
+const HERO_SEARCH_INPUT =
+  'hero-search-input block w-full border-0 bg-transparent p-0 text-base font-semibold leading-normal text-[#18324b] placeholder:font-normal placeholder:text-[#94a8b8] focus:outline-none focus:ring-0';
+const HERO_SEARCH_FIELD =
+  'hero-search-field flex min-w-0 flex-1 basis-0 items-center gap-3 border-[#e8edf2] p-4 sm:gap-3.5 sm:p-5';
+const HERO_SEARCH_SELECT =
+  `${HERO_SEARCH_INPUT} cursor-pointer appearance-none bg-[length:1.125rem] bg-[right_0.15rem_center] bg-no-repeat pr-8`;
+const HERO_SELECT_ARROW = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231F4E79'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`;
 
 function HeroWaveFooter() {
   return (
@@ -60,7 +87,7 @@ function HeroDestinationBadge({ current, slide }) {
         <span className="text-lg sm:text-xl" aria-hidden>
           {current.emoji}
         </span>
-        <span className="truncate text-[10px] font-bold uppercase tracking-[0.18em] text-white/95 sm:text-xs sm:tracking-[0.2em]">
+        <span className="text-[10px] font-bold uppercase leading-snug tracking-wide text-white/95 sm:text-xs sm:whitespace-nowrap">
           {current.tag}
         </span>
       </motion.div>
@@ -74,7 +101,8 @@ export default function HeroSection() {
   const [slides, setSlides] = useState(FALLBACK_HERO_SLIDES);
   const [slide, setSlide] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [travelMonth, setTravelMonth] = useState('');
+  const [monthInput, setMonthInput] = useState('');
+  const [datesFlexible, setDatesFlexible] = useState(false);
   const [guests, setGuests] = useState('2');
 
   useEffect(() => {
@@ -100,9 +128,10 @@ export default function HeroSection() {
 
   const runSearch = (rawDest) => {
     const dest = (rawDest ?? searchQuery).trim();
+    const month = datesFlexible ? '' : monthInputToLabel(monthInput);
     const url = buildDeparturesUrl({
       q: dest,
-      month: travelMonth.trim(),
+      month,
       guests,
     });
     router.push(url);
@@ -190,12 +219,12 @@ export default function HeroSection() {
 
       <div className="absolute inset-0 z-30 flex flex-col px-4 pb-8 pt-24 md:px-8 md:pb-10 md:pt-28">
         <div className="container mx-auto flex max-w-6xl flex-1 flex-col justify-end">
-          <div className="mb-5 grid gap-5 sm:mb-6 sm:gap-6 lg:mb-8 lg:grid-cols-2 lg:items-end lg:gap-8 xl:gap-10">
+          <div className="mb-5 flex flex-col gap-5 sm:mb-6 sm:gap-6 lg:mb-8 lg:gap-7">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55 }}
-              className="min-w-0 max-w-xl lg:max-w-lg xl:max-w-xl"
+              className="min-w-0 max-w-xl lg:max-w-2xl xl:max-w-3xl"
             >
               <p className="mb-2 inline-flex max-w-full flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.85)] sm:text-[11px] sm:tracking-[0.28em]">
                 <span
@@ -268,105 +297,117 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.08 }}
-              className="w-full min-w-0 lg:justify-self-end"
+              className="w-full min-w-0"
             >
-              <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 lg:mb-3">
-                <div className="flex items-center gap-2">
-                  <motion.span
-                    className="inline-flex h-2 w-2 shrink-0 rounded-full bg-cta shadow-[0_0_14px_rgba(231,111,81,0.9)]"
-                    animate={
-                      reduceMotion ? false : { opacity: [0.65, 1, 0.65], scale: [1, 1.08, 1] }
-                    }
-                    transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                    aria-hidden
-                  />
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white [text-shadow:0_1px_10px_rgba(0,0,0,0.55)]">
-                    Find your trip
-                  </p>
-                </div>
-                <p className="max-w-[14rem] text-[11px] font-medium leading-snug tracking-wide text-white/65 sm:max-w-none lg:ml-auto lg:text-right">
-                  Place &amp; month · guests · search
+              <div className="mb-3.5 flex items-center gap-2.5 sm:mb-4">
+                <motion.span
+                  className="inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-cta shadow-[0_0_16px_rgba(231,111,81,0.95)]"
+                  animate={reduceMotion ? false : { opacity: [0.65, 1, 0.65], scale: [1, 1.12, 1] }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+                  aria-hidden
+                />
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-white [text-shadow:0_1px_10px_rgba(0,0,0,0.55)] sm:text-[13px]">
+                  Find your trip
                 </p>
               </div>
-              <div className="relative">
+
+              <div className="relative w-full">
                 <div
-                  className="pointer-events-none absolute -inset-[2px] rounded-[1.1rem] bg-gradient-to-br from-cta/50 via-[#7ec8e3]/30 to-[#1F4E79]/40 opacity-90 blur-[2px] lg:-inset-[3px] lg:rounded-[1.65rem]"
+                  className="pointer-events-none absolute -inset-1.5 rounded-[1.35rem] bg-gradient-to-br from-cta/50 via-[#7ec8e3]/30 to-[#1F4E79]/40 opacity-90 blur-md sm:-inset-2 sm:rounded-[1.5rem]"
                   aria-hidden
                 />
                 <motion.form
                   onSubmit={onSubmitSearch}
-                  initial={{ boxShadow: '0 12px 32px -14px rgba(0,0,0,0.35)' }}
-                  animate={{ boxShadow: '0 22px 50px -18px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.12)' }}
-                  transition={{ duration: 0.85, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative rounded-2xl bg-white/95 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.4)] ring-1 ring-black/5 backdrop-blur-sm transition-shadow duration-300 focus-within:ring-2 focus-within:ring-cta/55 focus-within:ring-offset-2 focus-within:ring-offset-[#0a1628]/80 lg:rounded-3xl lg:shadow-2xl"
+                  className="hero-search-form relative w-full rounded-2xl bg-white shadow-[0_24px_56px_-14px_rgba(0,0,0,0.5)] ring-1 ring-black/[0.06] transition-shadow focus-within:shadow-[0_28px_60px_-12px_rgba(231,111,81,0.35)] focus-within:ring-2 focus-within:ring-cta/55 sm:rounded-[1.35rem] lg:rounded-3xl"
                   role="search"
                   aria-label="Search trips"
                 >
-                  <div className="grid grid-cols-1 divide-y divide-[#e8edf2] overflow-hidden rounded-2xl lg:grid-cols-[minmax(12rem,1.55fr)_minmax(10rem,1.05fr)_minmax(11.5rem,0.95fr)_minmax(10.5rem,max-content)] lg:divide-x lg:divide-y-0 lg:items-stretch lg:rounded-3xl">
-                    <label className="group flex min-h-[3.9rem] cursor-text items-center gap-3 px-4 py-3 transition-colors focus-within:bg-[#f8fbff] sm:px-5 lg:min-h-[4.25rem] lg:pl-6 lg:pr-4">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f4f9fd] text-primary ring-1 ring-[#dceaf7] transition group-focus-within:bg-white">
+                  <div className="hero-search-bar flex flex-col rounded-2xl sm:rounded-[1.35rem] md:flex-row md:items-stretch lg:rounded-3xl">
+                    <label
+                      htmlFor="hero-search-q"
+                      className={`${HERO_SEARCH_FIELD} cursor-text border-b border-[#e8edf2] focus-within:bg-[#f8fbff] md:min-w-[10rem] md:flex-[1.4] md:border-b-0 md:border-r`}
+                    >
+                      <span className={HERO_SEARCH_ICON}>
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                       </span>
-                      <span className="min-w-0 flex-1 py-0.5">
-                        <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#5f7b94]">
-                          Location
-                        </span>
+                      <span className="min-w-0 flex-1">
+                        <span className={HERO_SEARCH_LABEL}>Location</span>
                         <input
+                          id="hero-search-q"
                           type="text"
                           name="q"
                           role="searchbox"
-                          inputMode="search"
-                          enterKeyHint="search"
-                          placeholder="Where do you want to go?"
+                          placeholder="Where to go?"
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full min-w-0 appearance-none border-0 bg-transparent p-0 text-[0.95rem] font-semibold text-[#18324b] placeholder:font-normal placeholder:text-[#8ba0b2] focus:outline-none focus:ring-0"
+                          className={HERO_SEARCH_INPUT}
                           autoComplete="off"
-                          spellCheck={false}
                         />
                       </span>
                     </label>
 
-                    <label className="flex min-h-[3.75rem] cursor-text items-center gap-3 px-4 py-3 sm:px-5 lg:min-h-[4.25rem] lg:px-4">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-section-alt text-primary">
+                    <div
+                      className={`${HERO_SEARCH_FIELD} border-b border-[#e8edf2] focus-within:bg-[#f8fbff] md:min-w-[10rem] md:flex-1 md:border-b-0 md:border-r`}
+                    >
+                      <span className={HERO_SEARCH_ICON}>
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </span>
-                      <span className="min-w-0 flex-1 py-0.5">
-                        <span className="mb-0.5 block text-[10px] font-bold uppercase tracking-wider text-[#2B2B2B]/50">
-                          When
+                      <span className="min-w-0 flex-1">
+                        <span className="mb-1 flex items-center justify-between gap-2">
+                          <span className={HERO_SEARCH_LABEL}>When</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDatesFlexible((f) => !f);
+                              if (!datesFlexible) setMonthInput('');
+                            }}
+                            className="shrink-0 whitespace-nowrap text-[11px] font-semibold text-secondary underline-offset-2 hover:text-primary hover:underline"
+                          >
+                            {datesFlexible ? 'Pick month' : 'Flexible?'}
+                          </button>
                         </span>
-                        <input
-                          type="text"
-                          placeholder="May 2026 · flexible"
-                          value={travelMonth}
-                          onChange={(e) => setTravelMonth(e.target.value)}
-                          className="w-full min-w-0 border-0 bg-transparent p-0 text-sm font-semibold text-[#2B2B2B] placeholder:font-normal placeholder:text-gray-400 focus:outline-none lg:text-[0.9375rem]"
-                        />
+                        {datesFlexible ? (
+                          <p className={HERO_SEARCH_INPUT}>Flexible dates</p>
+                        ) : (
+                          <select
+                            id="hero-travel-month"
+                            value={monthInput}
+                            onChange={(e) => setMonthInput(e.target.value)}
+                            className={HERO_SEARCH_SELECT}
+                            style={{ backgroundImage: HERO_SELECT_ARROW }}
+                            aria-label="Travel month"
+                          >
+                            {HERO_MONTH_OPTIONS.map((opt) => (
+                              <option key={opt.value || 'any'} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        )}
                       </span>
-                    </label>
+                    </div>
 
-                    <div className="flex min-h-[3.75rem] items-center gap-3 px-4 py-3 sm:px-5 lg:min-h-[4.25rem] lg:px-4">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-section-alt text-primary">
+                    <div
+                      className={`${HERO_SEARCH_FIELD} border-b border-[#e8edf2] focus-within:bg-[#f8fbff] md:min-w-[9rem] md:max-w-[12.5rem] md:flex-none md:basis-[10.5rem] md:border-b-0 md:border-r`}
+                    >
+                      <span className={HERO_SEARCH_ICON}>
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
                       </span>
-                      <span className="min-w-0 flex-1 py-0.5">
-                        <span className="mb-0.5 block text-[10px] font-bold uppercase tracking-wider text-[#2B2B2B]/50">
-                          Guests
-                        </span>
+                      <span className="min-w-0 flex-1">
+                        <span className={HERO_SEARCH_LABEL}>Guests</span>
                         <select
                           value={guests}
                           onChange={(e) => setGuests(e.target.value)}
-                          className="w-full min-w-0 max-w-full cursor-pointer appearance-none border-0 bg-transparent bg-[length:1rem] bg-[right_0.1rem_center] bg-no-repeat p-0 pr-6 text-sm font-semibold text-[#2B2B2B] focus:outline-none focus:ring-0 lg:text-[0.9375rem]"
-                          style={{
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231F4E79'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
-                          }}
+                          className={HERO_SEARCH_SELECT}
+                          style={{ backgroundImage: HERO_SELECT_ARROW }}
+                          aria-label="Number of guests"
                         >
                           <option value="1">1 guest</option>
                           <option value="2">2 guests</option>
@@ -377,20 +418,23 @@ export default function HeroSection() {
                       </span>
                     </div>
 
-                    <div className="flex items-stretch p-3 sm:p-3.5 lg:shrink-0 lg:items-center lg:justify-center lg:px-3 lg:py-2.5 lg:pr-4">
+                    <div className="shrink-0 p-4 sm:p-5 md:flex md:w-[11.5rem] md:items-center md:justify-center md:border-l md:border-[#e8edf2] md:p-4 lg:w-[12.5rem] xl:w-[13.5rem]">
                       <button
                         type="submit"
-                        className="w-full whitespace-nowrap rounded-xl bg-gradient-to-r from-[#1F4E79] to-[#163a5c] px-5 py-3.5 text-sm font-bold text-white transition hover:from-[#163a5c] hover:to-[#0f2a42] lg:w-auto lg:min-w-[10.5rem] lg:rounded-2xl lg:px-6 lg:py-3"
+                        className="flex w-full min-h-[3.25rem] items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-gradient-to-r from-cta via-[#e07a5a] to-[#c95a3a] px-5 py-3.5 text-base font-bold text-white shadow-[0_8px_24px_-6px_rgba(231,111,81,0.65)] transition hover:from-[#d96545] hover:via-[#c95a3a] hover:to-[#b04a2e] hover:shadow-[0_12px_28px_-4px_rgba(231,111,81,0.75)] md:min-h-[3.5rem] md:rounded-2xl"
                       >
                         Search trips
+                        <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
                       </button>
                     </div>
                   </div>
                 </motion.form>
               </div>
 
-              <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-3.5">
-                <span className="mr-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/45">
+              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 sm:mt-3.5">
+                <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-white/45">
                   Popular
                 </span>
                 {QUICK_SEARCH.map((chip) => (

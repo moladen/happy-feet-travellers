@@ -60,43 +60,44 @@ export default async function BlogPage() {
           </article>
         )}
 
-        <div className="grid gap-12 lg:grid-cols-[1fr_320px]">
-          <div>
-            <h2 className="mb-8 text-2xl font-bold text-primary">Recent articles</h2>
-            <div className="space-y-8">
-              {rest.length === 0 && featured && (
-                <p className="text-foreground">More articles coming soon.</p>
-              )}
-              {rest.map((blog) => (
-                <article
-                  key={blog.id}
-                  className="group flex flex-col gap-6 overflow-hidden rounded-2xl border border-[#dceaf7] bg-white p-5 shadow-sm transition hover:shadow-lg md:flex-row md:p-6"
-                >
-                  <div className="relative h-48 w-full shrink-0 overflow-hidden rounded-xl bg-section-alt md:h-40 md:w-52">
-                    <img
-                      src={blog.image}
-                      alt=""
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-10 lg:gap-y-0">
+          <h2 className="text-2xl font-bold text-primary lg:col-start-1 lg:row-start-1 lg:mb-8">
+            Recent articles
+          </h2>
+
+          <div className="min-w-0 space-y-6 sm:space-y-8 lg:col-start-1 lg:row-start-2">
+            {rest.length === 0 && featured && (
+              <p className="text-foreground">More articles coming soon.</p>
+            )}
+            {rest.map((blog) => (
+              <article
+                key={blog.id}
+                className="group flex flex-col gap-6 overflow-hidden rounded-2xl border border-[#dceaf7] bg-white p-5 shadow-sm transition hover:shadow-lg md:flex-row md:p-6"
+              >
+                <div className="relative h-48 w-full shrink-0 overflow-hidden rounded-xl bg-section-alt md:h-40 md:w-52">
+                  <img
+                    src={blog.image}
+                    alt=""
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col justify-center">
+                  <span className="text-xs font-bold uppercase tracking-wide text-secondary">{blog.category}</span>
+                  <h3 className="mt-2 text-xl font-bold text-primary group-hover:text-secondary">{blog.title}</h3>
+                  <p className="mt-2 line-clamp-2 text-sm text-foreground">{blog.excerpt}</p>
+                  <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-foreground/80">
+                    <span>{blog.author}</span>
+                    <span>{blog.date}</span>
                   </div>
-                  <div className="flex flex-1 flex-col justify-center">
-                    <span className="text-xs font-bold uppercase tracking-wide text-secondary">{blog.category}</span>
-                    <h3 className="mt-2 text-xl font-bold text-primary group-hover:text-secondary">{blog.title}</h3>
-                    <p className="mt-2 line-clamp-2 text-sm text-foreground">{blog.excerpt}</p>
-                    <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-foreground/80">
-                      <span>{blog.author}</span>
-                      <span>{blog.date}</span>
-                    </div>
-                    <Link href={`/blog/${blog.id}`} className="mt-4 text-sm font-semibold text-primary hover:text-secondary">
-                      Read more →
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  <Link href={`/blog/${blog.id}`} className="mt-4 text-sm font-semibold text-primary hover:text-secondary">
+                    Read more →
+                  </Link>
+                </div>
+              </article>
+            ))}
           </div>
 
-          <aside className="lg:sticky lg:top-28 lg:self-start">
+          <aside className="min-w-0 lg:col-start-2 lg:row-start-2 lg:sticky lg:top-28 lg:self-start">
             <div className="rounded-2xl border border-[#dceaf7] bg-white p-6 shadow-sm">
               <h3 className="text-lg font-bold text-primary">On this journey</h3>
               <p className="mt-2 text-sm leading-relaxed text-foreground">

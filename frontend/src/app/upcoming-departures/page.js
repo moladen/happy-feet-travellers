@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
-import TourCard from '@/components/tour/TourCard';
+import DepartureTimelineList from '@/components/upcoming/DepartureTimelineList';
 import DepartureFilters from '@/components/upcoming/DepartureFilters';
 import SearchQueryBanner from '@/components/upcoming/SearchQueryBanner';
 import {
@@ -28,17 +28,19 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
   ]);
   const tours = Array.isArray(raw) ? raw : [];
 
+  const isCustomizedTour = (tour) =>
+    String(tour.category ?? '').trim().toLowerCase() === 'customized';
+
   const matchesDeparture = (tour) => {
-    const c = String(tour.category ?? '')
-      .trim()
-      .toLowerCase();
-    return c === 'upcoming' || c === 'customized' || Boolean(tour.startDate);
+    if (isCustomizedTour(tour)) return false;
+    const c = String(tour.category ?? '').trim().toLowerCase();
+    return c === 'upcoming' || Boolean(tour.startDate);
   };
 
   let upcomingTours = tours.filter(matchesDeparture);
   /* Older CMS rows may use different category strings — still list tours instead of an empty page */
   if (upcomingTours.length === 0 && tours.length > 0) {
-    upcomingTours = tours;
+    upcomingTours = tours.filter((tour) => !isCustomizedTour(tour));
   }
 
   upcomingTours = upcomingTours.filter((tour) => tourMatchesDepartureSearch(tour, search));
@@ -83,25 +85,12 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
                 <p className="mb-8 text-sm text-foreground/75 md:hidden">
                   Each card shows price, full itinerary, and Reserve Seat on WhatsApp — we confirm availability before you pay.
                 </p>
-                <div className="relative">
-                  <div
-                    className="absolute bottom-2 left-[11px] top-2 w-0.5 bg-gradient-to-b from-secondary via-[#dceaf7] to-secondary md:left-[15px]"
-                    aria-hidden
+                {monthTours.length > 0 ? (
+                  <DepartureTimelineList
+                    tours={monthTours}
+                    whatsappNumber={settings?.whatsappNumber}
                   />
-                  <ul className="space-y-10">
-                    {monthTours.map((tour) => (
-                      <li key={tour.id} className="relative pl-10 md:pl-12">
-                        <span
-                          className="absolute left-0 top-8 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-secondary shadow-sm ring-2 ring-[#eaf4fb] md:top-10 md:h-8 md:w-8"
-                          aria-hidden
-                        >
-                          <span className="h-2 w-2 rounded-full bg-white" />
-                        </span>
-                        <TourCard tour={tour} whatsappNumber={settings?.whatsappNumber} variant="list" />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                ) : null}
               </div>
             </div>
           ))}
