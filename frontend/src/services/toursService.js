@@ -129,6 +129,14 @@ const filterMockTours = (params) => {
     .map(normaliseTour);
 };
 
+export class ToursApiError extends Error {
+  constructor(message, cause) {
+    super(message);
+    this.name = 'ToursApiError';
+    this.cause = cause;
+  }
+}
+
 export const getTours = async (filters = null) => {
   const params = buildParams(filters);
 
@@ -141,6 +149,12 @@ export const getTours = async (filters = null) => {
     }
     if (shouldUseMockFallback()) {
       return params ? filterMockTours(params) : mockTours.map(normaliseTour);
+    }
+    if (typeof window === 'undefined') {
+      throw new ToursApiError(
+        'Could not load tours from the API. Check NEXT_PUBLIC_API_URL, API_PROXY_TARGET, or API_INTERNAL_URL on the server.',
+        err
+      );
     }
     return [];
   }

@@ -1,10 +1,36 @@
 import { API_BASE_URL } from '@/constants/site';
 
+/**
+ * Resolve API root for fetch(). Browser may use relative `/api` (Vercel/nginx proxy).
+ * Server-side must use an absolute URL (API_INTERNAL_URL or API_PROXY_TARGET).
+ */
 export function apiBase() {
   const isServer = typeof window === 'undefined';
   const internal = process.env.API_INTERNAL_URL?.replace(/\/$/, '');
   if (isServer && internal) return internal;
-  return (API_BASE_URL || 'http://127.0.0.1:5000/api').replace(/\/$/, '');
+
+  const configured = (process.env.NEXT_PUBLIC_API_URL || API_BASE_URL || 'http://127.0.0.1:5000/api').replace(
+    /\/$/,
+    ''
+  );
+
+  if (configured.startsWith('/')) {
+    if (isServer) {
+      const proxy = process.env.API_PROXY_TARGET?.replace(/\/$/, '');
+      if (proxy) return `${proxy}/api`;
+
+      const site =
+        process.env.SITE_URL?.replace(/\/$/, '') ||
+        process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
+
+      if (site) return `${site}${configured}`;
+      if (internal) return internal;
+    }
+    return configured;
+  }
+
+  return configured;
 }
 
 /** Backend `{ success, message, data }` envelope */

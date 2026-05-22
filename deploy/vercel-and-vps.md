@@ -11,13 +11,24 @@ If the site shows “Loading departures…”, the frontend is up but it cannot 
 1. Open [Vercel project settings → Environment Variables](https://vercel.com/dashboard).
 2. Add (all environments: **Production**, **Preview**, **Development**):
 
+   **Option A — recommended (VPS IP, no API domain):**
+
+   | Name | Value |
+   |------|--------|
+   | `API_PROXY_TARGET` | `http://YOUR_VPS_IP:5080` (no trailing slash) |
+   | `NEXT_PUBLIC_API_URL` | `/api` |
+
+   Browser calls same-origin `/api/...`; Vercel proxies to your VPS. Server-side pages use `API_PROXY_TARGET` automatically.
+
+   **Option B — public API URL:**
+
    | Name | Value |
    |------|--------|
    | `NEXT_PUBLIC_API_URL` | `https://YOUR_API_HOST/api` |
 
-   Replace `YOUR_API_HOST` with your real API domain (e.g. `api.happyfeet.com` or `1.2.3.4:5000` only for testing — use HTTPS in production).
+   Replace `YOUR_API_HOST` with your real API domain (HTTPS in production).
 
-3. **Redeploy** (Deployments → ⋯ → Redeploy). Env vars are applied at **build** time.
+3. **Redeploy** (Deployments → ⋯ → Redeploy). `NEXT_PUBLIC_*` vars are applied at **build** time; `API_PROXY_TARGET` is read at **runtime** on the server.
 
 4. Project settings (if not already):
 

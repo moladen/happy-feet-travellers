@@ -9,6 +9,7 @@ import {
   tourMatchesDepartureSearch,
 } from '@/lib/departureSearch';
 import { getTours } from '@/services/api';
+import { ToursApiError } from '@/services/toursService';
 import { getPublicSettings } from '@/services/settingsService';
 
 export const metadata = {
@@ -22,10 +23,23 @@ export const dynamic = 'force-dynamic';
 export default async function UpcomingDeparturesPage({ searchParams }) {
   const params = await searchParams;
   const search = parseDepartureSearchParams(params);
-  const [raw, settings] = await Promise.all([
-    getTours(buildApiTourQuery(search)),
-    getPublicSettings(),
-  ]);
+  let apiError = false;
+  let raw = [];
+  const settings = await getPublicSettings();
+
+  try {
+    raw = await getTours(buildApiTourQuery(search));
+  } catch (err) {
+    if (err instanceof ToursApiError || err?.name === 'ToursApiError') {
+      apiError = true;
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('[upcoming-departures]', err.message, err.cause);
+      }
+    } else {
+      throw err;
+    }
+  }
+
   const tours = Array.isArray(raw) ? raw : [];
 
   const isCustomizedTour = (tour) =>
@@ -96,7 +110,22 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
           ))}
         </div>
 
-        {upcomingTours.length === 0 && (
+        {apiError && (
+          <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-5 text-center text-foreground">
+            <p className="mb-2 text-lg font-bold text-primary">Could not load departures</p>
+            <p className="mx-auto mb-4 max-w-xl text-sm text-foreground/80">
+              The site is live but the server cannot reach your API. On Vercel set{' '}
+              <code className="rounded bg-white px-1">API_PROXY_TARGET</code> (your VPS URL) and{' '}
+              <code className="rounded bg-white px-1">NEXT_PUBLIC_API_URL=/api</code>, then redeploy. On Docker
+              set <code className="rounded bg-white px-1">API_INTERNAL_URL=http://api:5000/api</code>.
+            </p>
+            <Link href="/contact" className="rounded-full bg-cta px-5 py-3 font-semibold text-primary">
+              Contact Us
+            </Link>
+          </div>
+        )}
+
+        {!apiError && upcomingTours.length === 0 && (
           <div className="py-16 text-center">
             <p className="mb-4 text-xl text-foreground">No tours found. Please try different filters.</p>
             <Link href="/contact" className="rounded-full bg-cta px-5 py-3 font-semibold text-primary">
