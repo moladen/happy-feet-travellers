@@ -39,7 +39,13 @@ const HERO_SEARCH_LABEL =
 const HERO_SEARCH_INPUT =
   'hero-search-input block w-full border-0 bg-transparent p-0 text-base font-semibold leading-normal text-[#18324b] placeholder:font-normal placeholder:text-[#94a8b8] focus:outline-none focus:ring-0';
 const HERO_SEARCH_FIELD =
-  'hero-search-field flex min-w-0 flex-1 basis-0 items-center gap-3 border-[#e8edf2] p-4 sm:gap-3.5 sm:p-5';
+  'hero-search-field flex min-w-0 flex-1 basis-0 items-center gap-2.5 border-[#e8edf2] p-3.5 sm:gap-3 sm:p-4';
+const HERO_SEARCH_FIELD_DESKTOP =
+  'md:min-w-0 md:flex-1 md:basis-0 md:max-w-none';
+const HERO_SEARCH_SUBMIT_WRAP =
+  'flex shrink-0 flex-col border-t border-[#e8edf2] p-3.5 sm:p-4 md:basis-[10.75rem] md:flex-[0_0_10.75rem] md:justify-stretch md:border-l md:border-t-0 md:p-3 md:pl-3 lg:basis-[11.5rem] lg:flex-[0_0_11.5rem] xl:basis-[12.25rem] xl:flex-[0_0_12.25rem]';
+const HERO_SEARCH_SUBMIT_BTN =
+  'flex min-h-[3rem] w-full flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-gradient-to-r from-cta via-[#e07a5a] to-[#c95a3a] px-4 py-3 text-[15px] font-bold text-white shadow-[0_8px_24px_-6px_rgba(231,111,81,0.65)] transition hover:from-[#d96545] hover:via-[#c95a3a] hover:to-[#b04a2e] hover:shadow-[0_12px_28px_-4px_rgba(231,111,81,0.75)] sm:min-h-[3.125rem] sm:px-5 sm:py-3.5 sm:text-base md:h-full md:min-h-[3.25rem] md:rounded-2xl';
 const HERO_SEARCH_SELECT =
   `${HERO_SEARCH_INPUT} cursor-pointer appearance-none bg-[length:1.125rem] bg-[right_0.15rem_center] bg-no-repeat pr-8`;
 const HERO_SELECT_ARROW = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231F4E79'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`;
@@ -47,15 +53,16 @@ const HERO_SELECT_ARROW = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 function HeroWaveFooter() {
   return (
     <svg
-      className="pointer-events-none absolute bottom-0 left-0 z-[15] h-[min(28vh,260px)] w-full min-h-[140px] text-[#061525]"
+      className="hero-wave-footer pointer-events-none block w-full text-[#061525]"
       viewBox="0 0 1440 320"
       preserveAspectRatio="none"
       aria-hidden
     >
       <defs>
         <linearGradient id="heroWaveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#0f2844" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#030a12" />
+          <stop offset="0%" stopColor="#0f2844" stopOpacity="0" />
+          <stop offset="55%" stopColor="#0f2844" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="#030a12" stopOpacity="0.92" />
         </linearGradient>
       </defs>
       <path
@@ -63,7 +70,7 @@ function HeroWaveFooter() {
         d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,181.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L0,320Z"
       />
       <path
-        className="opacity-40"
+        className="opacity-25"
         fill="#1F4E79"
         d="M0,288L60,272C120,256,240,224,360,213.3C480,203,600,213,720,229.3C840,245,960,267,1080,261.3C1200,256,1320,224,1380,208L1440,192L1440,320L0,320Z"
       />
@@ -72,6 +79,41 @@ function HeroWaveFooter() {
 }
 
 const SLIDE_MS = 7000;
+const HERO_CROSSFADE_S = 1.35;
+const HERO_EASE = [0.22, 1, 0.36, 1];
+
+function HeroSlideLayer({ item, isActive, reduceMotion, priority }) {
+  return (
+    <motion.div
+      className="hero-slide-layer absolute inset-0 overflow-hidden"
+      initial={false}
+      animate={{
+        opacity: isActive ? 1 : 0,
+        scale: reduceMotion ? 1 : isActive ? 1 : 1.05,
+      }}
+      transition={{
+        opacity: { duration: reduceMotion ? 0.25 : HERO_CROSSFADE_S, ease: HERO_EASE },
+        scale: { duration: reduceMotion ? 0.25 : HERO_CROSSFADE_S, ease: HERO_EASE },
+      }}
+      style={{ zIndex: isActive ? 2 : 1 }}
+      aria-hidden={!isActive}
+    >
+      <div
+        key={isActive ? `ken-${item.id || item.src}` : `idle-${item.id || item.src}`}
+        className={`absolute inset-0 ${isActive && !reduceMotion ? 'hero-ken-burns' : ''}`}
+      >
+        <Image
+          src={item.src}
+          alt={isActive ? item.alt : ''}
+          fill
+          priority={priority}
+          sizes="100vw"
+          className="object-cover object-[center_38%] saturate-[1.12] contrast-[1.05] sm:object-center"
+        />
+      </div>
+    </motion.div>
+  );
+}
 
 function HeroDestinationBadge({ current, slide }) {
   return (
@@ -147,7 +189,8 @@ export default function HeroSection() {
   if (!current) return null;
 
   return (
-    <section className="relative min-h-[min(100dvh,920px)] overflow-hidden bg-[#0a1628] md:min-h-screen">
+    <section className="hero-section relative z-0 flex min-h-[100dvh] flex-col bg-[#0a1628]">
+      <div className="hero-stage relative min-h-0 flex-1 overflow-hidden">
       {!reduceMotion && (
         <div
           className="pointer-events-none absolute inset-x-0 top-0 z-[55] h-[3px] bg-black/20"
@@ -163,45 +206,36 @@ export default function HeroSection() {
         </div>
       )}
 
-      {/* Animated mesh accents */}
-      <div
-        className="hero-mesh-blob animate-blob -left-24 top-1/4 z-[6] h-64 w-64 bg-cta/35"
-        aria-hidden
-      />
-      <div
-        className="hero-mesh-blob animate-blob animation-delay-2000 -right-16 top-[42%] z-[6] h-72 w-72 bg-[#5a8fa8]/40"
-        aria-hidden
-      />
+      {/* Background slides — layered crossfade (entering slide fades in on top) */}
+      <div className="hero-slides absolute inset-0 z-0" aria-hidden>
+        {slides.map((item, index) => (
+          <HeroSlideLayer
+            key={item.id || item.src}
+            item={item}
+            isActive={index === slide}
+            reduceMotion={reduceMotion}
+            priority={index === 0}
+          />
+        ))}
+      </div>
 
-      <AnimatePresence initial={false} mode="sync">
-        <motion.div
-          key={current.id || current.src}
-          initial={{ opacity: 0, scale: reduceMotion ? 1 : 1.04 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: reduceMotion ? 1 : 1.02 }}
-          transition={{ duration: 1.15, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0"
-        >
-          <div className={`absolute inset-0 ${reduceMotion ? '' : 'hero-ken-burns'}`}>
-            <Image
-              src={current.src}
-              alt={current.alt}
-              fill
-              priority={slide === 0}
-              sizes="100vw"
-              className="object-cover saturate-[1.12] contrast-[1.05]"
-            />
-          </div>
-        </motion.div>
-      </AnimatePresence>
-
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0f1c2e]/65 via-[#1a1030]/30 to-[#030712]/88" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_10%_20%,rgba(231,111,81,0.22),transparent_50%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_75%_60%_at_92%_35%,rgba(126,200,227,0.28),transparent_48%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_50%_100%,rgba(255,180,120,0.12),transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#030712] via-transparent to-[#1a2b3c]/40" />
-
-      <HeroWaveFooter />
+      {/* Readability overlays — light vignette; bottom scrim only in lower third */}
+      <div className="hero-overlays pointer-events-none absolute inset-0 z-[8]" aria-hidden>
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0f1c2e]/48 via-[#1a1030]/18 to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_10%_20%,rgba(231,111,81,0.18),transparent_52%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_75%_60%_at_92%_35%,rgba(126,200,227,0.22),transparent_50%)]" />
+        <div className="hero-bottom-scrim absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#030712]/80 via-[#030712]/28 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-[38%] max-h-[280px] bg-[radial-gradient(ellipse_90%_70%_at_50%_100%,rgba(255,180,120,0.1),transparent_68%)]" />
+        <div className="absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-[#1a2b3c]/35 to-transparent" />
+        <div
+          className="hero-mesh-blob animate-blob -left-24 top-1/4 h-64 w-64 bg-cta/30"
+          aria-hidden
+        />
+        <div
+          className="hero-mesh-blob animate-blob animation-delay-2000 -right-16 top-[42%] h-72 w-72 bg-[#5a8fa8]/32"
+          aria-hidden
+        />
+      </div>
 
       {/* Destination tag — desktop: floating right; hidden on smaller screens */}
       <div
@@ -217,7 +251,7 @@ export default function HeroSection() {
         </motion.div>
       </div>
 
-      <div className="absolute inset-0 z-30 flex flex-col px-4 pb-8 pt-24 md:px-8 md:pb-10 md:pt-28">
+      <div className="absolute inset-0 z-30 flex flex-col px-4 pb-6 pt-24 md:px-8 md:pb-8 md:pt-28">
         <div className="container mx-auto flex max-w-6xl flex-1 flex-col justify-end">
           <div className="mb-5 flex flex-col gap-5 sm:mb-6 sm:gap-6 lg:mb-8 lg:gap-7">
             <motion.div
@@ -322,10 +356,10 @@ export default function HeroSection() {
                   role="search"
                   aria-label="Search trips"
                 >
-                  <div className="hero-search-bar flex flex-col rounded-2xl sm:rounded-[1.35rem] md:flex-row md:items-stretch lg:rounded-3xl">
+                  <div className="hero-search-bar flex flex-col rounded-2xl sm:rounded-[1.35rem] md:flex-row md:flex-nowrap md:items-stretch lg:rounded-3xl">
                     <label
                       htmlFor="hero-search-q"
-                      className={`${HERO_SEARCH_FIELD} cursor-text border-b border-[#e8edf2] focus-within:bg-[#f8fbff] md:min-w-[10rem] md:flex-[1.4] md:border-b-0 md:border-r`}
+                      className={`${HERO_SEARCH_FIELD} ${HERO_SEARCH_FIELD_DESKTOP} cursor-text border-b border-[#e8edf2] focus-within:bg-[#f8fbff] md:border-b-0 md:border-r`}
                     >
                       <span className={HERO_SEARCH_ICON}>
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -350,7 +384,7 @@ export default function HeroSection() {
                     </label>
 
                     <div
-                      className={`${HERO_SEARCH_FIELD} border-b border-[#e8edf2] focus-within:bg-[#f8fbff] md:min-w-[10rem] md:flex-1 md:border-b-0 md:border-r`}
+                      className={`${HERO_SEARCH_FIELD} ${HERO_SEARCH_FIELD_DESKTOP} border-b border-[#e8edf2] focus-within:bg-[#f8fbff] md:border-b-0 md:border-r`}
                     >
                       <span className={HERO_SEARCH_ICON}>
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -393,7 +427,7 @@ export default function HeroSection() {
                     </div>
 
                     <div
-                      className={`${HERO_SEARCH_FIELD} border-b border-[#e8edf2] focus-within:bg-[#f8fbff] md:min-w-[9rem] md:max-w-[12.5rem] md:flex-none md:basis-[10.5rem] md:border-b-0 md:border-r`}
+                      className={`${HERO_SEARCH_FIELD} ${HERO_SEARCH_FIELD_DESKTOP} border-b border-[#e8edf2] focus-within:bg-[#f8fbff] md:border-b-0 md:border-r`}
                     >
                       <span className={HERO_SEARCH_ICON}>
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -418,11 +452,8 @@ export default function HeroSection() {
                       </span>
                     </div>
 
-                    <div className="shrink-0 p-4 sm:p-5 md:flex md:w-[11.5rem] md:items-center md:justify-center md:border-l md:border-[#e8edf2] md:p-4 lg:w-[12.5rem] xl:w-[13.5rem]">
-                      <button
-                        type="submit"
-                        className="flex w-full min-h-[3.25rem] items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-gradient-to-r from-cta via-[#e07a5a] to-[#c95a3a] px-5 py-3.5 text-base font-bold text-white shadow-[0_8px_24px_-6px_rgba(231,111,81,0.65)] transition hover:from-[#d96545] hover:via-[#c95a3a] hover:to-[#b04a2e] hover:shadow-[0_12px_28px_-4px_rgba(231,111,81,0.75)] md:min-h-[3.5rem] md:rounded-2xl"
-                      >
+                    <div className={HERO_SEARCH_SUBMIT_WRAP}>
+                      <button type="submit" className={HERO_SEARCH_SUBMIT_BTN}>
                         Search trips
                         <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -502,6 +533,12 @@ export default function HeroSection() {
             </p>
           </motion.div>
         </div>
+      </div>
+      </div>
+
+      {/* In-flow wave — ends hero cleanly without overlapping the next section */}
+      <div className="hero-wave-cap relative z-[5] shrink-0 leading-[0]" aria-hidden>
+        <HeroWaveFooter />
       </div>
     </section>
   );

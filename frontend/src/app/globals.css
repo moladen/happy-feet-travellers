@@ -809,9 +809,21 @@ textarea {
   }
 }
 
-/* Hero search — flex fields, no overlap */
+/* Hero search — equal flex fields, no overlap */
 .hero-search-form .hero-search-bar {
   width: 100%;
+}
+
+@media (min-width: 768px) {
+  .hero-search-form .hero-search-bar {
+    align-items: stretch;
+  }
+
+  .hero-search-form .hero-search-field {
+    flex: 1 1 0%;
+    min-width: 0;
+    max-width: none;
+  }
 }
 
 .hero-search-form .hero-search-field {
@@ -827,11 +839,86 @@ textarea {
 .hero-search-form select.hero-search-input {
   width: 100%;
   max-width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .hero-search-form .hero-search-bar {
+    gap: 0;
+  }
+}
+
+/* Hero — section boundary + clean handoff to homepage content */
+.hero-section {
+  isolation: isolate;
+}
+
+.hero-stage {
+  isolation: isolate;
+}
+
+.hero-wave-cap {
+  flex-shrink: 0;
+  line-height: 0;
+  background: #030a12;
+}
+
+.homepage-main {
+  position: relative;
+  z-index: 10;
+  isolation: isolate;
+}
+
+/* Hero — layered slide crossfade */
+.hero-slides {
+  isolation: isolate;
+}
+
+.hero-slide-layer {
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.hero-overlays {
+  isolation: isolate;
+}
+
+/* Bottom scrim — localized so hero photos stay visible above content */
+.hero-bottom-scrim {
+  height: min(38vh, 320px);
+  max-height: 42%;
+}
+
+/* Wave transition at hero bottom edge — in-flow, does not cover next section */
+.hero-wave-footer {
+  display: block;
+  height: 64px;
+  min-height: 52px;
+  max-height: 80px;
+}
+
+@media (min-width: 768px) {
+  .hero-bottom-scrim {
+    height: min(32vh, 280px);
+  }
+
+  .hero-wave-footer {
+    height: 72px;
+    max-height: 88px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hero-wave-footer {
+    height: 80px;
+  }
 }
 
 /* Hero — modern travel canvas */
 .hero-ken-burns {
   animation: hero-ken-burns 7s linear forwards;
+  will-change: transform;
 }
 
 @keyframes hero-ken-burns {
