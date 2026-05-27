@@ -2,6 +2,8 @@ const express = require('express');
 const prisma = require('@/config/database');
 
 const tourRoutes = require('@/routes/tourRoutes');
+const upcomingDepartureRoutes = require('@/routes/upcomingDepartureRoutes');
+const personalizedTripRoutes = require('@/routes/personalizedTripRoutes');
 const blogRoutes = require('@/routes/blogRoutes');
 const testimonialRoutes = require('@/routes/testimonialRoutes');
 const enquiryRoutes = require('@/routes/enquiryRoutes');
@@ -36,6 +38,8 @@ router.get('/health', async (_req, res) => {
 });
 
 router.use('/tours', tourRoutes);
+router.use('/upcoming-departures', upcomingDepartureRoutes);
+router.use('/personalized-trips', personalizedTripRoutes);
 router.use('/blogs', blogRoutes);
 router.use('/testimonials', testimonialRoutes);
 router.use('/gallery', galleryRoutes);

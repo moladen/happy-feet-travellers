@@ -1,5 +1,6 @@
 const Joi = require('joi');
 const { CATEGORIES } = require('@/constants/tourCategories');
+const { DEPARTURE_STATUS_VALUES } = require('@/constants/upcomingDepartures');
 
 // Allow Indian phone numbers in common formats: 10 digits, optionally with +91/91 prefix and spaces/dashes.
 const phonePattern = /^(?:\+?91[\s-]?)?[6-9]\d{9}$/;
@@ -56,10 +57,61 @@ const createTourSchema = Joi.object({
   pickupPoints: Joi.any(),
   supplements: Joi.any(),
   terms: Joi.any(),
+  destination: Joi.string().allow('', null),
+  tags: Joi.array().items(Joi.string().trim()).max(16),
+  groupSize: Joi.string().allow('', null),
+  status: Joi.string().valid(...DEPARTURE_STATUS_VALUES),
+  featured: Joi.boolean(),
+  seriesSlug: Joi.string().pattern(slugPattern).allow('', null),
 });
+
+const createUpcomingDepartureSchema = createTourSchema
+  .fork(['category'], (s) => s.optional().default('upcoming'))
+  .custom((value, helpers) => {
+    const status = String(value.status || 'active').toLowerCase();
+    if (status === 'active') {
+      const hasStart = value.startDate != null && String(value.startDate).trim() !== '';
+      const hasLabel = String(value.dateLabel || '').trim().length > 0;
+      if (!hasStart && !hasLabel) {
+        return helpers.message(
+          'Active departures need a start date (Dates & pricing step) or a date label so they appear on the website.'
+        );
+      }
+    }
+    return value;
+  });
+
+const personalizedTripExtras = {
+  packageCategory: Joi.string().allow('', null),
+  state: Joi.string().allow('', null),
+  ctaData: Joi.object({
+    primaryLabel: Joi.string().allow('', null),
+    primaryHref: Joi.string().allow('', null),
+    secondaryLabel: Joi.string().allow('', null),
+    secondaryHref: Joi.string().allow('', null),
+    headline: Joi.string().allow('', null),
+  }).allow(null),
+  seoTitle: Joi.string().allow('', null),
+  seoDescription: Joi.string().allow('', null),
+};
+
+const createPersonalizedTripSchema = createTourSchema
+  .keys(personalizedTripExtras)
+  .fork(['category'], (s) => s.optional().default('customized'))
+  .fork(['departureCity'], (s) => s.optional().default('India'));
 
 const schemas = {
   createTour: createTourSchema,
+  createUpcomingDeparture: createUpcomingDepartureSchema,
+  updateUpcomingDeparture: createUpcomingDepartureSchema.fork(
+    ['title', 'description', 'duration', 'price', 'departureCity'],
+    (s) => s.optional()
+  ).min(1),
+  createPersonalizedTrip: createPersonalizedTripSchema,
+  updatePersonalizedTrip: createPersonalizedTripSchema.fork(
+    ['title', 'description', 'duration', 'price', 'departureCity'],
+    (s) => s.optional()
+  ).min(1),
   updateTour: createTourSchema.fork(
     ['title', 'description', 'duration', 'price', 'departureCity', 'category'],
     (s) => s.optional()

@@ -14,4 +14,15 @@ const authMiddleware = (req, _res, next) => {
   next();
 };
 
-module.exports = { authMiddleware };
+/** Sets req.user when a valid Bearer token is present; does not fail when missing. */
+const optionalAuthMiddleware = (req, _res, next) => {
+  const header = req.headers.authorization || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  if (token) {
+    const decoded = verifyToken(token);
+    if (decoded) req.user = decoded;
+  }
+  next();
+};
+
+module.exports = { authMiddleware, optionalAuthMiddleware };
