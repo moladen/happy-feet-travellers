@@ -41,7 +41,7 @@ export default function BlogForm({ form, setForm, onSubmit, busy, mode = "create
               required
               value={form.title}
               onChange={(event) => updateField("title", event.target.value)}
-              placeholder="7 Group Trips from Pune That Actually Stay on Budget"
+              placeholder="Curated group journeys that stay on budget"
             />
           </Field>
           <Field label="Slug">

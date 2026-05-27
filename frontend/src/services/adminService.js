@@ -65,6 +65,50 @@ export const updateTour = (id, payload) =>
 export const deleteTour = (id) =>
   run(() => apiClient.delete(`/tours/${id}`), "Could not delete tour.");
 
+/** Upcoming departures — dedicated API (auto-expiry, tags, featured). */
+export const listUpcomingDepartures = (params = {}) =>
+  run(
+    () =>
+      apiClient.get("/upcoming-departures", {
+        params: { ...params, admin: "true", includeArchived: params.includeArchived ?? "true" },
+      }),
+    "Could not load upcoming departures."
+  );
+
+export const getUpcomingDeparture = (idOrSlug) =>
+  run(() => apiClient.get(`/upcoming-departures/${idOrSlug}`), "Could not load departure.");
+
+export const createUpcomingDeparture = (payload) =>
+  run(() => apiClient.post("/upcoming-departures", payload), "Could not create departure.");
+
+export const updateUpcomingDeparture = (id, payload) =>
+  run(() => apiClient.put(`/upcoming-departures/${id}`, payload), "Could not update departure.");
+
+export const deleteUpcomingDeparture = (id) =>
+  run(() => apiClient.delete(`/upcoming-departures/${id}`), "Could not delete departure.");
+
+/** Personalized trips — dedicated API (state, package category, SEO, CTA). */
+export const listPersonalizedTrips = (params = {}) =>
+  run(
+    () =>
+      apiClient.get("/personalized-trips", {
+        params: { ...params, admin: "true", includeDraft: params.includeDraft ?? "true" },
+      }),
+    "Could not load personalized trips."
+  );
+
+export const getPersonalizedTrip = (idOrSlug) =>
+  run(() => apiClient.get(`/personalized-trips/${idOrSlug}`), "Could not load personalized trip.");
+
+export const createPersonalizedTrip = (payload) =>
+  run(() => apiClient.post("/personalized-trips", payload), "Could not create personalized trip.");
+
+export const updatePersonalizedTrip = (id, payload) =>
+  run(() => apiClient.put(`/personalized-trips/${id}`, payload), "Could not update personalized trip.");
+
+export const deletePersonalizedTrip = (id) =>
+  run(() => apiClient.delete(`/personalized-trips/${id}`), "Could not delete personalized trip.");
+
 export const listBlogs = (params = {}) =>
   run(() => apiClient.get("/blogs", { params }), "Could not load blogs.");
 

@@ -58,9 +58,14 @@ export default function SocialMediaIcons({
   showLabels = false,
   /** Use saved admin URLs with site defaults on the public footer */
   forFooter = false,
+  /** Premium glass styling for the site footer */
+  premiumFooter = false,
 }) {
   const links = forFooter ? buildFooterSocialLinks(settings) : buildSocialLinks(settings);
-  const buttonSize = BUTTON_CLASS[size] || BUTTON_CLASS.md;
+  const buttonSize = premiumFooter ? '' : BUTTON_CLASS[size] || BUTTON_CLASS.md;
+  const btnClass = premiumFooter
+    ? 'site-footer__social-btn group'
+    : `group grid ${buttonSize} place-items-center border border-white/25 bg-white/10 text-white shadow-[0_4px_16px_-6px_rgba(0,0,0,0.35)] backdrop-blur-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70`;
 
   if (!links.length) return null;
 
@@ -77,7 +82,8 @@ export default function SocialMediaIcons({
             rel="noopener noreferrer"
             aria-label={`Happy Feet Travellers on ${item.label}`}
             title={item.label}
-            className={`group grid ${buttonSize} place-items-center border border-white/25 bg-white/10 text-white shadow-[0_4px_16px_-6px_rgba(0,0,0,0.35)] backdrop-blur-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${item.hover}`}
+            data-social={item.icon}
+            className={`${btnClass} ${premiumFooter ? '' : item.hover}`}
           >
             <span className="transition group-hover:scale-110">
               <SocialIcon name={item.icon} size={size} />

@@ -5,7 +5,7 @@ import { travelIconClassForEmoji } from '@/lib/travelIconAnimations';
 export const metadata = {
   title: 'About Us - Happy Feet Travellers',
   description:
-    'Happy Feet Travellers is a Pune-based small-group travel company running fixed-date departures and customised trips across India.',
+    'Happy Feet Travellers is a premium small-group travel brand running curated departures and bespoke journeys across India and beyond.',
 };
 
 const VALUES = [
@@ -16,8 +16,8 @@ const VALUES = [
   },
   {
     icon: '🌿',
-    title: 'Local first',
-    desc: 'We work with homestays, drivers and guides from the region — money stays where the trip happens.',
+    title: 'Region-rooted',
+    desc: 'We work with homestays, drivers, and guides from each destination — authentic experiences where the journey unfolds.',
   },
   {
     icon: '🧭',
@@ -39,9 +39,9 @@ export default function AboutPage() {
         <div className="container mx-auto px-4">
           <p className="section-eyebrow mb-3 text-white/80">About us</p>
           <h1 className="font-display mb-3 text-4xl font-bold text-white md:text-5xl">Our story</h1>
-          <p className="max-w-2xl text-lg text-white/85">
-            We started with a simple idea: organise the kind of trips we&apos;d want to take with friends—clear costs,
-            small groups, and someone reliable to call when things change.
+          <p className="max-w-2xl text-lg leading-relaxed text-white/88">
+            We started with a simple idea: craft the kind of journeys we&apos;d want to take with friends — clear costs,
+            smaller groups, and a team you can reach when the road surprises you.
           </p>
         </div>
       </div>
@@ -53,15 +53,15 @@ export default function AboutPage() {
           <div className="rounded-2xl border border-[#dceaf7] bg-white p-8 shadow-sm">
             <h2 className="mb-3 text-xl font-bold text-primary">Mission</h2>
             <p className="text-foreground/85 leading-relaxed">
-              Make group travel from Pune predictable: honest pricing, vetted stays, and support you can reach on WhatsApp
-              before and during the trip.
+              Make group travel feel effortless: honest pricing, vetted stays, and support you can reach on WhatsApp before
+              and during every journey.
             </p>
           </div>
           <div className="rounded-2xl border border-[#dceaf7] bg-white p-8 shadow-sm">
             <h2 className="mb-3 text-xl font-bold text-primary">Vision</h2>
             <p className="text-foreground/85 leading-relaxed">
-              Become the first name families and solo travellers think of when they want affordable, well-run departures
-              and personalized holidays—without the stress of planning alone.
+              Become the name families and solo explorers trust for well-run departures and personalised holidays across
+              India — without the stress of planning alone.
             </p>
           </div>
         </div>
@@ -72,9 +72,9 @@ export default function AboutPage() {
             <div>
               <h2 className="mb-4 text-3xl font-bold text-primary">How we work</h2>
               <p className="mb-4 leading-relaxed text-foreground/85">
-                We design fixed-date group departures from Pune to popular Indian destinations—Sikkim, Kashmir, Himachal,
-                Goa, Kerala, Rajasthan and the Northeast—and also build customised trips for couples, families and
-                corporate offsites.
+                We design fixed-date group departures to beloved Indian destinations — Sikkim, Kashmir, Himachal, Goa,
+                Kerala, Rajasthan, and the Northeast — and build customised trips for couples, families, and corporate
+                offsites.
               </p>
               <p className="leading-relaxed text-foreground/85">
                 Every itinerary is run by people who have actually travelled the route. Hotels, drivers and meal stops are

@@ -76,6 +76,18 @@ export const tourCategoryOptions = [
   { value: "customized", label: "Customized Tour" },
 ];
 
+export const packageCategoryOptions = [
+  { value: "", label: "— Select experience —" },
+  { value: "Honeymoon", label: "Honeymoon" },
+  { value: "Adventure", label: "Adventure" },
+  { value: "Spiritual", label: "Spiritual" },
+  { value: "Family", label: "Family" },
+  { value: "Wildlife", label: "Wildlife" },
+  { value: "Road Trips", label: "Road Trips" },
+  { value: "Mountains", label: "Mountains" },
+  { value: "Beaches", label: "Beaches" },
+];
+
 export const enquiryStatusOptions = [
   { value: "new", label: "New" },
   { value: "contacted", label: "Contacted" },
@@ -83,7 +95,8 @@ export const enquiryStatusOptions = [
 ];
 
 export const dashboardQuickActions = [
-  { href: "/admin/tours/new", label: "Add tour" },
+  { href: "/admin/tours/new?type=upcoming", label: "Add upcoming departure" },
+  { href: "/admin/tours/new?type=customized", label: "Add personalized tour" },
   { href: "/admin/blogs/new", label: "Publish blog" },
   { href: "/admin/hero", label: "Hero banners" },
   { href: "/admin/gallery", label: "Upload gallery" },
@@ -123,6 +136,21 @@ export const emptyTourForm = {
   price: "",
   startingPrice: "",
   departureCity: "Pune",
+  destination: "",
+  state: "",
+  packageCategory: "",
+  tagsText: "",
+  groupSize: "12–18 travellers only",
+  status: "active",
+  featured: false,
+  seriesSlug: "",
+  seoTitle: "",
+  seoDescription: "",
+  ctaPrimaryLabel: "Explore journey",
+  ctaPrimaryHref: "/contact",
+  ctaSecondaryLabel: "",
+  ctaSecondaryHref: "",
+  ctaHeadline: "",
   startDate: "",
   endDate: "",
   dateLabel: "",
@@ -256,43 +284,181 @@ function cleanObjectList(list) {
     .filter(Boolean);
 }
 
+function tourWouldBeVisibleOnSite(form) {
+  const hasStart = Boolean(String(form.startDate || "").trim());
+  const hasLabel = Boolean(String(form.dateLabel || "").trim());
+  if (!hasStart && !hasLabel) return false;
+
+  if (hasStart) {
+    const start = new Date(`${form.startDate}T12:00:00`);
+    if (Number.isNaN(start.getTime())) return hasLabel;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endRaw = String(form.endDate || "").trim();
+    const compare = endRaw ? new Date(`${endRaw}T12:00:00`) : start;
+    return compare >= today;
+  }
+
+  return hasLabel;
+}
+
+/**
+ * Client-side checks before saving an upcoming departure.
+ * @returns {string|null} Error message or null if OK
+ */
+export function validateUpcomingDepartureForSite(form) {
+  const status = String(form.status || "active").toLowerCase();
+  const hasStart = Boolean(String(form.startDate || "").trim());
+  const hasLabel = Boolean(String(form.dateLabel || "").trim());
+
+  if (status === "draft") {
+    return null;
+  }
+
+  if (!hasStart && !hasLabel) {
+    return "Add a Start date or Date label (Dates & pricing step). Without dates, the departure will not appear on the website.";
+  }
+
+  if (status === "active" && hasStart && !tourWouldBeVisibleOnSite(form)) {
+    return "These dates are in the past — the trip will be hidden. Pick a future start/end date, or save as Archived.";
+  }
+
+  return null;
+}
+
+/**
+ * Normalise admin form → API payload for upcoming departures (category + publish status).
+ */
+/**
+ * Client-side checks before saving a personalized / customized tour.
+ * @returns {string|null}
+ */
+export function validatePersonalizedTripForSite(form) {
+  const status = String(form.status || "active").toLowerCase();
+  if (status === "draft") return null;
+
+  if (!String(form.description || "").trim()) {
+    return "Add a description (Trip content step) — it powers emotional copy on the website.";
+  }
+
+  if (!String(form.coverImage || "").trim() && !(form.images || []).length) {
+    return "Add a cover image (Media step) so the tour appears with cinematic visuals on the site.";
+  }
+
+  return null;
+}
+
+/**
+ * Normalise admin form → API payload for personalized tours (category + status).
+ */
+export function preparePersonalizedTripPayload(form) {
+  const payload = buildTourPayload(form);
+  payload.category = "customized";
+
+  const status = String(form.status || "active").toLowerCase();
+  if (status === "draft") {
+    payload.status = "draft";
+  } else if (status === "archived") {
+    payload.status = "archived";
+  } else {
+    payload.status = "active";
+  }
+
+  return payload;
+}
+
+export function prepareTourPayloadForAdmin(form) {
+  const cat = String(form.category || "").toLowerCase();
+  if (cat === "upcoming") return prepareUpcomingDeparturePayload(form);
+  if (cat === "customized") return preparePersonalizedTripPayload(form);
+  return buildTourPayload(form);
+}
+
+export function validateTourForAdminSite(form) {
+  const cat = String(form.category || "").toLowerCase();
+  if (cat === "upcoming") return validateUpcomingDepartureForSite(form);
+  if (cat === "customized") return validatePersonalizedTripForSite(form);
+  return null;
+}
+
+export function prepareUpcomingDeparturePayload(form) {
+  const payload = buildTourPayload(form);
+  payload.category = "upcoming";
+
+  const status = String(form.status || "active").toLowerCase();
+  if (status === "draft") {
+    payload.status = "draft";
+    return payload;
+  }
+
+  if (tourWouldBeVisibleOnSite(form)) {
+    payload.status = "active";
+  } else if (status === "archived") {
+    payload.status = "archived";
+  }
+
+  return payload;
+}
+
 export function buildTourPayload(form) {
   const resolvedPrice = resolveTourPriceAmount(form.startingPrice, form.price);
   return {
-    title: form.title.trim(),
+    title: (form.title ?? "").trim(),
     slug: generateSlug(form.slug || form.title),
-    description: form.description.trim(),
+    description: (form.description ?? "").trim(),
     category: String(form.category ?? '')
       .trim()
       .toLowerCase() || 'upcoming',
-    subCategory: form.subCategory.trim(),
+    subCategory: (form.subCategory ?? "").trim(),
     duration: Number(form.duration || 1),
-    durationLabel: form.durationLabel.trim(),
+    durationLabel: (form.durationLabel ?? "").trim(),
     price: resolvedPrice,
     startingPrice: resolvedPrice,
-    departureCity: form.departureCity.trim(),
-    startDate: form.startDate || null,
-    endDate: form.endDate || null,
-    dateLabel: form.dateLabel.trim(),
-    urgency: form.urgency.trim(),
+    departureCity: (form.departureCity ?? "").trim(),
+    destination: (form.destination || "").trim() || null,
+    state: (form.state || "").trim() || null,
+    packageCategory: (form.packageCategory || "").trim() || null,
+    seoTitle: (form.seoTitle || "").trim() || null,
+    seoDescription: (form.seoDescription || "").trim() || null,
+    ctaData: (() => {
+      const primaryLabel = (form.ctaPrimaryLabel || "").trim();
+      const primaryHref = (form.ctaPrimaryHref || "").trim();
+      if (!primaryLabel && !primaryHref) return null;
+      return {
+        primaryLabel: primaryLabel || "Explore journey",
+        primaryHref: primaryHref || "/contact",
+        secondaryLabel: (form.ctaSecondaryLabel || "").trim() || null,
+        secondaryHref: (form.ctaSecondaryHref || "").trim() || null,
+        headline: (form.ctaHeadline || "").trim() || null,
+      };
+    })(),
+    tags: splitLines(form.tagsText),
+    groupSize: (form.groupSize || "").trim() || null,
+    status: (form.status || "active").trim().toLowerCase(),
+    featured: Boolean(form.featured),
+    seriesSlug: generateSlug(form.seriesSlug || ""),
+    startDate: String(form.startDate || "").trim() || null,
+    endDate: String(form.endDate || "").trim() || null,
+    dateLabel: String(form.dateLabel || "").trim() || null,
+    urgency: (form.urgency ?? "").trim(),
     bookingDeposit: (() => {
       const amount = Number(String(form.bookingDeposit || "").replace(/,/g, ""));
       return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : null;
     })(),
-    offers: form.offers.trim(),
-    meals: form.meals.trim(),
-    stayType: form.stayType.trim(),
-    transport: form.transport.trim(),
-    suitableFor: form.suitableFor.trim(),
+    offers: (form.offers ?? "").trim(),
+    meals: (form.meals ?? "").trim(),
+    stayType: (form.stayType ?? "").trim(),
+    transport: (form.transport ?? "").trim(),
+    suitableFor: (form.suitableFor ?? "").trim(),
     coverImage: form.coverImage || null,
     images: (Array.isArray(form.images) ? form.images : []).filter(Boolean),
     highlights: splitLines(form.highlightsText),
     inclusions: splitLines(form.inclusionsText),
     exclusions: splitLines(form.exclusionsText),
     thingsToCarry: splitLines(form.thingsToCarryText),
-    cancellationPolicy: form.cancellationPolicy.trim(),
+    cancellationPolicy: (form.cancellationPolicy ?? "").trim(),
     terms: splitLines(form.termsText),
-    bankDetails: form.bankDetails.trim(),
+    bankDetails: (form.bankDetails ?? "").trim(),
     itinerary: cleanObjectList(form.itinerary),
     faqs: cleanObjectList(form.faqs),
     pickupPoints: cleanObjectList(form.pickupPoints),
@@ -314,6 +480,21 @@ export function createTourForm(record) {
     })(),
     startDate: record.startDate ? String(record.startDate).slice(0, 10) : "",
     endDate: record.endDate ? String(record.endDate).slice(0, 10) : "",
+    tagsText: joinLines(record.tags),
+    featured: Boolean(record.featured),
+    status: record.status || "active",
+    destination: record.destination || "",
+    state: record.state || "",
+    packageCategory: record.packageCategory || record.experienceCategory || "",
+    seoTitle: record.seoTitle || "",
+    seoDescription: record.seoDescription || "",
+    ctaPrimaryLabel: record.ctaData?.primaryLabel || "",
+    ctaPrimaryHref: record.ctaData?.primaryHref || "",
+    ctaSecondaryLabel: record.ctaData?.secondaryLabel || "",
+    ctaSecondaryHref: record.ctaData?.secondaryHref || "",
+    ctaHeadline: record.ctaData?.headline || "",
+    groupSize: record.groupSize || "",
+    seriesSlug: record.seriesSlug || "",
     bookingDeposit:
       record.bookingDeposit != null && Number(record.bookingDeposit) > 0
         ? String(record.bookingDeposit)

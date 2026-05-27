@@ -1,15 +1,28 @@
 import Link from 'next/link';
 import TourDetails from '@/components/tour/TourDetails';
 import RelatedToursScroll from '@/components/tour/RelatedToursScroll';
-import { getTourById, getTours } from '@/services/api';
+import { getTourById, getTours, getPersonalizedTrips } from '@/services/api';
 import { getPublicSettings } from '@/services/settingsService';
 
-export const metadata = {
-  title: 'Tour Details - Happy Feet Travellers',
-  description: 'View detailed information about this tour',
-};
-
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+  const tour = await getTourById(id);
+  if (!tour) {
+    return {
+      title: 'Tour Details - Happy Feet Travellers',
+      description: 'View detailed information about this tour',
+    };
+  }
+  const description =
+    tour.seoDescription ||
+    (tour.description ? String(tour.description).trim().slice(0, 160) : '');
+  return {
+    title: tour.seoTitle || `${tour.title} - Happy Feet Travellers`,
+    description: description || 'View detailed information about this tour',
+  };
+}
 
 export default async function TourPage({ params }) {
   const { id } = await params;
@@ -29,11 +42,13 @@ export default async function TourPage({ params }) {
     );
   }
 
-  const allTours = await getTours();
-  const related = allTours.filter((t) => String(t.id) !== String(tour.id)).slice(0, 8);
   const isCustomized = tour.category === 'customized';
+  const allTours = isCustomized
+    ? await getPersonalizedTrips({ limit: 24, sort: 'featured' })
+    : await getTours({ category: 'upcoming', limit: 24 });
+  const related = allTours.filter((t) => String(t.id) !== String(tour.id)).slice(0, 8);
   const toursListHref = isCustomized ? '/customized-trips' : '/upcoming-departures';
-  const toursListLabel = isCustomized ? 'Customized trips' : 'Tours';
+  const toursListLabel = isCustomized ? 'Personalized tours' : 'Upcoming departures';
 
   return (
     <div className="min-h-screen bg-background">
@@ -59,7 +74,11 @@ export default async function TourPage({ params }) {
         <div className="border-t border-[#dceaf7] bg-white py-14">
           <div className="container mx-auto px-4">
             <h2 className="mb-10 text-center text-2xl font-bold text-primary md:text-3xl">You might also like</h2>
-            <RelatedToursScroll tours={related} whatsappNumber={settings?.whatsappNumber} />
+            <RelatedToursScroll
+              tours={related}
+              whatsappNumber={settings?.whatsappNumber}
+              tourKind={isCustomized ? 'personalized' : 'upcoming'}
+            />
           </div>
         </div>
       )}

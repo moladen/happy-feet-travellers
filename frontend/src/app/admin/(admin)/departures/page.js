@@ -6,16 +6,20 @@ import PageTransition from "@/components/admin/PageTransition";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { CardSection } from "@/components/admin/AdminFields";
 import { formatCurrency, formatDate, groupDeparturesByMonth } from "@/lib/admin-data";
-import { listTours } from "@/services/adminService";
+import { listUpcomingDepartures } from "@/services/adminService";
 
 export default function DeparturesPage() {
   const [state, setState] = useState({ tours: [], loading: true, message: "" });
 
   useEffect(() => {
     const load = async () => {
-      const result = await listTours({ category: "upcoming", limit: 100, sort: "startDate" });
+      const result = await listUpcomingDepartures({ limit: 100, sort: "startDate" });
       setState({
-        tours: result.success ? result.data?.tours || [] : [],
+        tours: result.success
+          ? (result.data?.departures || result.data?.tours || []).filter(
+              (t) => String(t.category || "").toLowerCase() === "upcoming"
+            )
+          : [],
         loading: false,
         message: result.success ? "" : result.message,
       });
@@ -45,7 +49,7 @@ export default function DeparturesPage() {
           <div className="rounded-[24px] bg-[#f7fbfe] p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#5b84a5]">Action</p>
             <Link
-              href="/admin/tours/new"
+              href="/admin/tours/new?type=upcoming"
               className="mt-3 inline-flex rounded-full bg-[#1f4e79] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#173b5d]"
             >
               Add departure
@@ -76,6 +80,11 @@ export default function DeparturesPage() {
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusBadge value="upcoming">Upcoming</StatusBadge>
+                      {String(tour.status || "").toLowerCase() !== "active" ? (
+                        <span className="inline-flex rounded-full bg-[#fde8e8] px-2.5 py-1 text-xs font-semibold text-[#b42318]">
+                          {tour.status || "hidden"}
+                        </span>
+                      ) : null}
                       {tour.urgency ? (
                         <span className="inline-flex rounded-full bg-[#fff0df] px-2.5 py-1 text-xs font-semibold text-[#b86b18]">
                           {tour.urgency}

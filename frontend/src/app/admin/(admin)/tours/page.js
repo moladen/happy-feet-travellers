@@ -8,6 +8,7 @@ import Modal from "@/components/admin/Modal";
 import PageTransition from "@/components/admin/PageTransition";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { CardSection, Field, SelectInput, TextInput } from "@/components/admin/AdminFields";
+import AdminAddTourActions from "@/components/admin/AdminAddTourActions";
 import { formatCurrency, formatDate, tourCategoryOptions } from "@/lib/admin-data";
 import { deleteTour, listTours } from "@/services/adminService";
 
@@ -44,14 +45,7 @@ export default function ToursPage() {
       <CardSection
         title="All tours"
         description="Search, filter, paginate, and manage every tour across upcoming group departures and customised packages."
-        actions={
-          <Link
-            href="/admin/tours/new"
-            className="rounded-full bg-[#f4a261] px-4 py-2 text-sm font-semibold text-[#17324d] shadow-[0_16px_32px_-20px_rgba(244,162,97,0.85)] transition hover:bg-[#ee9654]"
-          >
-            Add new tour
-          </Link>
-        }
+        actions={<AdminAddTourActions />}
       >
         <div className="grid gap-4 lg:grid-cols-[1.2fr_0.45fr]">
           <Field label="Search tours">

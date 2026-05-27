@@ -22,35 +22,39 @@ export function Field({ label, hint, children, className = "" }) {
   );
 }
 
-export function TextInput(props) {
+export function TextInput({ value, className = "", ...props }) {
+  // React warning: <input value={null} /> not allowed. Use empty string instead.
+  const safeValue = value === null ? "" : value;
+
   return (
     <input
       {...props}
-      className={`w-full rounded-2xl border border-[#d5e1eb] bg-white px-4 py-3 text-sm text-[#33475b] outline-none transition focus:border-[#4fa3d1] ${
-        props.className || ""
-      }`}
+      value={safeValue}
+      className={`w-full rounded-2xl border border-[#d5e1eb] bg-white px-4 py-3 text-sm text-[#33475b] outline-none transition focus:border-[#4fa3d1] ${className}`.trim()}
     />
   );
 }
 
-export function TextArea(props) {
+export function TextArea({ value, className = "", ...props }) {
+  const safeValue = value === null ? "" : value;
+
   return (
     <textarea
       {...props}
-      className={`w-full rounded-2xl border border-[#d5e1eb] bg-white px-4 py-3 text-sm leading-6 text-[#33475b] outline-none transition focus:border-[#4fa3d1] ${
-        props.className || ""
-      }`}
+      value={safeValue}
+      className={`w-full rounded-2xl border border-[#d5e1eb] bg-white px-4 py-3 text-sm leading-6 text-[#33475b] outline-none transition focus:border-[#4fa3d1] ${className}`.trim()}
     />
   );
 }
 
-export function SelectInput(props) {
+export function SelectInput({ value, className = "", ...props }) {
+  const safeValue = value === null ? "" : value;
+
   return (
     <select
       {...props}
-      className={`w-full rounded-2xl border border-[#d5e1eb] bg-white px-4 py-3 text-sm text-[#33475b] outline-none transition focus:border-[#4fa3d1] ${
-        props.className || ""
-      }`}
+      value={safeValue}
+      className={`w-full rounded-2xl border border-[#d5e1eb] bg-white px-4 py-3 text-sm text-[#33475b] outline-none transition focus:border-[#4fa3d1] ${className}`.trim()}
     />
   );
 }

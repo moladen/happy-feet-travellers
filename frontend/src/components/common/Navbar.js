@@ -10,7 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 /** Primary menu — order & labels per client requirements + reference layout. */
 const navItems = [
   { label: 'Home', href: '/' },
-  { label: 'Customized Trips', href: '/customized-trips' },
+  { label: 'Personalized Tours', href: '/customized-trips' },
   { label: 'Upcoming Departures', href: '/upcoming-departures' },
   { label: 'Discover the world', href: '/discover' },
   { label: 'About Us', href: '/about' },
@@ -95,7 +95,7 @@ export default function Navbar() {
     : 'border-[#d0e2f0] bg-white/95 text-primary shadow-sm ring-1 ring-[#1f4e79]/[0.04] hover:bg-[#f4f9fd]';
 
   const barSurface = onHero
-    ? 'border-white/12 bg-gradient-to-b from-[#071522]/78 via-[#123657]/54 to-transparent text-white shadow-[0_18px_44px_-30px_rgba(0,0,0,0.9)] backdrop-blur-xl'
+    ? 'border-white/10 bg-gradient-to-b from-[#071522]/72 via-[#0f2844]/48 to-transparent text-white shadow-[0_12px_40px_-28px_rgba(0,0,0,0.75)] backdrop-blur-2xl backdrop-saturate-150'
     : 'border-sand/60 bg-off-white/96 text-foreground shadow-[0_16px_44px_-28px_rgba(15,28,46,0.18)] backdrop-blur-xl';
 
   /** Hero / glass: wide pill + frosted field; inner pages: light pill */
@@ -125,67 +125,68 @@ export default function Navbar() {
   const iconSubmitClass = onHero ? iconSubmitHero : iconSubmitSolid;
 
   return (
-    <motion.nav
+    <nav
       id="site-navigation"
-      initial={{ y: -10, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className={`z-50 w-full border-b transition-[background-color,box-shadow,border-color,backdrop-filter] duration-500 ${
         isHome ? 'fixed top-0 left-0 right-0' : 'sticky top-0'
       } ${barSurface}`}
       aria-label="Main navigation"
     >
-      <div className="container relative mx-auto max-w-[1400px] px-4 py-2.5 md:px-6 md:py-3">
-        <div className="flex min-w-0 items-center gap-3 lg:gap-5">
-          <div onClick={() => setIsOpen(false)} className="min-w-0 shrink-0">
-            <BrandLogo
-              variant="nav"
-              navTone={onHero ? 'hero' : 'solid'}
-              priority
-              className={onHero ? 'drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)]' : ''}
-            />
+      <div className="site-nav__inner container relative mx-auto max-w-[1400px] px-5 py-3.5 sm:px-6 md:px-8 md:py-4 lg:px-10 lg:py-4 xl:px-12">
+        <div className="flex w-full min-w-0 items-center justify-between gap-3 sm:gap-4">
+          <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
+            <div onClick={() => setIsOpen(false)} className="min-w-0 shrink-0">
+              <BrandLogo
+                variant="nav"
+                navTone={onHero ? 'hero' : 'solid'}
+                priority
+                className={onHero ? 'drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)]' : ''}
+              />
+            </div>
+
+            <form
+              onSubmit={onSearchSubmit}
+              className={`min-w-0 ${onHero ? 'hidden xl:flex' : 'hidden sm:flex'}`}
+              role="search"
+              aria-label="Search tours"
+            >
+              <div
+                className={`flex w-full items-center gap-1 rounded-full py-1 pl-2.5 pr-1 backdrop-blur-xl ${
+                  onHero
+                    ? 'w-[12.5rem]'
+                    : 'w-full max-w-[min(100%,11rem)] sm:max-w-[13rem] md:max-w-[14rem] lg:max-w-[15rem] xl:max-w-[17rem]'
+                } ${searchOuter}`}
+              >
+                <input
+                  type="text"
+                  name="q"
+                  role="searchbox"
+                  inputMode="search"
+                  enterKeyHint="search"
+                  placeholder={onHero ? 'Search tours…' : 'Search tours, destinations'}
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className={`min-w-0 flex-1 border-0 bg-transparent py-1.5 text-xs font-medium outline-none sm:py-2 sm:text-sm ${searchInputClass}`}
+                  aria-label="Search tours or destinations"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                <button type="submit" className={iconSubmitClass} aria-label="Search">
+                  <SearchMagnifyIcon className="h-[18px] w-[18px]" />
+                </button>
+              </div>
+            </form>
           </div>
 
-          {/* Center: search always in navbar (all breakpoints) */}
-          <form
-            onSubmit={onSearchSubmit}
-            className="flex min-w-0 flex-1"
-            role="search"
-            aria-label="Search tours"
-          >
-            <div
-              className={`mx-auto flex w-full max-w-[min(100%,18rem)] items-center gap-1 rounded-full py-1 pl-3 pr-1 backdrop-blur-xl sm:max-w-md lg:max-w-xl xl:max-w-2xl ${searchOuter}`}
-            >
-              <input
-                type="text"
-                name="q"
-                role="searchbox"
-                inputMode="search"
-                enterKeyHint="search"
-                placeholder="Search tours, destinations"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                className={`min-w-0 flex-1 border-0 bg-transparent py-2 text-sm font-medium outline-none sm:text-[15px] ${searchInputClass}`}
-                aria-label="Search tours or destinations"
-                autoComplete="off"
-                spellCheck={false}
-              />
-              <button type="submit" className={iconSubmitClass} aria-label="Search">
-                <SearchMagnifyIcon className="h-[18px] w-[18px]" />
-              </button>
-            </div>
-          </form>
-
-          {/* Right: plain text links + underline active (reference) */}
-          <div className="hidden min-w-0 shrink-0 items-center lg:flex">
-            <div className="glass-scrollbar flex max-w-[min(52vw,38rem)] items-center gap-x-1 overflow-x-auto whitespace-nowrap pr-1 xl:max-w-none xl:gap-x-2 xl:overflow-visible xl:pr-0">
+          <div className="site-nav__desktop hidden min-w-0 items-center lg:flex">
+            <nav className="site-nav__links glass-scrollbar flex items-center gap-x-0.5 overflow-x-auto whitespace-nowrap xl:gap-x-1" aria-label="Primary">
               {navItems.map((item) => {
                 const active = linkIsActive(pathname, item.href);
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`shrink-0 border-b-2 px-2 py-2 text-[13px] font-medium tracking-tight transition sm:px-2.5 sm:text-sm ${desktopLinkBase} ${
+                    className={`shrink-0 border-b-2 px-2 py-2 text-[11px] font-medium tracking-tight transition lg:px-2.5 lg:text-xs xl:px-3 xl:text-sm ${desktopLinkBase} ${
                       active ? desktopLinkActive : ''
                     }`}
                     aria-current={active ? 'page' : undefined}
@@ -194,12 +195,12 @@ export default function Navbar() {
                   </Link>
                 );
               })}
-            </div>
+            </nav>
           </div>
 
           <button
             type="button"
-            className={`ml-auto rounded-2xl p-2.5 transition lg:hidden ${mobileMenuButtonClass}`}
+            className={`shrink-0 rounded-2xl p-2.5 transition lg:hidden ${mobileMenuButtonClass}`}
             onClick={() => setIsOpen((o) => !o)}
             aria-label={isOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={isOpen}
@@ -279,6 +280,6 @@ export default function Navbar() {
           )}
         </AnimatePresence>
       </div>
-    </motion.nav>
+    </nav>
   );
 }

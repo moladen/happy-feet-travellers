@@ -16,9 +16,11 @@ const oswald = Oswald({
 });
 
 export const metadata = {
-  title: "Happy Feet Travellers - Affordable Group Tours from Pune",
-  description: "Book affordable group tours from Pune. Trusted by 1000+ travelers. Customized packages, upcoming departures, and amazing experiences.",
-  keywords: "group tours, travel packages, tour operator, Pune tours, affordable travel",
+  title: "Happy Feet Travellers — Curated Group Tours Across India & Beyond",
+  description:
+    "Experience-first group departures and carefully curated travel across India. Honest pricing, smaller groups, and support from enquiry to homecoming.",
+  keywords:
+    "group tours India, curated travel experiences, small group travel, customized holidays, tour operator India",
 };
 
 export default async function RootLayout({ children }) {

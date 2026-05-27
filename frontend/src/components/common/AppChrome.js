@@ -1,3 +1,6 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import LeadPopup from "@/components/common/LeadPopup";
@@ -5,12 +8,19 @@ import ExitIntentPopup from "@/components/common/ExitIntentPopup";
 import { whatsappHref } from "@/lib/siteContact";
 
 export default function AppChrome({ children, settings }) {
+  const pathname = usePathname();
+  const isAdminRoute = pathname?.startsWith("/admin");
+
+  if (isAdminRoute) {
+    return <main className="flex-grow">{children}</main>;
+  }
+
   const waLink = whatsappHref(settings?.whatsappNumber, "Hi, I'm interested in your tours");
 
   return (
     <>
       <Navbar settings={settings} />
-      <main className="flex-grow">{children}</main>
+      <main>{children}</main>
       <Footer settings={settings} />
       <LeadPopup />
       <ExitIntentPopup />

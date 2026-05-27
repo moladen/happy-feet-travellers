@@ -131,11 +131,11 @@ export default function TeamSection() {
           Meet the crew
         </p>
         <h2 className="font-display mt-2 text-center text-3xl font-bold text-white md:text-4xl">
-          The team in Pune
+          The people behind your journey
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-sm leading-relaxed text-white/75 md:text-base">
-          Travel-obsessed folks you&apos;ll actually be talking to over WhatsApp — planners, ops leads and trip
-          captains who know the routes.
+          Travel-obsessed planners, ops leads, and trip captains you&apos;ll actually reach on WhatsApp — people who
+          know the routes across India.
         </p>
 
         <div className="mt-10">

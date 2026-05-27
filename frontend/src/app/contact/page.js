@@ -147,8 +147,8 @@ export default async function ContactPage() {
             We&apos;re here to help you travel
           </h1>
           <p className="max-w-2xl text-base leading-relaxed text-white/88 md:text-lg">
-            Fixed departures, customized holidays, or payment questions — reach out and a real person from Pune will
-            reply.
+            Fixed departures, customized holidays, or payment questions — reach out and our travel team will reply with
+            care.
           </p>
         </div>
       </div>

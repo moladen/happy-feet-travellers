@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import {
-  buildTourPayload,
   generateSlug,
   tourCategoryOptions,
+  packageCategoryOptions,
+  validateTourForAdminSite,
+  prepareTourPayloadForAdmin,
 } from "@/lib/admin-data";
 import { Icon } from "@/components/admin/AdminIcons";
 import ImageUploader from "@/components/admin/ImageUploader";
@@ -103,6 +105,7 @@ function Repeater({ label, rows, onChange, fields, addLabel }) {
 
 export default function TourForm({ form, setForm, onSubmit, busy, mode = "create" }) {
   const [activeStep, setActiveStep] = useState(0);
+  const [formError, setFormError] = useState("");
   const progress = useMemo(() => `${activeStep + 1}/${steps.length}`, [activeStep]);
 
   const updateField = (key, value) => {
@@ -124,11 +127,40 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
 
   const submit = async (event) => {
     event.preventDefault();
-    await onSubmit(buildTourPayload(form));
+    setFormError("");
+    const validationMessage = validateTourForAdminSite(form);
+    if (validationMessage) {
+      setFormError(validationMessage);
+      const cat = String(form.category || "").toLowerCase();
+      setActiveStep(cat === "customized" ? 0 : 1);
+      return;
+    }
+    await onSubmit(prepareTourPayloadForAdmin(form));
   };
 
   return (
     <form onSubmit={submit} className="space-y-6">
+      {formError ? (
+        <div className="rounded-[26px] border border-[#f2d4bd] bg-[#fff5eb] px-5 py-4 text-sm text-[#a35a23]">
+          {formError}
+        </div>
+      ) : null}
+      {form.category === "upcoming" ? (
+        <div className="rounded-[26px] border border-[#cfe6f5] bg-[#f7fbfe] px-5 py-4 text-sm text-[#314559]">
+          <strong className="text-[#1f4e79]">Upcoming departure:</strong> Set{" "}
+          <span className="font-semibold">Active</span> + a{" "}
+          <span className="font-semibold">future start date</span> (Dates &amp; pricing) to show on the
+          homepage carousel and Upcoming Departures page.
+        </div>
+      ) : null}
+      {form.category === "customized" ? (
+        <div className="rounded-[26px] border border-[#f0e6d8] bg-[#fffaf4] px-5 py-4 text-sm text-[#314559]">
+          <strong className="text-[#a35a23]">Personalized tour:</strong> Set{" "}
+          <span className="font-semibold">Active</span>, add description + cover image, and pick an{" "}
+          <span className="font-semibold">Experience category</span> (Honeymoon, Adventure, etc.) for
+          website tags. Appears under Personalized Tours and /customized-trips.
+        </div>
+      ) : null}
       <CardSection
         title={mode === "edit" ? "Edit tour" : "Add tour"}
         description="Shape the full booking story: dates, pricing, visuals, itinerary, and policies."
@@ -248,23 +280,195 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
           </div>
 
           {form.category === "upcoming" ? (
-            <div className="mt-5 max-w-xs">
-              <Field
-                label="Reserve deposit (₹)"
-                hint="Reserve Seat button & WhatsApp. Leave blank for site default ₹5,000."
-              >
-                <TextInput
-                  inputMode="numeric"
-                  value={form.bookingDeposit}
-                  onChange={(event) => updateField("bookingDeposit", event.target.value)}
-                  placeholder="5000"
+            <>
+              <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+                <Field label="Destination" hint="e.g. Sikkim, Kerala">
+                  <TextInput
+                    value={form.destination}
+                    onChange={(event) => updateField("destination", event.target.value)}
+                    placeholder="Sikkim & Darjeeling"
+                  />
+                </Field>
+                <Field label="Group size" hint="Shown on homepage cards">
+                  <TextInput
+                    value={form.groupSize}
+                    onChange={(event) => updateField("groupSize", event.target.value)}
+                    placeholder="12–18 travellers only"
+                  />
+                </Field>
+                <Field label="Series slug" hint="Recurring trips: same base slug">
+                  <TextInput
+                    value={form.seriesSlug}
+                    onChange={(event) => updateField("seriesSlug", event.target.value)}
+                    placeholder="goa-weekend-escape"
+                  />
+                </Field>
+                <Field label="Status" hint="Only Active trips appear on the website">
+                  <SelectInput
+                    value={form.status}
+                    onChange={(event) => updateField("status", event.target.value)}
+                    options={[
+                      { value: "active", label: "Active (visible on site)" },
+                      { value: "draft", label: "Draft (hidden)" },
+                      { value: "archived", label: "Archived (hidden)" },
+                    ]}
+                  />
+                </Field>
+              </div>
+              {form.status === "archived" ? (
+                <p className="mt-3 rounded-2xl border border-[#f2d4bd] bg-[#fff5eb] px-4 py-3 text-sm text-[#a35a23]">
+                  Archived trips are hidden. If dates are in the future, saving will automatically set this
+                  trip to <strong>Active</strong> so it appears on the website.
+                </p>
+              ) : null}
+              <div className="mt-5">
+                <Field
+                  label="Personality tags"
+                  hint="One per line — e.g. Snow Lovers, Best for Couples, Adventure"
+                >
+                  <TextArea
+                    rows={3}
+                    value={form.tagsText}
+                    onChange={(event) => updateField("tagsText", event.target.value)}
+                    placeholder={'Snow Lovers\nBest for Couples'}
+                  />
+                </Field>
+              </div>
+              <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#314559]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.featured)}
+                  onChange={(event) => updateField("featured", event.target.checked)}
+                  className="h-4 w-4 rounded border-[#c5d6e4] text-[#1f4e79]"
                 />
-              </Field>
-            </div>
+                Featured on homepage &amp; listings
+              </label>
+              <div className="mt-5 max-w-xs">
+                <Field
+                  label="Reserve deposit (₹)"
+                  hint="Reserve Seat button & WhatsApp. Leave blank for site default ₹5,000."
+                >
+                  <TextInput
+                    inputMode="numeric"
+                    value={form.bookingDeposit}
+                    onChange={(event) => updateField("bookingDeposit", event.target.value)}
+                    placeholder="5000"
+                  />
+                </Field>
+              </div>
+            </>
+          ) : null}
+
+          {form.category === "customized" ? (
+            <>
+              <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+                <Field label="State / region" hint="e.g. Kerala, Rajasthan">
+                  <TextInput
+                    value={form.state}
+                    onChange={(event) => updateField("state", event.target.value)}
+                    placeholder="Kerala"
+                  />
+                </Field>
+                <Field label="Destination" hint="Shown on cards & filters">
+                  <TextInput
+                    value={form.destination}
+                    onChange={(event) => updateField("destination", event.target.value)}
+                    placeholder="Munnar, Alleppey & Kochi"
+                  />
+                </Field>
+                <Field label="Experience category">
+                  <SelectInput
+                    value={form.packageCategory}
+                    onChange={(event) => updateField("packageCategory", event.target.value)}
+                    options={packageCategoryOptions}
+                  />
+                </Field>
+                <Field label="Status">
+                  <SelectInput
+                    value={form.status}
+                    onChange={(event) => updateField("status", event.target.value)}
+                    options={[
+                      { value: "active", label: "Active (live on site)" },
+                      { value: "draft", label: "Draft" },
+                      { value: "archived", label: "Archived" },
+                    ]}
+                  />
+                </Field>
+              </div>
+              <div className="mt-5">
+                <Field
+                  label="Emotional / mood tags"
+                  hint="One per line — e.g. Backwaters, Houseboat, Tea estates"
+                >
+                  <TextArea
+                    rows={3}
+                    value={form.tagsText}
+                    onChange={(event) => updateField("tagsText", event.target.value)}
+                    placeholder={'Backwaters\nHouseboat'}
+                  />
+                </Field>
+              </div>
+              <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#314559]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.featured)}
+                  onChange={(event) => updateField("featured", event.target.checked)}
+                  className="h-4 w-4 rounded border-[#c5d6e4] text-[#6b43a6]"
+                />
+                Featured on homepage &amp; listings
+              </label>
+              <div className="mt-5 grid gap-5 md:grid-cols-2">
+                <Field label="SEO title" hint="Optional — overrides default on tour page">
+                  <TextInput
+                    value={form.seoTitle}
+                    onChange={(event) => updateField("seoTitle", event.target.value)}
+                    placeholder="Kerala Backwater Retreat — Private Trip"
+                  />
+                </Field>
+                <Field label="SEO description">
+                  <TextArea
+                    rows={2}
+                    value={form.seoDescription}
+                    onChange={(event) => updateField("seoDescription", event.target.value)}
+                    placeholder="Short meta description for search engines"
+                  />
+                </Field>
+              </div>
+              <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                <Field label="Primary CTA label">
+                  <TextInput
+                    value={form.ctaPrimaryLabel}
+                    onChange={(event) => updateField("ctaPrimaryLabel", event.target.value)}
+                    placeholder="Explore journey"
+                  />
+                </Field>
+                <Field label="Primary CTA link">
+                  <TextInput
+                    value={form.ctaPrimaryHref}
+                    onChange={(event) => updateField("ctaPrimaryHref", event.target.value)}
+                    placeholder="/contact"
+                  />
+                </Field>
+                <Field label="CTA headline" hint="Optional card emphasis">
+                  <TextInput
+                    value={form.ctaHeadline}
+                    onChange={(event) => updateField("ctaHeadline", event.target.value)}
+                    placeholder="Your dates, your pace"
+                  />
+                </Field>
+              </div>
+            </>
           ) : null}
 
           <div className="mt-5 grid gap-5 md:grid-cols-3 md:items-end">
-            <Field label="Start date">
+            <Field
+              label="Start date"
+              hint={
+                form.category === "upcoming"
+                  ? "Required for website listing (or use date label below)"
+                  : undefined
+              }
+            >
               <TextInput
                 type="date"
                 value={form.startDate}

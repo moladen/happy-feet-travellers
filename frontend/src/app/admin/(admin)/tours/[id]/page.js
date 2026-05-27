@@ -5,7 +5,12 @@ import { useParams, useRouter } from "next/navigation";
 import PageTransition from "@/components/admin/PageTransition";
 import TourForm from "@/components/admin/TourForm";
 import { createTourForm } from "@/lib/admin-data";
-import { getTour, updateTour } from "@/services/adminService";
+import {
+  getTour,
+  updateTour,
+  updateUpcomingDeparture,
+  updatePersonalizedTrip,
+} from "@/services/adminService";
 
 export default function EditTourPage() {
   const params = useParams();
@@ -51,11 +56,26 @@ export default function EditTourPage() {
         mode="edit"
         onSubmit={async (payload) => {
           setBusy(true);
-          const result = await updateTour(params.id, payload);
+          const cat = String(payload.category || form.category || "").toLowerCase();
+          const result =
+            cat === "upcoming"
+              ? await updateUpcomingDeparture(params.id, payload)
+              : cat === "customized"
+                ? await updatePersonalizedTrip(params.id, payload)
+                : await updateTour(params.id, payload);
           setBusy(false);
-          setMessage(result.message);
+          const details = Array.isArray(result.details)
+            ? result.details.join(" ")
+            : typeof result.details === "string"
+              ? result.details
+              : "";
+          setMessage(
+            result.success
+              ? "Saved successfully."
+              : [result.message, details].filter(Boolean).join(" — ")
+          );
           if (result.success) {
-            router.push("/admin/tours");
+            router.push(cat === "upcoming" ? "/admin/departures" : "/admin/tours");
           }
         }}
       />

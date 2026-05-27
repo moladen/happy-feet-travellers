@@ -201,10 +201,17 @@ export const mockTours = [
   },
   {
     id: 3,
+    slug: "kerala-backwater-retreat",
     title: "Kerala Backwater Retreat",
-    departureCity: "Pune",
+    departureCity: "India",
     category: "customized",
     subCategory: "family",
+    state: "Kerala",
+    destination: "Munnar, Alleppey & Kochi",
+    packageCategory: "Family",
+    status: "active",
+    featured: true,
+    tags: ["Backwaters", "Houseboat", "Tea estates"],
     price: 22000,
     startingPrice: 22000,
     image: IMG.kerala,
@@ -256,7 +263,7 @@ export const mockTours = [
 export const mockBlogs = [
   {
     id: 1,
-    title: "7 Group Trips from Pune That Actually Stay on Budget",
+    title: "7 Curated Group Trips That Actually Stay on Budget",
     category: "Travel guide",
     image: IMG.himalayas,
     date: "05 May 2026",
@@ -265,9 +272,9 @@ export const mockBlogs = [
       "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=80",
     authorInstagram: "happyfeettravellers",
     excerpt:
-      "From Spiti to Goa — short, honest notes on which group trips give you the best value when you’re leaving from Pune.",
+      "From Spiti to Goa — short, honest notes on which curated group trips deliver the best value across India.",
     content: [
-      "If you are booking a group tour from Pune, the sticker price is only half the story. What matters is what is included — transfers, meals, hotel category — and whether the operator is transparent when something changes.",
+      "When you book a group tour, the sticker price is only half the story. What matters is what is included — transfers, meals, hotel category — and whether the operator is transparent when something changes.",
       "In this guide we compare seven popular routes we run as fixed departures: what you typically pay, what is worth upgrading, and where you can save without ruining the experience.",
       "Rule of thumb: if a brochure is vague about hotels, ask for names before you pay. We publish stay names after confirmation for every batch so you know exactly what you are getting.",
     ],
