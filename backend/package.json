@@ -13,6 +13,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:seed": "node prisma/seed.js",
+    "seed:tours": "node scripts/seed-sample-tours.js",
     "smoke": "node scripts/smoke-api.js",
     "demo:email": "node scripts/demo-enquiry-email.js",
     "seed:team": "node scripts/seed-team-members.js"

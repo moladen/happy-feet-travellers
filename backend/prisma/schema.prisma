@@ -20,6 +20,17 @@ model Tour {
   price              Float
   startingPrice      Float?
   departureCity      String
+  destination        String?
+  state              String?
+  packageCategory    String?
+  ctaData            Json?
+  seoTitle           String?
+  seoDescription     String?   @db.Text
+  tags               String[]  @default([])
+  groupSize          String?
+  status             String    @default("active")
+  featured           Boolean   @default(false)
+  seriesSlug         String?
   category           String
   subCategory        String?
   startDate          DateTime?
@@ -54,6 +65,12 @@ model Tour {
   @@index([subCategory])
   @@index([slug])
   @@index([startDate])
+  @@index([status])
+  @@index([featured])
+  @@index([destination])
+  @@index([seriesSlug])
+  @@index([state])
+  @@index([packageCategory])
 }
 
 model Blog {
