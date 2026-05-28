@@ -78,7 +78,7 @@ const parseImageList = (value) => {
   return trimmed.includes(',') ? trimmed.split(',') : [trimmed];
 };
 
-const normaliseTour = (tour) => {
+export const normaliseTour = (tour) => {
   if (!tour || typeof tour !== 'object') return tour;
   const images = [
     ...parseImageList(tour.gallery),
@@ -100,6 +100,12 @@ const normaliseTour = (tour) => {
     duration: tour.durationLabel || tour.duration,
     reviews: tour.reviews ?? tour.reviewsCount ?? 0,
     rating: tour.rating != null ? tour.rating : 4.8,
+    tags: Array.isArray(tour.tags) ? tour.tags : [],
+    groupSize: tour.groupSize || null,
+    destination: tour.destination || null,
+    featured: Boolean(tour.featured),
+    status: tour.status || 'active',
+    seriesSlug: tour.seriesSlug || null,
   };
 };
 
@@ -139,6 +145,31 @@ export class ToursApiError extends Error {
 
 export const getTours = async (filters = null) => {
   const params = buildParams(filters);
+  const isUpcoming =
+    params?.category === 'upcoming' ||
+    (typeof filters === 'string' && filters === 'upcoming');
+
+  if (isUpcoming) {
+    const { getUpcomingDepartures } = await import('@/services/upcomingDeparturesService');
+    return getUpcomingDepartures({
+      ...(typeof filters === 'object' ? filters : {}),
+      limit: filters?.limit ?? 100,
+      sort: filters?.sort ?? 'startDate',
+    });
+  }
+
+  const isCustomized =
+    params?.category === 'customized' ||
+    (typeof filters === 'string' && filters === 'customized');
+
+  if (isCustomized) {
+    const { getPersonalizedTrips } = await import('@/services/personalizedTripsService');
+    return getPersonalizedTrips({
+      ...(typeof filters === 'object' ? filters : {}),
+      limit: filters?.limit ?? 50,
+      sort: filters?.sort ?? 'featured',
+    });
+  }
 
   try {
     const data = await publicFetch(`/tours${toQuery(params)}`);
@@ -160,19 +191,58 @@ export const getTours = async (filters = null) => {
   }
 };
 
+function mergePersonalizedFields(tour, pkg) {
+  if (!pkg) return tour;
+  return {
+    ...tour,
+    state: pkg.state ?? tour.state,
+    packageCategory: pkg.packageCategory ?? tour.packageCategory,
+    experienceCategory: pkg.packageCategory || pkg.experienceCategory || tour.experienceCategory,
+    ctaData: pkg.ctaData ?? tour.ctaData,
+    seoTitle: pkg.seoTitle ?? tour.seoTitle,
+    seoDescription: pkg.seoDescription ?? tour.seoDescription,
+    gallery:
+      (Array.isArray(tour.gallery) && tour.gallery.length ? tour.gallery : null) ||
+      pkg.gallery ||
+      [],
+  };
+}
+
 export const getTourById = async (idOrSlug) => {
+  const id = encodeURIComponent(String(idOrSlug));
   try {
-    const id = encodeURIComponent(String(idOrSlug));
     const data = await publicFetch(`/tours/${id}`);
-    return normaliseTour(data);
-  } catch (err) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('[getTourById]', err?.message || err);
+    const tour = normaliseTour(data);
+    if (String(tour?.category || '').toLowerCase() === 'upcoming') {
+      try {
+        const departure = await publicFetch(`/upcoming-departures/${id}`);
+        return normaliseTour({ ...tour, ...departure });
+      } catch {
+        return tour;
+      }
     }
-    if (!shouldUseMockFallback()) return null;
-    const match = mockTours.find(
-      (tour) => String(tour.id) === String(idOrSlug) || tour.slug === idOrSlug
-    );
-    return match ? normaliseTour(match) : null;
+    if (String(tour?.category || '').toLowerCase() === 'customized') {
+      try {
+        const pkg = await publicFetch(`/personalized-trips/${id}`);
+        return mergePersonalizedFields(tour, pkg);
+      } catch {
+        return tour;
+      }
+    }
+    return tour;
+  } catch (err) {
+    try {
+      const pkg = await publicFetch(`/personalized-trips/${id}`);
+      return mergePersonalizedFields(normaliseTour(pkg), pkg);
+    } catch {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[getTourById]', err?.message || err);
+      }
+      if (!shouldUseMockFallback()) return null;
+      const match = mockTours.find(
+        (tour) => String(tour.id) === String(idOrSlug) || tour.slug === idOrSlug
+      );
+      return match ? normaliseTour(match) : null;
+    }
   }
 };

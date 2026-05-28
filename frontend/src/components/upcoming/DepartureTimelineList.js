@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import TourCard from '@/components/tour/TourCard';
+import DepartureTourCard from '@/components/tour/DepartureTourCard';
 
 const INDICATOR_SIZE = { mobile: 24, desktop: 32 };
 
@@ -124,7 +124,7 @@ export default function DepartureTimelineList({ tours = [], whatsappNumber }) {
         <span className="departure-timeline__indicator-dot" />
       </motion.div>
 
-      <ul className="departure-timeline__list space-y-10">
+      <ul className="departure-timeline__list space-y-6 md:space-y-7">
         {tours.map((tour, index) => {
           const isActive = index === activeIndex;
           return (
@@ -152,7 +152,11 @@ export default function DepartureTimelineList({ tours = [], whatsappNumber }) {
                 aria-label={`Go to ${tour.title}`}
                 aria-current={isActive ? 'step' : undefined}
               />
-              <TourCard tour={tour} whatsappNumber={whatsappNumber} variant="list" />
+              <DepartureTourCard
+                tour={tour}
+                whatsappNumber={whatsappNumber}
+                className="departure-tour-card--timeline"
+              />
             </li>
           );
         })}

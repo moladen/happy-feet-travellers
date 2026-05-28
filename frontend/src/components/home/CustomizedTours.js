@@ -2,11 +2,71 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { getTours } from '@/services/api';
-import TourCardsAutoScroll from '@/components/tour/TourCardsAutoScroll';
+import { motion, useReducedMotion } from 'framer-motion';
+import { getPersonalizedTrips } from '@/services/api';
+import { PERSONALIZED_SECTION_COPY } from '@/lib/personalizedTourCategories';
+import PersonalizedCategoryChips from '@/components/personalized/PersonalizedCategoryChips';
+import PersonalizedToursScroll from '@/components/tour/PersonalizedToursScroll';
+
+const EASE = [0.22, 1, 0.36, 1];
+
+function SectionHeader() {
+  const copy = PERSONALIZED_SECTION_COPY;
+  return (
+    <header className="personalized-tours-section__header">
+      <p className="section-eyebrow mb-2">{copy.eyebrow}</p>
+      <h2 className="section-title text-3xl md:text-4xl lg:text-[2.75rem]">{copy.title}</h2>
+      <p className="personalized-tours-section__lede">{copy.lede}</p>
+    </header>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="personalized-tours-section__skeleton" aria-hidden>
+      <div className="personalized-tours-section__skeleton-card" />
+      <div className="personalized-tours-section__skeleton-card hidden sm:block" />
+      <div className="personalized-tours-section__skeleton-card hidden md:block" />
+    </div>
+  );
+}
+
+function DreamTripEnquiry() {
+  const copy = PERSONALIZED_SECTION_COPY;
+  return (
+    <motion.aside
+      className="personalized-tours-section__enquiry"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.35 }}
+      transition={{ duration: 0.5, ease: EASE }}
+      aria-labelledby="personalized-enquiry-heading"
+    >
+      <div className="personalized-tours-section__enquiry-glow" aria-hidden />
+      <h3 id="personalized-enquiry-heading" className="personalized-tours-section__enquiry-headline">
+        {copy.ctaHeadline}
+      </h3>
+      <p className="personalized-tours-section__enquiry-text">
+        Share destinations, dates, and how you want the journey to feel. Our planners craft a private route with
+        honest pricing and comfort at every step.
+      </p>
+      <div className="personalized-tours-section__enquiry-actions">
+        <Link href="/contact" className="personalized-tours-section__enquiry-btn">
+          {copy.ctaButton}
+          <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </Link>
+        <Link href="/customized-trips" className="personalized-tours-section__enquiry-link">
+          View all personalized tours
+        </Link>
+      </div>
+    </motion.aside>
+  );
+}
 
 export default function CustomizedTours() {
+  const reduceMotion = useReducedMotion();
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -14,11 +74,11 @@ export default function CustomizedTours() {
     let cancelled = false;
     (async () => {
       try {
-        const data = await getTours('customized');
+        const data = await getPersonalizedTrips({ limit: 12, sort: 'featured' });
         if (cancelled) return;
         setTours(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error('Error fetching customized tours:', error);
+        console.error('Error fetching personalized tours:', error);
         if (!cancelled) setTours([]);
       } finally {
         if (!cancelled) setLoading(false);
@@ -31,85 +91,49 @@ export default function CustomizedTours() {
 
   const list = tours.filter((t) => String(t.category || '').trim().toLowerCase() === 'customized');
 
-  const sectionVariants = {
-    hidden: { y: 28 },
-    visible: {
-      y: 0,
-      transition: {
-        duration: 0.55,
-        ease: [0.22, 1, 0.36, 1],
-        staggerChildren: 0.12,
-      },
-    },
-  };
-
-  const headerVariants = {
-    hidden: { y: 16 },
-    visible: {
-      y: 0,
-      transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
-    },
-  };
-
-  if (loading) {
-    return (
-      <motion.section
-        className="section-ambient section-tone-sand relative overflow-hidden py-14 md:py-16"
-        variants={sectionVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-      >
-        <div className="container relative z-10 mx-auto px-4">
-          <motion.div className="mb-8 text-center" variants={headerVariants}>
-            <p className="section-eyebrow mb-2">Popular customized tours</p>
-            <h2 className="section-title mb-2 text-3xl md:text-4xl lg:text-5xl">Personalized tour ideas</h2>
-            <p className="text-foreground/80">Loading customized packages…</p>
-          </motion.div>
-        </div>
-      </motion.section>
-    );
-  }
-
   return (
     <motion.section
-      className="section-ambient section-tone-sand relative overflow-hidden py-14 md:py-16"
-      variants={sectionVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.3 }}
+      id="personalized-tours"
+      className="personalized-tours-section personalized-tours-section--cinematic customized-tours-section customized-tours-section--cinematic section-ambient section-tone-sand-soft relative overflow-hidden py-14 md:py-16 lg:py-[4.5rem]"
+      initial={reduceMotion ? false : { opacity: 0, y: 28 }}
+      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.06 }}
+      transition={{ duration: 0.55, ease: EASE }}
     >
-      <div className="container relative z-10 mx-auto px-4">
-        <motion.div className="mb-8 text-center" variants={headerVariants}>
-          <p className="section-eyebrow mb-2">Popular customized tours</p>
-          <h2 className="section-title mb-3 text-3xl md:text-4xl lg:text-5xl">Personalized tour ideas</h2>
-          <p className="mx-auto mb-6 max-w-2xl text-base text-foreground/85 md:text-lg">
-            Sample packages to inspire your trip—cards scroll automatically so you can browse every idea. Share your
-            dates and budget and we&apos;ll tailor the plan for you.
-          </p>
-          <Link
-            href="/customized-trips"
-            className="btn-travel-primary px-8 py-3"
-          >
-            View all customized packages
-          </Link>
-        </motion.div>
+      <div className="personalized-tours-section__texture customized-tours-section__texture" aria-hidden />
+      <div className="personalized-tours-section__atmosphere customized-tours-section__atmosphere" aria-hidden />
 
-        {list.length === 0 ? (
-          <p className="text-center text-foreground/75">
-            Custom packages coming soon —{' '}
-            <Link href="/contact" className="font-semibold text-primary underline">
-              contact us
-            </Link>{' '}
-            for a quote.
-          </p>
-        ) : (
-          <TourCardsAutoScroll
-            tours={list}
-            ariaLabel="Popular customized tour packages"
-            className="[--marquee-fade:var(--color-off-white)]"
-          />
-        )}
+      <div className="container relative z-10 mx-auto max-w-6xl px-4 sm:px-6">
+        <SectionHeader />
+        <PersonalizedCategoryChips />
+      </div>
+
+      <div className="personalized-tours-section__cards relative z-10">
+        <div className="personalized-tours-section__carousel-wrap customized-tours-section__carousel-wrap">
+          {loading ? (
+            <div className="container mx-auto max-w-6xl px-4 sm:px-6">
+              <LoadingSkeleton />
+            </div>
+          ) : list.length === 0 ? (
+            <p className="personalized-tours-section__empty container mx-auto max-w-6xl px-4 text-center sm:px-6">
+              Your kind of journey is waiting to be shaped —{' '}
+              <Link href="/contact" className="font-semibold text-primary underline-offset-2 hover:underline">
+                tell us your dream trip
+              </Link>
+              .
+            </p>
+          ) : (
+            <PersonalizedToursScroll
+              tours={list}
+              cardVariant="experience"
+              className="[--marquee-fade:#f3ebe0]"
+            />
+          )}
+        </div>
+      </div>
+
+      <div className="container relative z-10 mx-auto max-w-6xl px-4 sm:px-6">
+        <DreamTripEnquiry />
       </div>
     </motion.section>
   );

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import TourCard from '@/components/tour/TourCard';
+import DepartureTourCard from '@/components/tour/DepartureTourCard';
 import { getTours } from '@/services/api';
 
 export const metadata = {
@@ -39,7 +39,7 @@ export default async function CategoryPage({ params }) {
         {/* Tours Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tours.map((tour) => (
-            <TourCard key={tour.id} tour={tour} />
+            <DepartureTourCard key={tour.id} tour={tour} />
           ))}
         </div>
 

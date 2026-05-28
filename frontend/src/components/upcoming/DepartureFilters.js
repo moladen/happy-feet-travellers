@@ -64,7 +64,10 @@ function DepartureFiltersForm({ initial }) {
   const hasActiveFilters = Boolean(sub || price || duration);
 
   return (
-    <form onSubmit={applyFilters} className="mb-8 rounded-2xl bg-white p-6 shadow-sm">
+    <form
+      onSubmit={applyFilters}
+      className="mb-6 rounded-2xl border border-[#e5d9c8] bg-[#f8f2e8]/95 p-5 shadow-sm md:mb-7"
+    >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-bold text-primary">Quick Filters</h2>
         {hasActiveFilters ? (

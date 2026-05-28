@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <>
       <HeroSection />
-      <div id="main-content-start" className="homepage-main relative z-10 scroll-mt-0">
+      <div id="main-content-start" className="homepage-main scroll-mt-0">
         <TripsCarousel />
         <CustomizedTours />
         <WhyChooseUs />

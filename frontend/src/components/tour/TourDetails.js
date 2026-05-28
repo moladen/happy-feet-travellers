@@ -145,9 +145,16 @@ export default function TourDetails({ tour, whatsappNumber }) {
               )}
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-foreground">
                 <span>⏱️ {tour.duration}</span>
-                <span>📍 {tour.departureCity || 'Pune'}</span>
-                <span>📅 {tour.date || tour.startDate || 'On request'}</span>
-                <span>⭐ {tour.rating} ({tour.reviews} reviews)</span>
+                {tour.departureCity ? <span>📍 {tour.departureCity}</span> : null}
+                <span>📅 {tour.date || tour.dateLabel || tour.startDate || 'On request'}</span>
+                {!isCustomized && tour.rating != null ? (
+                  <span>
+                    ⭐ {tour.rating}
+                    {(tour.reviews ?? tour.reviewsCount) > 0
+                      ? ` (${tour.reviews ?? tour.reviewsCount} reviews)`
+                      : ''}
+                  </span>
+                ) : null}
               </div>
             </div>
             <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end">

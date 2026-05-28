@@ -73,7 +73,7 @@ export default function Gallery() {
           <p className="section-eyebrow mb-2">Gallery</p>
           <h2 className="section-title mb-2.5 text-3xl md:text-4xl lg:text-5xl">Postcards from our trips</h2>
           <p className="mx-auto max-w-2xl text-base text-foreground/85 md:text-lg">
-            From Goa shorelines to Sikkim valleys — a peek into the places our Pune travellers have explored with us.
+            From Goa shorelines to Sikkim valleys — glimpses of the landscapes and moments our travel community has shared with us.
           </p>
         </div>
 

@@ -8,7 +8,7 @@ export const FALLBACK_TEAM_MEMBERS = [
     id: 'fallback-aniket',
     fullName: 'Aniket Patil',
     role: 'Founder · Trip planning',
-    bio: 'Designs fixed departures and custom routes from Pune.',
+    bio: 'Designs fixed departures and custom routes across India.',
     instagramUrl: null,
     linkedinUrl: null,
     imageUrl:

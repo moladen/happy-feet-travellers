@@ -1,16 +1,25 @@
 'use client';
 
-import TourCardsAutoScroll from '@/components/tour/TourCardsAutoScroll';
+import DepartureToursScroll from '@/components/tour/DepartureToursScroll';
+import PersonalizedToursScroll from '@/components/tour/PersonalizedToursScroll';
 
-export default function RelatedToursScroll({ tours, whatsappNumber }) {
+/**
+ * @param {{ tours: object[]; whatsappNumber?: string; tourKind?: 'personalized' | 'upcoming' }} props
+ */
+export default function RelatedToursScroll({ tours, whatsappNumber, tourKind = 'upcoming' }) {
   if (!tours?.length) return null;
 
+  if (tourKind === 'personalized') {
+    return (
+      <PersonalizedToursScroll tours={tours} cardVariant="experience" className="[--marquee-fade:#ffffff]" />
+    );
+  }
+
   return (
-    <TourCardsAutoScroll
+    <DepartureToursScroll
       tours={tours}
       whatsappNumber={whatsappNumber}
-      ariaLabel="Related tours"
-      className="[--marquee-fade:var(--color-off-white)]"
+      className="[--marquee-fade:#ffffff]"
     />
   );
 }

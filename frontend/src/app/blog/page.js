@@ -20,7 +20,8 @@ export default async function BlogPage() {
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80">Stories & guides</p>
           <h1 className="text-4xl font-bold md:text-5xl">Travel Blog</h1>
           <p className="mt-3 max-w-2xl text-lg text-white/90">
-            Inspiration, packing tips, and destination notes from our team—built for travelers booking from Pune.
+            Inspiration, packing tips, and destination notes from our team — written for curious travellers planning their
+            next journey across India.
           </p>
         </div>
       </div>

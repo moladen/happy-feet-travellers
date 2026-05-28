@@ -21,6 +21,24 @@ function isValidUrl(value) {
   }
 }
 
+function normalizeHttpUrl(value) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "";
+
+  // Users sometimes paste extra characters like ":" or ";" before the URL.
+  const cleaned = raw.replace(/^[\s;:]+/, "");
+  if (!cleaned) return "";
+
+  // If user pasted "instagram.com/..." without scheme, auto-fix to https://
+  const looksLikeDomain =
+    /^[\w-]+\.[a-z]{2,}([/].*)?$/i.test(cleaned) || cleaned.startsWith("www.");
+  if (!/^https?:\/\//i.test(cleaned) && looksLikeDomain) {
+    return `https://${cleaned}`;
+  }
+
+  return cleaned;
+}
+
 export default function SettingsPage() {
   const [form, setForm] = useState({ ...emptySettings });
   const [busy, setBusy] = useState(false);
@@ -84,11 +102,20 @@ export default function SettingsPage() {
                 showMessage("Enter a valid email address or leave the field empty.", true);
                 return;
               }
+
+              const payloadForm = {
+                ...form,
+                instagramUrl: normalizeHttpUrl(form.instagramUrl),
+                facebookUrl: normalizeHttpUrl(form.facebookUrl),
+                youtubeUrl: normalizeHttpUrl(form.youtubeUrl),
+                paymentLink: normalizeHttpUrl(form.paymentLink),
+              };
+
               for (const [label, value] of [
-                ["Instagram URL", form.instagramUrl],
-                ["Facebook URL", form.facebookUrl],
-                ["YouTube URL", form.youtubeUrl],
-                ["Payment link", form.paymentLink],
+                ["Instagram URL", payloadForm.instagramUrl],
+                ["Facebook URL", payloadForm.facebookUrl],
+                ["YouTube URL", payloadForm.youtubeUrl],
+                ["Payment link", payloadForm.paymentLink],
               ]) {
                 if (!isValidUrl(value)) {
                   showMessage(`${label} must start with http:// or https://`, true);
@@ -97,7 +124,7 @@ export default function SettingsPage() {
               }
 
               setBusy(true);
-              const payload = buildSettingsPayload(form);
+              const payload = buildSettingsPayload(payloadForm);
               const result = await updateSettings(payload);
               setBusy(false);
 
@@ -188,7 +215,7 @@ export default function SettingsPage() {
                   onChange={(event) =>
                     setForm((current) => ({ ...current, footerTagline: event.target.value }))
                   }
-                  placeholder="Affordable group tours · Trusted local experts"
+                  placeholder="Curated group tours across India · Trusted travel experts"
                 />
               </Field>
               <Field label="Footer details">
@@ -198,7 +225,7 @@ export default function SettingsPage() {
                   onChange={(event) =>
                     setForm((current) => ({ ...current, footerDetails: event.target.value }))
                   }
-                  placeholder="Pune-based small-group travel..."
+                  placeholder="Experience-first small-group travel across India..."
                 />
               </Field>
             </div>

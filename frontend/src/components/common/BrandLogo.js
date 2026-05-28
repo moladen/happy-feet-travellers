@@ -1,30 +1,37 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { resolveBrandLogoTone } from '@/lib/brandLogos';
 
-/** Same brand artwork site-wide (white type + mountain mark). */
+/** Original Happy Feet Travellers logo artwork. */
 export const BRAND_LOGO_SRC = '/happy-feet-logo-transparent.png';
 
 const VARIANT_CONFIG = {
   nav: {
-    className: 'h-11 w-auto max-w-[10.75rem] sm:h-12 sm:max-w-[12rem] lg:h-[3.35rem] lg:max-w-[13rem]',
+    className:
+      'brand-logo__img h-11 w-auto max-w-[10.75rem] sm:h-12 sm:max-w-[12rem] lg:h-[3.35rem] lg:max-w-[13rem]',
   },
   footer: {
-    className: 'h-[3.25rem] w-auto max-w-[12.5rem] sm:h-[3.75rem] sm:max-w-[14rem]',
+    className:
+      'brand-logo__img h-[2.85rem] w-auto max-w-[11rem] sm:h-[3rem] sm:max-w-[12rem]',
   },
 };
 
+/**
+ * Original brand logo — dual tone without heavy background chip.
+ * Dark surfaces: logo as-is (white type on artwork).
+ * Light surfaces: invert so typography reads dark on cream/white bars.
+ */
 export default function BrandLogo({
   variant = 'nav',
   className = '',
   priority = false,
   href = '/',
-  /** Nav only: `hero` | `solid` (light bar gets navy chip). */
-  navTone = 'solid',
+  tone,
+  navTone,
 }) {
   const config = VARIANT_CONFIG[variant] ?? VARIANT_CONFIG.nav;
-  const isNav = variant === 'nav';
-  const isFooter = variant === 'footer';
-  const onLightNavbar = isNav && navTone === 'solid';
+  const resolvedTone = resolveBrandLogoTone({ tone, navTone });
+  const onLightSurface = resolvedTone === 'light';
 
   const image = (
     <Image
@@ -33,32 +40,28 @@ export default function BrandLogo({
       width={420}
       height={168}
       priority={priority}
-      className={`object-contain object-left ${config.className} ${onLightNavbar || isFooter ? '' : className}`}
+      className={`object-contain object-left ${config.className} ${
+        onLightSurface ? 'brand-logo__img--on-light' : 'brand-logo__img--on-dark'
+      } ${className}`.trim()}
     />
   );
 
-  let content = image;
-
-  if (onLightNavbar) {
-    content = (
-      <span
-        className={`inline-flex shrink-0 items-center rounded-xl bg-[#0f1c2e] px-2 py-1 shadow-[0_8px_22px_-10px_rgba(15,28,46,0.45)] ring-1 ring-cta/40 sm:px-2.5 sm:py-1.5 ${className}`}
-      >
-        {image}
-      </span>
-    );
-  } else if (isFooter) {
-    content = (
-      <span className={`inline-flex shrink-0 items-center ${className}`}>{image}</span>
-    );
-  }
+  const content = (
+    <span className="brand-logo__wrap inline-flex shrink-0 items-center" data-brand-tone={resolvedTone}>
+      {image}
+    </span>
+  );
 
   if (!href) {
-    return <span className="inline-flex shrink-0 items-center">{content}</span>;
+    return content;
   }
 
   return (
-    <Link href={href} className="inline-flex shrink-0 items-center" aria-label="Happy Feet Travellers home">
+    <Link
+      href={href}
+      className="brand-logo__link inline-flex shrink-0 items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-cta/55 focus-visible:ring-offset-2"
+      aria-label="Happy Feet Travellers home"
+    >
       {content}
     </Link>
   );
