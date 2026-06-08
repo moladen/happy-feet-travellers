@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { blogHref } from '@/lib/contentTopics';
 
 function formatReadLabel(category) {
   const c = String(category || '').trim();
@@ -13,7 +14,7 @@ export default function BlogCard({ blog, variant = 'default' }) {
   if (variant === 'journal') {
     return (
       <Link
-        href={`/blog/${blog.id}`}
+        href={blogHref(blog)}
         className="blog-journal-card group block h-full rounded-[1.35rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-cta/60 focus-visible:ring-offset-2"
       >
         <article className="blog-journal-card__inner flex h-full flex-col overflow-hidden">
@@ -57,7 +58,7 @@ export default function BlogCard({ blog, variant = 'default' }) {
 
   return (
     <Link
-      href={`/blog/${blog.id}`}
+      href={blogHref(blog)}
       className="group block h-full rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <article className="relative flex h-full flex-col overflow-hidden rounded-3xl glass-card transition-[box-shadow,border-color] duration-500 hover:border-cta/25 hover:shadow-[0_24px_48px_-16px_rgba(15,28,46,0.18)]">

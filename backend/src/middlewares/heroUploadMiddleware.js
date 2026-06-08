@@ -1,5 +1,6 @@
 const multer = require('multer');
 const path = require('path');
+const AppError = require('@/utils/AppError');
 const {
   HERO_DIR,
   ensureHeroDir,
@@ -27,7 +28,7 @@ const upload = multer({
   limits: { fileSize: MAX_BYTES, files: 1 },
   fileFilter: (_req, file, cb) => {
     if (!isAllowedHeroMime(file.mimetype)) {
-      return cb(new Error('Only JPG, PNG, and WebP images are allowed'));
+      return cb(AppError.badRequest('Only JPG, PNG, and WebP images are allowed'));
     }
     return cb(null, true);
   },
@@ -47,9 +48,9 @@ function heroImageUpload(fieldName = 'image') {
         return next();
       }
       if (err.code === 'LIMIT_FILE_SIZE') {
-        return next(new Error(`Image must be ${MAX_BYTES / (1024 * 1024)}MB or smaller`));
+        return next(AppError.badRequest(`Image must be ${MAX_BYTES / (1024 * 1024)}MB or smaller`));
       }
-      return next(err);
+      return next(err instanceof AppError ? err : AppError.badRequest(err.message || 'Upload failed'));
     });
   };
 }

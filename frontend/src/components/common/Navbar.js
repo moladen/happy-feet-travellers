@@ -34,21 +34,8 @@ function SearchMagnifyIcon({ className }) {
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const isHome = pathname === '/';
   const [isOpen, setIsOpen] = useState(false);
-  const [homeScrollPast, setHomeScrollPast] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const scrolled = isHome ? homeScrollPast : false;
-  const onHero = isHome && !scrolled;
-
-  useEffect(() => {
-    if (!isHome) return;
-    const onScroll = () => setHomeScrollPast(window.scrollY > 56);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [isHome]);
 
   useEffect(() => {
     queueMicrotask(() => setIsOpen(false));
@@ -86,76 +73,50 @@ export default function Navbar() {
     setIsOpen(false);
   };
 
-  const mobilePanelBorder = onHero
-    ? 'border-white/18 bg-gradient-to-br from-[#1a4a72]/98 via-[#163d61]/96 to-[#122f4a]/98 text-white ring-1 ring-white/10 backdrop-blur-2xl'
-    : 'border-[#dceaf4] bg-gradient-to-b from-white to-[#f8fbff] text-foreground ring-1 ring-[#1f4e79]/[0.05]';
+  const mobilePanelBorder = 'border-[#e5d4bc] bg-gradient-to-b from-[#faf6ef] to-[#f5efe3] text-foreground ring-1 ring-primary/[0.06]';
 
-  const mobileMenuButtonClass = onHero
-    ? 'border-white/20 bg-white/12 text-white shadow-[0_10px_28px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 hover:bg-white/18'
-    : 'border-[#d0e2f0] bg-white/95 text-primary shadow-sm ring-1 ring-[#1f4e79]/[0.04] hover:bg-[#f4f9fd]';
+  const mobileMenuButtonClass =
+    'border-[#e5d4bc] bg-[#faf6ef]/95 text-primary shadow-sm ring-1 ring-primary/[0.04] hover:bg-[#f5efe3]';
 
-  const barSurface = onHero
-    ? 'border-white/10 bg-gradient-to-b from-[#071522]/72 via-[#0f2844]/48 to-transparent text-white shadow-[0_12px_40px_-28px_rgba(0,0,0,0.75)] backdrop-blur-2xl backdrop-saturate-150'
-    : 'border-sand/60 bg-off-white/96 text-foreground shadow-[0_16px_44px_-28px_rgba(15,28,46,0.18)] backdrop-blur-xl';
+  const barSurface = 'site-nav--solid site-chrome site-chrome--nav';
 
-  /** Hero / glass: wide pill + frosted field; inner pages: light pill */
-  const searchOuterHero =
-    'border border-white/22 bg-white/14 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_10px_30px_-22px_rgba(0,0,0,0.8)] ring-1 ring-white/10';
-  const searchOuterSolid =
-    'border border-[#c5d9e8] bg-white/92 shadow-[0_10px_30px_-18px_rgba(31,78,121,0.24)] ring-1 ring-[#1f4e79]/[0.04]';
+  const searchOuter =
+    'border border-[#e5d4bc] bg-[#faf6ef]/95 shadow-[0_8px_24px_-14px_rgba(26,43,60,0.1)] ring-1 ring-primary/[0.04]';
 
-  const searchInputClass = onHero
-    ? 'text-white placeholder:text-white/50'
-    : 'text-foreground placeholder:text-gray-500';
+  const searchInputClass = 'text-foreground placeholder:text-foreground/45';
 
-  const iconSubmitHero =
-    'grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-primary shadow-[0_4px_14px_-4px_rgba(0,0,0,0.35)] transition hover:bg-[#f4f8fb] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70';
-  const iconSubmitSolid =
-    'grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-white shadow-[0_6px_16px_-8px_rgba(31,78,121,0.45)] transition hover:bg-[#163a5c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/40';
+  const iconSubmitClass =
+    'grid h-10 w-10 shrink-0 place-items-center rounded-full bg-cta text-white shadow-[0_6px_16px_-8px_rgba(231,111,81,0.45)] transition hover:bg-cta-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cta/45';
 
-  const desktopLinkBase = onHero
-    ? 'border-transparent text-white/86 hover:border-cta/70 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/50'
-    : 'border-transparent text-foreground/72 hover:border-cta/75 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/35';
+  const desktopLinkBase =
+    'border-transparent text-foreground/78 hover:border-cta/70 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/35';
 
-  const desktopLinkActive = onHero
-    ? 'border-cta text-white'
-    : 'border-cta text-primary';
+  const desktopLinkActive = 'border-cta text-primary';
 
-  const searchOuter = onHero ? searchOuterHero : searchOuterSolid;
-  const iconSubmitClass = onHero ? iconSubmitHero : iconSubmitSolid;
+  const logoTone = 'light';
 
   return (
     <nav
       id="site-navigation"
-      className={`z-50 w-full border-b transition-[background-color,box-shadow,border-color,backdrop-filter] duration-500 ${
-        isHome ? 'fixed top-0 left-0 right-0' : 'sticky top-0'
-      } ${barSurface}`}
+      className={`sticky top-0 z-50 w-full transition-[background-color,box-shadow,border-color,color,backdrop-filter] duration-500 ${barSurface}`}
+      data-nav-mode="solid"
       aria-label="Main navigation"
     >
       <div className="site-nav__inner container relative mx-auto max-w-[1400px] px-5 py-3.5 sm:px-6 md:px-8 md:py-4 lg:px-10 lg:py-4 xl:px-12">
         <div className="flex w-full min-w-0 items-center justify-between gap-3 sm:gap-4">
           <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
             <div onClick={() => setIsOpen(false)} className="min-w-0 shrink-0">
-              <BrandLogo
-                variant="nav"
-                navTone={onHero ? 'hero' : 'solid'}
-                priority
-                className={onHero ? 'drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)]' : ''}
-              />
+              <BrandLogo variant="nav" tone={logoTone} priority />
             </div>
 
             <form
               onSubmit={onSearchSubmit}
-              className={`min-w-0 ${onHero ? 'hidden xl:flex' : 'hidden sm:flex'}`}
+              className="min-w-0 hidden sm:flex"
               role="search"
               aria-label="Search tours"
             >
               <div
-                className={`flex w-full items-center gap-1 rounded-full py-1 pl-2.5 pr-1 backdrop-blur-xl ${
-                  onHero
-                    ? 'w-[12.5rem]'
-                    : 'w-full max-w-[min(100%,11rem)] sm:max-w-[13rem] md:max-w-[14rem] lg:max-w-[15rem] xl:max-w-[17rem]'
-                } ${searchOuter}`}
+                className={`flex w-full max-w-[min(100%,11rem)] items-center gap-1 rounded-full py-1 pl-2.5 pr-1 backdrop-blur-xl sm:max-w-[13rem] md:max-w-[14rem] lg:max-w-[15rem] xl:max-w-[17rem] ${searchOuter}`}
               >
                 <input
                   type="text"
@@ -163,7 +124,7 @@ export default function Navbar() {
                   role="searchbox"
                   inputMode="search"
                   enterKeyHint="search"
-                  placeholder={onHero ? 'Search tours…' : 'Search tours, destinations'}
+                  placeholder="Search tours, destinations"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   className={`min-w-0 flex-1 border-0 bg-transparent py-1.5 text-xs font-medium outline-none sm:py-2 sm:text-sm ${searchInputClass}`}
@@ -207,11 +168,21 @@ export default function Navbar() {
             aria-controls="mobile-nav-panel"
           >
             {isOpen ? (
-              <svg className={`h-6 w-6 ${onHero ? 'text-white' : 'text-primary'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-6 w-6 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <svg className={`h-6 w-6 ${onHero ? 'text-white' : 'text-primary'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-6 w-6 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
@@ -226,12 +197,10 @@ export default function Navbar() {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className={`mt-3 overflow-hidden rounded-[1.35rem] border shadow-[0_24px_56px_-32px_rgba(31,78,121,0.55)] lg:hidden ${mobilePanelBorder}`}
+              className={`mt-3 overflow-hidden rounded-[1.35rem] border shadow-[0_24px_56px_-32px_rgba(26,43,60,0.18)] lg:hidden ${mobilePanelBorder}`}
             >
               <div
-                className={`border-b px-4 py-3 text-[11px] font-bold uppercase tracking-[0.2em] ${
-                  onHero ? 'border-white/10 text-white/50' : 'border-[#e3edf6] text-primary/45'
-                }`}
+                className="border-b border-[#efe6d8] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-olive/90"
               >
                 Menu
               </div>
@@ -248,13 +217,9 @@ export default function Navbar() {
                       <Link
                         href={item.href}
                         className={`block rounded-2xl px-4 py-3.5 text-[15px] font-medium tracking-tight transition ${
-                          onHero
-                            ? active
-                              ? 'bg-white/18 text-white ring-2 ring-cta/90 shadow-[0_0_0_1px_rgba(0,0,0,0.2)]'
-                              : 'text-white/95 hover:bg-white/10'
-                            : active
-                              ? 'bg-section-alt text-primary ring-1 ring-primary/10'
-                              : 'text-foreground hover:bg-section-alt/90'
+                          active
+                            ? 'bg-section-alt text-primary ring-1 ring-primary/10'
+                            : 'text-foreground hover:bg-section-alt/90'
                         }`}
                         aria-current={active ? 'page' : undefined}
                         onClick={() => setIsOpen(false)}
@@ -267,11 +232,7 @@ export default function Navbar() {
                 <Link
                   href="/contact"
                   onClick={() => setIsOpen(false)}
-                  className={`mx-2 mb-2 mt-1 block rounded-2xl py-3.5 text-center text-[15px] font-bold transition ${
-                    onHero
-                      ? 'bg-cta text-[#1a1208] shadow-[0_10px_28px_-14px_rgba(244,162,97,0.5)] hover:bg-[#f6b078]'
-                      : 'bg-primary text-white shadow-[0_10px_28px_-14px_rgba(31,78,121,0.45)] hover:bg-[#163a5c]'
-                  }`}
+                  className="mx-2 mb-2 mt-1 block rounded-2xl bg-cta py-3.5 text-center text-[15px] font-bold text-white shadow-[0_10px_28px_-14px_rgba(231,111,81,0.45)] transition hover:bg-cta-hover"
                 >
                   Plan your trip
                 </Link>

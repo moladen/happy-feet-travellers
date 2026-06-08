@@ -9,19 +9,27 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import { getBlogs } from '@/services/api';
 import BlogCard from '@/components/common/BlogCard';
+import SectionState from '@/components/common/SectionState';
+import { USER_MESSAGES } from '@/lib/userMessages';
 
 export default function BlogSection() {
   const reduceMotion = useReducedMotion();
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
         const data = await getBlogs();
         setBlogs(Array.isArray(data) ? data.slice(0, 8) : []);
+        setFetchError(false);
       } catch (error) {
-        console.error('Error fetching blogs:', error);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Error fetching blogs:', error);
+        }
+        setBlogs([]);
+        setFetchError(true);
       } finally {
         setLoading(false);
       }
@@ -53,17 +61,30 @@ export default function BlogSection() {
 
         {loading ? (
           <div className="blog-journal-section__state">
+            <SectionState type="loading" loadingKey="blog" className="mb-6" />
             <div className="blog-journal-card__skeleton" aria-hidden />
             <div className="blog-journal-card__skeleton hidden sm:block" aria-hidden />
             <div className="blog-journal-card__skeleton hidden lg:block" aria-hidden />
           </div>
+        ) : fetchError ? (
+          <SectionState
+            type="error"
+            title="Stories unavailable"
+            message={USER_MESSAGES.serviceUnavailable}
+            actionHref="/blog"
+            actionLabel="Visit travel journal"
+          />
         ) : blogs.length === 0 ? (
-          <p className="blog-journal-section__empty">New stories are on the way — check back soon.</p>
+          <SectionState
+            type="empty"
+            className="blog-journal-section__empty"
+            title="Stories coming soon"
+            message={USER_MESSAGES.noBlogs}
+            actionHref="/blog"
+            actionLabel="View travel journal"
+          />
         ) : useSlider ? (
           <div className="blog-journal-carousel">
-            <div className="blog-journal-carousel__fade blog-journal-carousel__fade--left" aria-hidden />
-            <div className="blog-journal-carousel__fade blog-journal-carousel__fade--right" aria-hidden />
-
             <Swiper
               modules={[Autoplay, Pagination, A11y]}
               className="blog-journal-swiper"

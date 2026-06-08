@@ -1,8 +1,11 @@
 import Link from 'next/link';
+import RelatedBlogsSection from '@/components/content/RelatedBlogsSection';
 import TourDetails from '@/components/tour/TourDetails';
 import RelatedToursScroll from '@/components/tour/RelatedToursScroll';
 import { getTourById, getTours, getPersonalizedTrips } from '@/services/api';
 import { getPublicSettings } from '@/services/settingsService';
+import SectionState from '@/components/common/SectionState';
+import { USER_MESSAGES } from '@/lib/userMessages';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,14 +33,22 @@ export default async function TourPage({ params }) {
 
   if (!tour) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <h1 className="mb-4 text-4xl font-bold text-primary">Tour not found</h1>
-          <p className="mb-6 text-foreground/80">The tour you&apos;re looking for doesn&apos;t exist or was removed.</p>
-          <Link href="/upcoming-departures" className="font-bold text-secondary hover:text-primary">
-            Browse all tours →
-          </Link>
-        </div>
+      <div className="flex min-h-[60vh] items-center justify-center bg-background px-4 py-16">
+        <SectionState
+          type="empty"
+          title="Tour not found"
+          message={USER_MESSAGES.tourNotFound}
+          action={
+            <div className="flex flex-wrap justify-center gap-3">
+              <Link href="/upcoming-departures" className="section-state__action section-state__action--primary">
+                View departures
+              </Link>
+              <Link href="/customized-trips" className="section-state__action">
+                Personalized tours
+              </Link>
+            </div>
+          }
+        />
       </div>
     );
   }
@@ -53,7 +64,7 @@ export default async function TourPage({ params }) {
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b border-[#dceaf7] bg-white">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-2.5 sm:px-6">
           <div className="flex flex-wrap items-center gap-2 text-sm text-foreground/75">
             <Link href="/" className="text-primary hover:text-secondary">
               Home
@@ -69,6 +80,16 @@ export default async function TourPage({ params }) {
       </div>
 
       <TourDetails tour={tour} whatsappNumber={settings?.whatsappNumber} />
+
+      <RelatedBlogsSection
+        blogs={tour.relatedBlogs || []}
+        landingPage={tour.relatedLandingPage || null}
+        title={
+          tour.destination
+            ? `Guides & stories — ${tour.destination}`
+            : 'Related travel blogs'
+        }
+      />
 
       {related.length > 0 && (
         <div className="border-t border-[#dceaf7] bg-white py-14">

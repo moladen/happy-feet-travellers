@@ -1,4 +1,5 @@
 const prisma = require('@/config/database');
+const { getRelatedForTour } = require('@/services/contentLinkingService');
 const AppError = require('@/utils/AppError');
 const { withDatabaseErrors } = require('@/utils/databaseErrors');
 const { generateSlug } = require('@/utils/slugGenerator');
@@ -115,11 +116,21 @@ async function getTour(idOrSlug) {
       where: { OR: [{ id: String(idOrSlug) }, { slug: String(idOrSlug) }] },
     });
     if (!tour) throw AppError.notFound('Tour not found');
-    return tour;
+    const related = await getRelatedForTour(tour);
+    return { ...tour, relatedBlogs: related.blogs, relatedLandingPage: related.landingPage };
   });
 }
 
-const ARRAY_FIELDS = ['images', 'highlights', 'inclusions', 'exclusions', 'thingsToCarry', 'tags'];
+const ARRAY_FIELDS = [
+  'images',
+  'highlights',
+  'inclusions',
+  'exclusions',
+  'thingsToCarry',
+  'tags',
+  'topicKeys',
+  'relatedBlogSlugs',
+];
 const JSON_FIELDS = ['itinerary', 'faqs', 'pickupPoints', 'supplements', 'terms'];
 
 function normaliseTourPayload(payload) {
@@ -148,6 +159,9 @@ function normaliseTourPayload(payload) {
   if (data.seoTitle !== undefined) data.seoTitle = String(data.seoTitle || '').trim() || null;
   if (data.seoDescription !== undefined) {
     data.seoDescription = String(data.seoDescription || '').trim() || null;
+  }
+  if (data.landingPageSlug !== undefined) {
+    data.landingPageSlug = String(data.landingPageSlug || '').trim() || null;
   }
   for (const f of ARRAY_FIELDS) {
     if (data[f] === undefined) continue;

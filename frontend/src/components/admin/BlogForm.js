@@ -1,6 +1,7 @@
 "use client";
 
 import { buildBlogPayload, generateSlug } from "@/lib/admin-data";
+import { CONTENT_TOPIC_EXAMPLES } from "@/lib/contentTopics";
 import ImageUploader from "@/components/admin/ImageUploader";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import { CardSection, Field, TextArea, TextInput } from "@/components/admin/AdminFields";
@@ -97,6 +98,38 @@ export default function BlogForm({ form, setForm, onSubmit, busy, mode = "create
             value={form.content}
             onChange={(value) => updateField("content", value)}
           />
+        </div>
+      </CardSection>
+
+      <CardSection
+        title="Cross-link tours & packages"
+        description="Connect this article to matching departures and seasonal landing pages for SEO (e.g. Rann of Kutch blogs → Rann tours)."
+      >
+        <Field
+          label="Topic keys"
+          hint={`Comma-separated — e.g. ${CONTENT_TOPIC_EXAMPLES.slice(0, 3).map((t) => t.key).join(', ')}`}
+        >
+          <TextInput
+            value={form.topicKeysText}
+            onChange={(event) => updateField("topicKeysText", event.target.value)}
+            placeholder="rann-of-kutch, gujarat"
+          />
+        </Field>
+        <div className="mt-5 grid gap-5 md:grid-cols-2">
+          <Field label="Landing page slug" hint="Published seasonal page, e.g. rann-of-kutch-season-2026-27">
+            <TextInput
+              value={form.landingPageSlug}
+              onChange={(event) => updateField("landingPageSlug", event.target.value)}
+              placeholder="rann-of-kutch-season-2026-27"
+            />
+          </Field>
+          <Field label="Related tour slugs (optional)" hint="Exact tour URLs — comma-separated">
+            <TextInput
+              value={form.relatedTourSlugsText}
+              onChange={(event) => updateField("relatedTourSlugsText", event.target.value)}
+              placeholder="spiti-valley-group-expedition-jun-2026-2026-06-20"
+            />
+          </Field>
         </div>
       </CardSection>
 

@@ -28,3 +28,16 @@ export const TRUSTINDEX_LOADER_SRC = TRUSTINDEX_WIDGET_ID
 export function isTrustindexWidgetEnabled() {
   return Boolean(TRUSTINDEX_WIDGET_ID);
 }
+
+/** Trustindex trial / paywall copy — hide widget and use local reviews instead. */
+const TRUSTINDEX_BLOCKED_PATTERNS = [
+  /trial period has expired/i,
+  /check our subscription plans/i,
+  /subscription plan/i,
+  /widget can only be used for free for 7 days/i,
+];
+
+export function isTrustindexBlockedContent(text) {
+  const raw = String(text || '');
+  return TRUSTINDEX_BLOCKED_PATTERNS.some((pattern) => pattern.test(raw));
+}

@@ -40,6 +40,11 @@ export const DEFAULT_SITE_CONTACT = {
 /** On-site payment section (Contact page) — footer & nav link here first. */
 export const SITE_PAYMENT_PAGE = '/contact#pay';
 
+/** Public WhatsApp community for tour updates (replaces email newsletter). */
+export const SITE_WHATSAPP_GROUP_URL =
+  process.env.NEXT_PUBLIC_WHATSAPP_GROUP_URL ||
+  'https://chat.whatsapp.com/DJGQZzmiJ02CT8uPUqtxgK';
+
 /** External gateway URL from admin settings (used on Contact → Pay online button). */
 export function resolveGatewayPaymentUrl(settings) {
   const merged = mergeSiteSettings(settings);

@@ -62,14 +62,6 @@ RATE_LIMIT_MAX=200
 RUN_MIGRATIONS=true
 RUN_SEED=true
 
-ENQUIRY_NOTIFY_EMAIL=info@happyfeet.com
-MAIL_FROM="Happy Feet Travellers <noreply@happyfeet.com>"
-SMTP_HOST=
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=
-SMTP_PASS=
-SMTP_VERIFY_ON_START=false
 EOF
 
 chmod 600 .env

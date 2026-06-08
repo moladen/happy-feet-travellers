@@ -40,7 +40,7 @@ export const TRAVEL_CATEGORIES = [
     tagline: 'Forests, safaris & natural wonder',
     href: '/upcoming-departures?q=wildlife',
     image:
-      'https://images.unsplash.com/photo-1476514525535-07fb1b4f5bb5?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'honeymoon',

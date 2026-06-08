@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { subscribeToNewsletter } from '@/services/api';
+import { sanitizePublicMessage, USER_MESSAGES } from '@/lib/userMessages';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -26,7 +27,10 @@ export default function NewsletterForm({ source = 'footer' }) {
       setFeedback({ ok: true, message: 'Subscribed! Look out for trip drops in your inbox.' });
       setEmail('');
     } else {
-      setFeedback({ ok: false, message: result.message });
+      setFeedback({
+        ok: false,
+        message: sanitizePublicMessage(result.message, USER_MESSAGES.subscribeFailed),
+      });
     }
   };
 
@@ -46,7 +50,7 @@ export default function NewsletterForm({ source = 'footer' }) {
             if (feedback) setFeedback(null);
           }}
           placeholder="you@example.com"
-          className="w-full flex-1 rounded-full border border-white/30 bg-white/10 px-4 py-2.5 text-sm text-white placeholder-white/60 focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40"
+          className="w-full flex-1 rounded-full border border-primary/15 bg-white px-4 py-2.5 text-sm text-foreground shadow-sm placeholder:text-foreground/45 focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/35"
         />
         <button
           type="submit"
@@ -59,7 +63,7 @@ export default function NewsletterForm({ source = 'footer' }) {
       {feedback && (
         <p
           role={feedback.ok ? 'status' : 'alert'}
-          className={`text-xs ${feedback.ok ? 'text-emerald-200' : 'text-red-200'}`}
+          className={`text-xs ${feedback.ok ? 'text-emerald-700' : 'text-red-600'}`}
         >
           {feedback.message}
         </p>

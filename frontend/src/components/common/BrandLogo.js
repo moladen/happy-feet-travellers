@@ -1,9 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { resolveBrandLogoTone } from '@/lib/brandLogos';
+import { getBrandLogoSrc, resolveBrandLogoTone } from '@/lib/brandLogos';
 
-/** Original Happy Feet Travellers logo artwork. */
-export const BRAND_LOGO_SRC = '/happy-feet-logo-transparent.png';
+export const BRAND_LOGO_SRC = getBrandLogoSrc('light');
 
 const VARIANT_CONFIG = {
   nav: {
@@ -17,9 +16,7 @@ const VARIANT_CONFIG = {
 };
 
 /**
- * Original brand logo — dual tone without heavy background chip.
- * Dark surfaces: logo as-is (white type on artwork).
- * Light surfaces: invert so typography reads dark on cream/white bars.
+ * Brand logo — black artwork on light surfaces; inverted on dark hero/footer.
  */
 export default function BrandLogo({
   variant = 'nav',
@@ -32,13 +29,14 @@ export default function BrandLogo({
   const config = VARIANT_CONFIG[variant] ?? VARIANT_CONFIG.nav;
   const resolvedTone = resolveBrandLogoTone({ tone, navTone });
   const onLightSurface = resolvedTone === 'light';
+  const logoSrc = getBrandLogoSrc(resolvedTone);
 
   const image = (
     <Image
-      src={BRAND_LOGO_SRC}
+      src={logoSrc}
       alt="Happy Feet Travellers"
-      width={420}
-      height={168}
+      width={300}
+      height={253}
       priority={priority}
       className={`object-contain object-left ${config.className} ${
         onLightSurface ? 'brand-logo__img--on-light' : 'brand-logo__img--on-dark'

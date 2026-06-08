@@ -1,6 +1,8 @@
 import { mockTours } from '@/data/mockData';
 import { resolveTourPriceAmount } from '@/lib/tourPrice';
+import { sanitiseStockImageUrl, TRAVEL_FALLBACK_IMAGE } from '@/lib/stockImages';
 import { publicFetch, shouldUseMockFallback } from '@/lib/publicApi';
+import { isNotFoundError, withPublicDataFetch } from '@/lib/publicApiError';
 
 function toQuery(params) {
   if (!params) return '';
@@ -13,8 +15,7 @@ function toQuery(params) {
   return s ? `?${s}` : '';
 }
 
-const DEFAULT_TOUR_IMAGE =
-  'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=80';
+const DEFAULT_TOUR_IMAGE = TRAVEL_FALLBACK_IMAGE.replace('w=1200', 'w=900');
 
 const API_ASSET_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api')
   .replace(/\/api\/?$/, '')
@@ -39,7 +40,9 @@ const formatDateRange = (start, end) => {
 const resolveImageUrl = (value) => {
   const src = String(value || '').trim();
   if (!src) return '';
-  if (/^(data:|blob:|https?:\/\/)/i.test(src)) return src;
+  if (/^(data:|blob:|https?:\/\/)/i.test(src)) {
+    return /^https?:\/\/images\.unsplash\.com/i.test(src) ? sanitiseStockImageUrl(src) : src;
+  }
   if (src.startsWith('/images/') || src.startsWith('/videos/') || src.startsWith('/happy-feet-logo')) return src;
   if (src.startsWith('/')) return `${API_ASSET_BASE}${src}`;
   return `${API_ASSET_BASE}/${src}`;
@@ -135,13 +138,7 @@ const filterMockTours = (params) => {
     .map(normaliseTour);
 };
 
-export class ToursApiError extends Error {
-  constructor(message, cause) {
-    super(message);
-    this.name = 'ToursApiError';
-    this.cause = cause;
-  }
-}
+export { ToursApiError } from '@/lib/publicApiError';
 
 export const getTours = async (filters = null) => {
   const params = buildParams(filters);
@@ -171,24 +168,14 @@ export const getTours = async (filters = null) => {
     });
   }
 
-  try {
-    const data = await publicFetch(`/tours${toQuery(params)}`);
-    return normaliseList(pickList(data));
-  } catch (err) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('[getTours]', err?.message || err);
-    }
-    if (shouldUseMockFallback()) {
-      return params ? filterMockTours(params) : mockTours.map(normaliseTour);
-    }
-    if (typeof window === 'undefined') {
-      throw new ToursApiError(
-        'Could not load tours from the API. Check NEXT_PUBLIC_API_URL, API_PROXY_TARGET, or API_INTERNAL_URL on the server.',
-        err
-      );
-    }
-    return [];
-  }
+  return withPublicDataFetch({
+    context: 'tours',
+    mock: () => (params ? filterMockTours(params) : mockTours.map(normaliseTour)),
+    run: async () => {
+      const data = await publicFetch(`/tours${toQuery(params)}`);
+      return normaliseList(pickList(data));
+    },
+  });
 };
 
 function mergePersonalizedFields(tour, pkg) {

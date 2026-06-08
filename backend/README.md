@@ -119,23 +119,10 @@ The enquiry endpoint accepts either `phone` or `whatsappNumber` for FE
 compatibility — the validator normalises to a single `phone` field before it
 hits the service.
 
-### Enquiry email notifications
+### Enquiry notifications
 
-Each successful `POST /api/enquiry` saves the lead and sends **"New Travel Enquiry Received"**
-to the company inbox via Nodemailer (SMTP). Configure in `backend/.env`:
-
-| Variable | Purpose |
-|----------|---------|
-| `ENQUIRY_NOTIFY_EMAIL` | Company inbox (falls back to Site Settings → `ADMIN_EMAIL`) |
-| `MAIL_FROM` | Verified sender, e.g. `Happy Feet Travellers <noreply@yourdomain.com>` |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | Brevo, Resend SMTP, Gmail, etc. |
-| `SMTP_SECURE` | `true` for port 465, else `false` for 587 |
-| `SMTP_VERIFY_ON_START` | `true` in production to verify SMTP on boot |
-
-**Brevo:** `smtp-relay.brevo.com`, port `587`, user = your Brevo login email, pass = SMTP key.  
-**Resend:** `smtp.resend.com`, user `resend`, pass = API key.
-
-If SMTP is not configured, enquiries are still stored; only the email step is skipped (see server logs).
+`POST /api/enquiry` saves leads to the database for the admin panel. Customer-facing
+email delivery uses **EmailJS** on the frontend — see `frontend/.env.example`.
 
 ## Migrations after schema changes
 

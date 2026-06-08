@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URL, API_TIMEOUT_MS } from '@/constants/site';
+import { resolvePublicError } from '@/lib/userMessages';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -48,5 +49,11 @@ export const extractApiError = (error, fallback = 'Something went wrong, please 
     details?.length > 0 ? `${base} (${details.join('; ')})` : base;
   return { message, details };
 };
+
+/** Public UI only — strips technical API / env messages. */
+export const extractPublicApiError = (error, _fallback, context = 'generic') => ({
+  message: resolvePublicError(error, context),
+  details: null,
+});
 
 export default apiClient;

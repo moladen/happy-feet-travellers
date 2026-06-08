@@ -4,6 +4,8 @@ import CustomizedTripsGrid from '@/components/tour/CustomizedTripsGrid';
 import PersonalizedTripFilters from '@/components/personalized/PersonalizedTripFilters';
 import PersonalizedCategoryChips from '@/components/personalized/PersonalizedCategoryChips';
 import { PERSONALIZED_SECTION_COPY } from '@/lib/personalizedTourCategories';
+import RannSeasonPromo from '@/components/campaign/RannSeasonPromo';
+import SectionState from '@/components/common/SectionState';
 
 export const metadata = {
   title: 'Personalized Tours - Happy Feet Travellers',
@@ -30,6 +32,7 @@ export default function CustomizedTripsPage() {
       </section>
 
       <div className="container mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
+        <RannSeasonPromo variant="page" className="mb-10" />
         <Suspense
           fallback={
             <div className="mb-10 h-32 animate-pulse rounded-2xl bg-white/80" aria-hidden />
@@ -40,10 +43,13 @@ export default function CustomizedTripsPage() {
 
         <Suspense
           fallback={
-            <div className="personalized-trips-listing__grid">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="personalized-trips-listing__skeleton" aria-hidden />
-              ))}
+            <div>
+              <SectionState type="loading" loadingKey="experiences" className="mb-6" />
+              <div className="personalized-trips-listing__grid" aria-hidden>
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="personalized-trips-listing__skeleton" />
+                ))}
+              </div>
             </div>
           }
         >

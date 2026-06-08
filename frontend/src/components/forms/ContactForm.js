@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { submitContactForm } from '@/services/api';
+import { resolveFormErrorMessage, USER_MESSAGES } from '@/lib/userMessages';
 
 const PHONE_RE = /^(?:\+?91[\s-]?)?[6-9]\d{9}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -50,9 +51,13 @@ export default function ContactForm({ variant = 'default', headingId }) {
   const [formData, setFormData] = useState(initialForm);
   const [fieldErrors, setFieldErrors] = useState({});
   const [serverError, setServerError] = useState(null);
-  const [serverDetails, setServerDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.location.search) return;
+    window.history.replaceState({}, '', window.location.pathname);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -75,23 +80,26 @@ export default function ContactForm({ variant = 'default', headingId }) {
     }
     setFieldErrors({});
     setServerError(null);
-    setServerDetails(null);
     setLoading(true);
 
-    const result = await submitContactForm({
-      ...formData,
-      destination: isReach ? formData.subject : formData.subject || undefined,
-      source: isReach ? 'contact-page' : 'contact-form',
-    });
+    try {
+      const result = await submitContactForm({
+        ...formData,
+        destination: isReach ? formData.subject : formData.subject || undefined,
+        source: isReach ? 'contact-page' : 'contact-form',
+      });
 
-    setLoading(false);
-    if (result.success) {
-      setSubmitted(true);
-      setFormData(initialForm);
-      setTimeout(() => setSubmitted(false), 8000);
-    } else {
-      setServerError(result.message);
-      setServerDetails(result.details || null);
+      if (result.success) {
+        setSubmitted(true);
+        setFormData(initialForm);
+        setTimeout(() => setSubmitted(false), 8000);
+      } else {
+        setServerError(resolveFormErrorMessage(result));
+      }
+    } catch {
+      setServerError(USER_MESSAGES.formSubmitFailed);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -140,21 +148,21 @@ export default function ContactForm({ variant = 'default', headingId }) {
       {serverError && (
         <div className="mb-6 rounded-xl border border-red-300 bg-red-50 px-4 py-3 md:px-5 md:py-4" role="alert">
           <p className="font-semibold text-red-700">{serverError}</p>
-          {serverDetails && (
-            <ul className="mt-2 list-inside list-disc space-y-0.5 text-sm text-red-700/90">
-              {serverDetails.map((d, i) => (
-                <li key={i}>{d}</li>
-              ))}
-            </ul>
-          )}
         </div>
       )}
 
-      <fieldset
-        disabled={loading || submitted}
-        className="grid grid-cols-1 gap-4 border-0 p-0 md:gap-5 disabled:opacity-90"
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        method="post"
+        action="/contact"
+        className="min-w-0"
+        aria-busy={loading}
       >
-      <form onSubmit={handleSubmit} noValidate className="contents" aria-busy={loading}>
+        <fieldset
+          disabled={loading || submitted}
+          className="grid min-w-0 grid-cols-1 gap-4 border-0 p-0 m-0 md:gap-5 disabled:opacity-90"
+        >
         {/* Honeypot — hidden from users, traps bots */}
         <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
           <label htmlFor="website">Website</label>
@@ -303,8 +311,8 @@ export default function ContactForm({ variant = 'default', headingId }) {
             {loading ? 'Sending…' : submitted ? 'Sent' : 'Send Message'}
           </button>
         </div>
+        </fieldset>
       </form>
-      </fieldset>
     </div>
   );
 }

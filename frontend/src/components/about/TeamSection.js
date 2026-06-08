@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { fetchPublicTeamMembers } from '@/services/teamMembersService';
+import SectionState from '@/components/common/SectionState';
+import { USER_MESSAGES } from '@/lib/userMessages';
 
 function SocialLink({ href, label, children }) {
   if (!href?.trim()) return null;
@@ -105,7 +107,7 @@ export default function TeamSection() {
         setError('');
       } catch {
         if (!active) return;
-        setError('Could not load team profiles. Please refresh the page.');
+        setError('unavailable');
       } finally {
         if (active) setLoading(false);
       }
@@ -139,14 +141,27 @@ export default function TeamSection() {
         </p>
 
         <div className="mt-10">
-          {loading ? <TeamSkeleton /> : null}
+          {loading ? (
+            <>
+              <SectionState type="loading" loadingKey="team" className="mb-6 [&_.section-state__loading-text]:text-white/85" />
+              <TeamSkeleton />
+            </>
+          ) : null}
           {!loading && error ? (
-            <p className="rounded-2xl border border-white/20 bg-black/25 px-5 py-4 text-center text-sm text-white/85">
-              {error}
-            </p>
+            <SectionState
+              type="error"
+              title="Profiles unavailable"
+              message={USER_MESSAGES.noTeam}
+              className="border-white/15 bg-black/20 [&_.section-state__title]:text-white [&_.section-state__message]:text-white/80"
+            />
           ) : null}
           {!loading && !error && members.length === 0 ? (
-            <p className="text-center text-sm text-white/70">Team profiles coming soon.</p>
+            <SectionState
+              type="empty"
+              title="Meet the team soon"
+              message={USER_MESSAGES.noTeam}
+              className="border-white/15 bg-black/20 [&_.section-state__title]:text-white [&_.section-state__message]:text-white/80"
+            />
           ) : null}
           {!loading && !error && members.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

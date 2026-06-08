@@ -8,6 +8,7 @@ import {
   validateTourForAdminSite,
   prepareTourPayloadForAdmin,
 } from "@/lib/admin-data";
+import { CONTENT_TOPIC_EXAMPLES } from "@/lib/contentTopics";
 import { Icon } from "@/components/admin/AdminIcons";
 import ImageUploader from "@/components/admin/ImageUploader";
 import {
@@ -238,6 +239,40 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
                 value={form.description}
                 onChange={(event) => updateField("description", event.target.value)}
                 placeholder="Tell travellers what makes this route special..."
+              />
+            </Field>
+          </div>
+        </CardSection>
+      ) : null}
+
+      {activeStep === 0 ? (
+        <CardSection
+          title="Cross-link blogs & landing page"
+          description="Show related travel articles on this tour page and boost SEO between blogs, tours, and seasonal pages."
+        >
+          <Field
+            label="Topic keys"
+            hint={`Comma-separated — e.g. ${CONTENT_TOPIC_EXAMPLES.slice(0, 3).map((t) => t.key).join(', ')}`}
+          >
+            <TextInput
+              value={form.topicKeysText}
+              onChange={(event) => updateField("topicKeysText", event.target.value)}
+              placeholder="rann-of-kutch"
+            />
+          </Field>
+          <div className="mt-5 grid gap-5 md:grid-cols-2">
+            <Field label="Landing page slug" hint="Optional seasonal hub">
+              <TextInput
+                value={form.landingPageSlug}
+                onChange={(event) => updateField("landingPageSlug", event.target.value)}
+                placeholder="rann-of-kutch-season-2026-27"
+              />
+            </Field>
+            <Field label="Related blog slugs" hint="Comma-separated article slugs">
+              <TextInput
+                value={form.relatedBlogSlugsText}
+                onChange={(event) => updateField("relatedBlogSlugsText", event.target.value)}
+                placeholder="rann-utsav-travel-guide-2026"
               />
             </Field>
           </div>

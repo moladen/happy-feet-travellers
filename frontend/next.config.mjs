@@ -26,6 +26,15 @@ const nextConfig = {
     root: monorepoRoot,
   },
 
+  webpack: (config) => {
+    config.resolve.modules = [
+      path.resolve(__dirname, 'node_modules'),
+      path.resolve(monorepoRoot, 'node_modules'),
+      ...(config.resolve.modules || []),
+    ];
+    return config;
+  },
+
   async rewrites() {
     if (!apiProxyTarget) return [];
     return [

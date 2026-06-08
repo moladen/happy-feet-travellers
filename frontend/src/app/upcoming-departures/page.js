@@ -8,9 +8,12 @@ import {
   parseDepartureSearchParams,
   tourMatchesDepartureSearch,
 } from '@/lib/departureSearch';
+import { isFetchFailure } from '@/lib/publicApiError';
 import { getUpcomingDepartures } from '@/services/api';
-import { ToursApiError } from '@/services/toursService';
 import { getPublicSettings } from '@/services/settingsService';
+import RannSeasonPromo from '@/components/campaign/RannSeasonPromo';
+import SectionState from '@/components/common/SectionState';
+import { USER_MESSAGES } from '@/lib/userMessages';
 
 export const metadata = {
   title: 'Upcoming Departures - Happy Feet Travellers',
@@ -34,7 +37,7 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
       sort: 'startDate',
     });
   } catch (err) {
-    if (err instanceof ToursApiError || err?.name === 'ToursApiError') {
+    if (isFetchFailure(err)) {
       apiError = true;
       if (process.env.NODE_ENV !== 'production') {
         console.error('[upcoming-departures]', err.message, err.cause);
@@ -82,6 +85,7 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
       </div>
 
       <div className="container mx-auto px-4 py-8 md:py-10">
+        <RannSeasonPromo variant="page" className="mb-8" />
         <Suspense fallback={null}>
           <SearchQueryBanner />
         </Suspense>
@@ -106,36 +110,37 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
         </div>
 
         {apiError && (
-          <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-5 text-center text-foreground">
-            <p className="mb-2 text-lg font-bold text-primary">Could not load departures</p>
-            <p className="mx-auto mb-4 max-w-xl text-sm text-foreground/80">
-              Start the backend API (<code className="rounded bg-white px-1">npm run dev</code> in the{' '}
-              <code className="rounded bg-white px-1">backend</code> folder) and ensure{' '}
-              <code className="rounded bg-white px-1">NEXT_PUBLIC_API_URL=http://localhost:5000/api</code> in{' '}
-              <code className="rounded bg-white px-1">frontend/.env.local</code>.
-            </p>
-          </div>
+          <SectionState
+            type="error"
+            className="mb-8 max-w-lg"
+            title="Departures unavailable"
+            message={USER_MESSAGES.serviceUnavailable}
+            actionHref="/contact"
+            actionLabel="Contact our team"
+          />
         )}
 
         {!apiError && upcomingTours.length === 0 && (
-          <div className="py-16 text-center">
-            <p className="mb-2 text-xl text-foreground">
-              {hasFilters ? 'No departures match your filters.' : 'No upcoming departures right now.'}
-            </p>
-            <p className="mx-auto mb-6 max-w-lg text-sm text-foreground/75">
-              {hasFilters
-                ? 'Try clearing search filters — a typo in the destination (e.g. kerla vs kerala) hides all results.'
-                : 'In admin: category must be Upcoming Group Trip, status Active, and dates in the future.'}
-            </p>
-            {hasFilters ? (
-              <Link href="/upcoming-departures" className="mr-3 rounded-full border border-primary px-5 py-3 font-semibold text-primary">
-                Clear filters
-              </Link>
-            ) : null}
-            <Link href="/contact" className="rounded-full bg-cta px-5 py-3 font-semibold text-primary">
-              Contact Us
-            </Link>
-          </div>
+          <SectionState
+            type="empty"
+            className="py-4"
+            title={hasFilters ? 'No matching departures' : 'No departures scheduled'}
+            message={
+              hasFilters ? USER_MESSAGES.noDepartures : USER_MESSAGES.noDeparturesScheduled
+            }
+            action={
+              <div className="flex flex-wrap justify-center gap-3">
+                {hasFilters ? (
+                  <Link href="/upcoming-departures" className="section-state__action">
+                    Clear filters
+                  </Link>
+                ) : null}
+                <Link href="/contact" className="section-state__action section-state__action--primary">
+                  Plan your journey
+                </Link>
+              </div>
+            }
+          />
         )}
       </div>
     </div>

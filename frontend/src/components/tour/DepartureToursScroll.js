@@ -3,10 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import DepartureTourCard from '@/components/tour/DepartureTourCard';
 
-const CARD_WRAP_CLASS =
-  'w-[min(86vw,300px)] shrink-0 sm:w-[312px] md:w-[332px] lg:w-[346px] xl:w-[346px]';
-const SEQUENCE_GAP_CLASS = 'flex shrink-0 gap-6 md:gap-7 lg:gap-8';
-
 export default function DepartureToursScroll({ tours = [], whatsappNumber, className = '' }) {
   const containerRef = useRef(null);
   const sequenceRef = useRef(null);
@@ -64,30 +60,28 @@ export default function DepartureToursScroll({ tours = [], whatsappNumber, class
         }
       : undefined;
 
+  const trackClass = [
+    'tour-cards-marquee__track',
+    canMarquee && shiftPx > 0 ? 'tour-cards-marquee-track' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div
       ref={containerRef}
-      className={`departure-tours-scroll tour-cards-marquee relative overflow-hidden ${className}`.trim()}
+      className={`departure-tours-scroll tour-cards-marquee tour-cards-marquee--departures ${className}`.trim()}
     >
-      <div className="departure-tours-scroll__fade departure-tours-scroll__fade--left" aria-hidden />
-      <div className="departure-tours-scroll__fade departure-tours-scroll__fade--right" aria-hidden />
-
-      <div
-        className={`flex w-max gap-6 px-4 py-2 sm:px-6 md:gap-7 lg:gap-8 lg:px-6 ${
-          canMarquee && shiftPx > 0 ? 'tour-cards-marquee-track' : ''
-        }`}
-        style={trackStyle}
-        aria-label="Upcoming group departures"
-      >
+      <div className={trackClass} style={trackStyle} aria-label="Upcoming group departures">
         {copies.map((copyIndex) => (
           <div
             key={`seq-${copyIndex}`}
             ref={copyIndex === 0 ? sequenceRef : undefined}
-            className={SEQUENCE_GAP_CLASS}
+            className="tour-cards-marquee__sequence"
             aria-hidden={copyIndex > 0 ? true : undefined}
           >
             {tours.map((tour) => (
-              <div key={`${copyIndex}-${tour.id}`} className={CARD_WRAP_CLASS}>
+              <div key={`${copyIndex}-${tour.id}`} className="tour-cards-marquee__slot">
                 <DepartureTourCard tour={tour} whatsappNumber={whatsappNumber} />
               </div>
             ))}

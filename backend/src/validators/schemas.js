@@ -59,6 +59,9 @@ const createTourSchema = Joi.object({
   terms: Joi.any(),
   destination: Joi.string().allow('', null),
   tags: Joi.array().items(Joi.string().trim()).max(16),
+  topicKeys: Joi.array().items(Joi.string().trim().max(80)).max(12),
+  relatedBlogSlugs: Joi.array().items(Joi.string().pattern(slugPattern)).max(16),
+  landingPageSlug: Joi.string().pattern(slugPattern).allow('', null),
   groupSize: Joi.string().allow('', null),
   status: Joi.string().valid(...DEPARTURE_STATUS_VALUES),
   featured: Joi.boolean(),
@@ -131,6 +134,9 @@ const schemas = {
     authorInstagram: Joi.string().allow('', null),
     seoTitle: Joi.string().allow('', null),
     seoDescription: Joi.string().allow('', null),
+    topicKeys: Joi.array().items(Joi.string().trim().max(80)).max(12),
+    relatedTourSlugs: Joi.array().items(Joi.string().pattern(slugPattern)).max(16),
+    landingPageSlug: Joi.string().pattern(slugPattern).allow('', null),
     publishedAt: Joi.date(),
   }),
 
@@ -150,6 +156,9 @@ const schemas = {
     authorInstagram: Joi.string().allow('', null),
     seoTitle: Joi.string().allow('', null),
     seoDescription: Joi.string().allow('', null),
+    topicKeys: Joi.array().items(Joi.string().trim().max(80)).max(12),
+    relatedTourSlugs: Joi.array().items(Joi.string().pattern(slugPattern)).max(16),
+    landingPageSlug: Joi.string().pattern(slugPattern).allow('', null),
     publishedAt: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()),
   }).min(1),
 
@@ -178,12 +187,21 @@ const schemas = {
     message: Joi.string().required().trim().min(10).max(2000),
     subject: Joi.string().trim().max(200).allow('', null),
     destination: Joi.string().trim().max(200).allow('', null),
+    landingPageId: Joi.string().trim().allow('', null),
     source: Joi.string().trim().max(80).allow('', null),
     website: Joi.string().max(0).allow('', null),
     _honeypot: Joi.string().max(0).allow('', null),
   }).custom((value, helpers) => {
-      const { phone, whatsappNumber, email, destination, subject, website, _honeypot, ...rest } =
-        value;
+      const {
+        phone,
+        whatsappNumber,
+        email,
+        destination,
+        subject,
+        website,
+        _honeypot,
+        ...rest
+      } = value;
       const normalisedPhone = (phone || whatsappNumber || '').replace(/[\s-]/g, '');
       const normalisedEmail = (email || '').trim();
       if (!normalisedPhone && !normalisedEmail) {
@@ -320,6 +338,130 @@ const schemas = {
     email: Joi.string().required().email(),
     password: Joi.string().required().min(6),
   }),
+
+  createLandingPage: Joi.object({
+    title: Joi.string().required().min(3).max(200),
+    slug: Joi.string().pattern(slugPattern).allow('', null),
+    status: Joi.string().valid('draft', 'published'),
+    heroHeading: Joi.string().allow('', null).max(300),
+    heroSubheading: Joi.string().allow('', null).max(4000),
+    heroBannerImage: Joi.string().allow('', null),
+    seasonDates: Joi.string().allow('', null).max(200),
+    ctaButtonText: Joi.string().allow('', null).max(120),
+    ctaButtonLink: Joi.string().allow('', null).max(500),
+    whatsappCtaLink: Joi.string().allow('', null).max(500),
+    whatsappGroupLink: Joi.string().allow('', null).max(500),
+    whatsappGroupEnabled: Joi.boolean(),
+    introContent: Joi.any(),
+    whyVisit: Joi.any(),
+    bestTimeToVisit: Joi.any(),
+    destinationHighlights: Joi.any(),
+    fullMoonCalendar: Joi.any(),
+    customBlocks: Joi.any(),
+    formConfig: Joi.any(),
+    seoTitle: Joi.string().allow('', null).max(200),
+    seoDescription: Joi.string().allow('', null).max(500),
+    seoKeywords: Joi.array().items(Joi.string().max(80)),
+    ogImage: Joi.string().allow('', null),
+    publishedAt: Joi.date(),
+    packages: Joi.array().items(
+      Joi.object({
+        slug: Joi.string().pattern(slugPattern).allow('', null),
+        name: Joi.string().required().min(2).max(200),
+        emoji: Joi.string().allow('', null).max(8),
+        featuredImage: Joi.string().allow('', null),
+        shortDescription: Joi.string().allow('', null).max(4000),
+        startingPrice: Joi.string().allow('', null).max(80),
+        duration: Joi.string().allow('', null).max(120),
+        highlights: Joi.array().items(Joi.string().max(500)),
+        viewDetailsUrl: Joi.string().allow('', null).max(500),
+        detailContent: Joi.any(),
+        sortOrder: Joi.number().integer().min(0),
+        active: Joi.boolean(),
+      })
+    ),
+    faqs: Joi.array().items(
+      Joi.object({
+        category: Joi.string().valid('travel', 'package', 'booking').default('travel'),
+        question: Joi.string().required().min(3).max(500),
+        answer: Joi.string().required().min(3).max(8000),
+        sortOrder: Joi.number().integer().min(0),
+      })
+    ),
+    testimonials: Joi.array().items(
+      Joi.object({
+        name: Joi.string().required().min(2).max(120),
+        city: Joi.string().allow('', null).max(120),
+        image: Joi.string().allow('', null),
+        review: Joi.string().required().min(10).max(4000),
+        rating: Joi.number().integer().min(1).max(5),
+        sortOrder: Joi.number().integer().min(0),
+        active: Joi.boolean(),
+      })
+    ),
+  }),
+
+  updateLandingPage: Joi.object({
+    title: Joi.string().min(3).max(200),
+    slug: Joi.string().pattern(slugPattern),
+    status: Joi.string().valid('draft', 'published'),
+    heroHeading: Joi.string().allow('', null).max(300),
+    heroSubheading: Joi.string().allow('', null).max(4000),
+    heroBannerImage: Joi.string().allow('', null),
+    seasonDates: Joi.string().allow('', null).max(200),
+    ctaButtonText: Joi.string().allow('', null).max(120),
+    ctaButtonLink: Joi.string().allow('', null).max(500),
+    whatsappCtaLink: Joi.string().allow('', null).max(500),
+    whatsappGroupLink: Joi.string().allow('', null).max(500),
+    whatsappGroupEnabled: Joi.boolean(),
+    introContent: Joi.any(),
+    whyVisit: Joi.any(),
+    bestTimeToVisit: Joi.any(),
+    destinationHighlights: Joi.any(),
+    fullMoonCalendar: Joi.any(),
+    customBlocks: Joi.any(),
+    formConfig: Joi.any(),
+    seoTitle: Joi.string().allow('', null).max(200),
+    seoDescription: Joi.string().allow('', null).max(500),
+    seoKeywords: Joi.array().items(Joi.string().max(80)),
+    ogImage: Joi.string().allow('', null),
+    publishedAt: Joi.date(),
+    packages: Joi.array().items(
+      Joi.object({
+        slug: Joi.string().pattern(slugPattern).allow('', null),
+        name: Joi.string().min(2).max(200),
+        emoji: Joi.string().allow('', null).max(8),
+        featuredImage: Joi.string().allow('', null),
+        shortDescription: Joi.string().allow('', null).max(4000),
+        startingPrice: Joi.string().allow('', null).max(80),
+        duration: Joi.string().allow('', null).max(120),
+        highlights: Joi.array().items(Joi.string().max(500)),
+        viewDetailsUrl: Joi.string().allow('', null).max(500),
+        detailContent: Joi.any(),
+        sortOrder: Joi.number().integer().min(0),
+        active: Joi.boolean(),
+      })
+    ),
+    faqs: Joi.array().items(
+      Joi.object({
+        category: Joi.string().valid('travel', 'package', 'booking'),
+        question: Joi.string().min(3).max(500),
+        answer: Joi.string().min(3).max(8000),
+        sortOrder: Joi.number().integer().min(0),
+      })
+    ),
+    testimonials: Joi.array().items(
+      Joi.object({
+        name: Joi.string().min(2).max(120),
+        city: Joi.string().allow('', null).max(120),
+        image: Joi.string().allow('', null),
+        review: Joi.string().min(10).max(4000),
+        rating: Joi.number().integer().min(1).max(5),
+        sortOrder: Joi.number().integer().min(0),
+        active: Joi.boolean(),
+      })
+    ),
+  }).min(1),
 };
 
 module.exports = schemas;
