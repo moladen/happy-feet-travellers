@@ -7,7 +7,7 @@ const AppError = require('@/utils/AppError');
  */
 const validate = (schemaKey) => (req, _res, next) => {
   const schema = schemas[schemaKey];
-  if (!schema) return next(new Error(`Unknown validation schema: ${schemaKey}`));
+  if (!schema) return next(AppError.badRequest('Invalid request payload'));
 
   const { error, value } = schema.validate(req.body, {
     abortEarly: false,

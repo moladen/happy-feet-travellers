@@ -3,10 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PersonalizedTourCard from '@/components/tour/PersonalizedTourCard';
 
-const CARD_WRAP_CLASS =
-  'w-[min(90vw,328px)] shrink-0 sm:w-[340px] md:w-[360px] lg:w-[376px] xl:w-[388px]';
-const SEQUENCE_GAP_CLASS = 'flex shrink-0 gap-7 md:gap-8 lg:gap-9';
-
 /**
  * Continuous horizontal scroll for personalized tour cards (homepage section).
  */
@@ -67,30 +63,28 @@ export default function PersonalizedToursScroll({ tours = [], className = '', ca
         }
       : undefined;
 
+  const trackClass = [
+    'tour-cards-marquee__track',
+    canMarquee && shiftPx > 0 ? 'tour-cards-marquee-track' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div
       ref={containerRef}
-      className={`personalized-tours-scroll tour-cards-marquee relative overflow-hidden ${className}`.trim()}
+      className={`personalized-tours-scroll tour-cards-marquee tour-cards-marquee--personalized ${className}`.trim()}
     >
-      <div className="personalized-tours-scroll__fade personalized-tours-scroll__fade--left" aria-hidden />
-      <div className="personalized-tours-scroll__fade personalized-tours-scroll__fade--right" aria-hidden />
-
-      <div
-        className={`flex w-max gap-7 px-5 py-2 sm:px-8 md:gap-8 lg:gap-9 lg:px-10 ${
-          canMarquee && shiftPx > 0 ? 'tour-cards-marquee-track' : ''
-        }`}
-        style={trackStyle}
-        aria-label="Personalized tour experiences"
-      >
+      <div className={trackClass} style={trackStyle} aria-label="Personalized tour experiences">
         {copies.map((copyIndex) => (
           <div
             key={`seq-${copyIndex}`}
             ref={copyIndex === 0 ? sequenceRef : undefined}
-            className={SEQUENCE_GAP_CLASS}
+            className="tour-cards-marquee__sequence"
             aria-hidden={copyIndex > 0 ? true : undefined}
           >
             {tours.map((tour) => (
-              <div key={`${copyIndex}-${tour.id}`} className={CARD_WRAP_CLASS}>
+              <div key={`${copyIndex}-${tour.id}`} className="tour-cards-marquee__slot">
                 <PersonalizedTourCard tour={tour} variant={cardVariant} />
               </div>
             ))}

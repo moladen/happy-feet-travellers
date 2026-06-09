@@ -14,7 +14,7 @@ const IMG = {
   desert:
     "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=80",
   forest:
-    "https://images.unsplash.com/photo-1476514525535-07fb1b4f5bb5?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=900&q=80",
   snowMtn:
     "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80",
   blogPacking:

@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { submitContactForm } from '@/services/api';
+import { resolveFormErrorMessage, USER_MESSAGES } from '@/lib/userMessages';
+import { isValidIndianPhone, normalizeIndianPhone } from '@/lib/indianPhone';
 
 const STORAGE_KEY = 'hft_lead_popup_dismissed_at';
 const SUPPRESSION_MS = 7 * 24 * 60 * 60 * 1000;
-const PHONE_RE = /^(?:\+?91[\s-]?)?[6-9]\d{9}$/;
 
 export default function LeadPopup() {
   const [isVisible, setIsVisible] = useState(false);
@@ -50,7 +51,7 @@ export default function LeadPopup() {
       setFieldError('Please enter your name.');
       return;
     }
-    if (!PHONE_RE.test(formData.phone.trim())) {
+    if (!isValidIndianPhone(formData.phone)) {
       setFieldError('Enter a valid 10-digit Indian mobile number.');
       return;
     }
@@ -64,27 +65,31 @@ export default function LeadPopup() {
     setLoading(true);
     setServerError(null);
 
-    const result = await submitContactForm({
-      name: formData.name,
-      whatsappNumber: formData.phone,
-      email: formData.email.trim() || undefined,
-      message: formData.message,
-      source: 'lead-popup',
-      subject: 'Lead from popup',
-    });
+    try {
+      const result = await submitContactForm({
+        name: formData.name,
+        whatsappNumber: normalizeIndianPhone(formData.phone),
+        email: formData.email.trim() || undefined,
+        message: formData.message,
+        source: 'lead-popup',
+        subject: 'Lead from popup',
+      });
 
-    setLoading(false);
-
-    if (result.success) {
-      setIsSubmitted(true);
-      try {
-        window.localStorage.setItem(STORAGE_KEY, String(Date.now()));
-      } catch {
-        /* noop */
+      if (result.success) {
+        setIsSubmitted(true);
+        try {
+          window.localStorage.setItem(STORAGE_KEY, String(Date.now()));
+        } catch {
+          /* noop */
+        }
+        setTimeout(() => setIsVisible(false), 2200);
+      } else {
+        setServerError(resolveFormErrorMessage(result));
       }
-      setTimeout(() => setIsVisible(false), 2200);
-    } else {
-      setServerError(result.message);
+    } catch {
+      setServerError(USER_MESSAGES.formSubmitFailed);
+    } finally {
+      setLoading(false);
     }
   };
 

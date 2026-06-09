@@ -7,6 +7,9 @@ import { getPersonalizedTrips } from '@/services/api';
 import { PERSONALIZED_SECTION_COPY } from '@/lib/personalizedTourCategories';
 import PersonalizedCategoryChips from '@/components/personalized/PersonalizedCategoryChips';
 import PersonalizedToursScroll from '@/components/tour/PersonalizedToursScroll';
+import RannSeasonPromo from '@/components/campaign/RannSeasonPromo';
+import SectionState from '@/components/common/SectionState';
+import { USER_MESSAGES } from '@/lib/userMessages';
 
 const EASE = [0.22, 1, 0.36, 1];
 
@@ -33,6 +36,9 @@ function LoadingSkeleton() {
 
 function DreamTripEnquiry() {
   const copy = PERSONALIZED_SECTION_COPY;
+  const assurancePoints = ['Early-bird savings', 'Buddy/group offer', 'Fast WhatsApp support'];
+  const trustPoints = ['1200+ happy travellers', 'Comfort-first stays', 'Transparent pricing'];
+
   return (
     <motion.aside
       className="personalized-tours-section__enquiry"
@@ -43,23 +49,47 @@ function DreamTripEnquiry() {
       aria-labelledby="personalized-enquiry-heading"
     >
       <div className="personalized-tours-section__enquiry-glow" aria-hidden />
-      <h3 id="personalized-enquiry-heading" className="personalized-tours-section__enquiry-headline">
-        {copy.ctaHeadline}
-      </h3>
-      <p className="personalized-tours-section__enquiry-text">
-        Share destinations, dates, and how you want the journey to feel. Our planners craft a private route with
-        honest pricing and comfort at every step.
-      </p>
-      <div className="personalized-tours-section__enquiry-actions">
-        <Link href="/contact" className="personalized-tours-section__enquiry-btn">
-          {copy.ctaButton}
-          <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-          </svg>
-        </Link>
-        <Link href="/customized-trips" className="personalized-tours-section__enquiry-link">
-          View all personalized tours
-        </Link>
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] md:items-center">
+        <div className="hidden md:block">
+          <ul className="space-y-2 text-left">
+            {assurancePoints.map((item) => (
+              <li key={item} className="rounded-lg border border-white/18 bg-white/8 px-3 py-2 text-xs font-semibold text-white/90">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h3 id="personalized-enquiry-heading" className="personalized-tours-section__enquiry-headline">
+            {copy.ctaHeadline}
+          </h3>
+          <p className="personalized-tours-section__enquiry-text">
+            Share destinations, dates, and how you want the journey to feel. Our planners craft a private route with
+            honest pricing and comfort at every step.
+          </p>
+          <div className="personalized-tours-section__enquiry-actions">
+            <Link href="/contact" className="personalized-tours-section__enquiry-btn">
+              {copy.ctaButton}
+              <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+            <Link href="/customized-trips" className="personalized-tours-section__enquiry-link">
+              View all personalized tours
+            </Link>
+          </div>
+        </div>
+
+        <div className="hidden md:block">
+          <ul className="space-y-2 text-left">
+            {trustPoints.map((item) => (
+              <li key={item} className="rounded-lg border border-white/18 bg-white/8 px-3 py-2 text-xs font-semibold text-white/90">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </motion.aside>
   );
@@ -69,6 +99,7 @@ export default function CustomizedTours() {
   const reduceMotion = useReducedMotion();
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,9 +108,15 @@ export default function CustomizedTours() {
         const data = await getPersonalizedTrips({ limit: 12, sort: 'featured' });
         if (cancelled) return;
         setTours(Array.isArray(data) ? data : []);
+        setFetchError(false);
       } catch (error) {
-        console.error('Error fetching personalized tours:', error);
-        if (!cancelled) setTours([]);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Error fetching personalized tours:', error);
+        }
+        if (!cancelled) {
+          setTours([]);
+          setFetchError(true);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -94,7 +131,7 @@ export default function CustomizedTours() {
   return (
     <motion.section
       id="personalized-tours"
-      className="personalized-tours-section personalized-tours-section--cinematic customized-tours-section customized-tours-section--cinematic section-ambient section-tone-sand-soft relative overflow-hidden py-14 md:py-16 lg:py-[4.5rem]"
+      className="personalized-tours-section personalized-tours-section--cinematic customized-tours-section customized-tours-section--cinematic section-ambient section-tone-personalized relative overflow-hidden py-14 md:py-16 lg:py-[4.5rem]"
       initial={reduceMotion ? false : { opacity: 0, y: 28 }}
       whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.06 }}
@@ -106,27 +143,35 @@ export default function CustomizedTours() {
       <div className="container relative z-10 mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeader />
         <PersonalizedCategoryChips />
+        <RannSeasonPromo className="mt-8" />
       </div>
 
       <div className="personalized-tours-section__cards relative z-10">
         <div className="personalized-tours-section__carousel-wrap customized-tours-section__carousel-wrap">
           {loading ? (
             <div className="container mx-auto max-w-6xl px-4 sm:px-6">
+              <SectionState type="loading" loadingKey="experiences" className="mb-4" />
               <LoadingSkeleton />
             </div>
           ) : list.length === 0 ? (
-            <p className="personalized-tours-section__empty container mx-auto max-w-6xl px-4 text-center sm:px-6">
-              Your kind of journey is waiting to be shaped —{' '}
-              <Link href="/contact" className="font-semibold text-primary underline-offset-2 hover:underline">
-                tell us your dream trip
-              </Link>
-              .
-            </p>
+            <div className="container mx-auto max-w-6xl px-4 sm:px-6">
+              <SectionState
+                type={fetchError ? 'error' : 'empty'}
+                className="personalized-tours-section__empty max-w-lg"
+                title={fetchError ? 'Journeys unavailable' : 'Your journey awaits'}
+                message={
+                  fetchError
+                    ? USER_MESSAGES.serviceUnavailable
+                    : 'Share your dream trip and we will shape a personalized route for you.'
+                }
+                actionHref="/contact"
+                actionLabel="Tell us your dream trip"
+              />
+            </div>
           ) : (
             <PersonalizedToursScroll
               tours={list}
               cardVariant="experience"
-              className="[--marquee-fade:#f3ebe0]"
             />
           )}
         </div>

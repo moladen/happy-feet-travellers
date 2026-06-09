@@ -140,6 +140,9 @@ export const emptyTourForm = {
   state: "",
   packageCategory: "",
   tagsText: "",
+  topicKeysText: "",
+  relatedBlogSlugsText: "",
+  landingPageSlug: "",
   groupSize: "12–18 travellers only",
   status: "active",
   featured: false,
@@ -185,6 +188,9 @@ export const emptyBlogForm = {
   authorName: "Happy Feet Team",
   publishDate: "",
   content: "<p>Start writing your travel story here...</p>",
+  topicKeysText: "",
+  relatedTourSlugsText: "",
+  landingPageSlug: "",
   seoTitle: "",
   seoDescription: "",
 };
@@ -433,6 +439,9 @@ export function buildTourPayload(form) {
       };
     })(),
     tags: splitLines(form.tagsText),
+    topicKeys: splitLines(form.topicKeysText),
+    relatedBlogSlugs: splitLines(form.relatedBlogSlugsText),
+    landingPageSlug: (form.landingPageSlug || "").trim() || null,
     groupSize: (form.groupSize || "").trim() || null,
     status: (form.status || "active").trim().toLowerCase(),
     featured: Boolean(form.featured),
@@ -481,6 +490,9 @@ export function createTourForm(record) {
     startDate: record.startDate ? String(record.startDate).slice(0, 10) : "",
     endDate: record.endDate ? String(record.endDate).slice(0, 10) : "",
     tagsText: joinLines(record.tags),
+    topicKeysText: joinLines(record.topicKeys),
+    relatedBlogSlugsText: joinLines(record.relatedBlogSlugs),
+    landingPageSlug: record.landingPageSlug || "",
     featured: Boolean(record.featured),
     status: record.status || "active",
     destination: record.destination || "",
@@ -579,6 +591,9 @@ export function createBlogForm(record) {
     publishDate: record.publishedAt ? String(record.publishedAt).slice(0, 10) : "",
     coverImage: record.coverImage || record.image || "",
     content: normalizeBlogContentForForm(record.content),
+    topicKeysText: joinLines(record.topicKeys),
+    relatedTourSlugsText: joinLines(record.relatedTourSlugs),
+    landingPageSlug: record.landingPageSlug || "",
   };
 }
 

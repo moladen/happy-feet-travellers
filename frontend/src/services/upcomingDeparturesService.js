@@ -1,6 +1,6 @@
 import { mockTours } from '@/data/mockData';
-import { publicFetch, shouldUseMockFallback } from '@/lib/publicApi';
-import { ToursApiError } from '@/services/toursService';
+import { publicFetch } from '@/lib/publicApi';
+import { isNotFoundError, withPublicDataFetch } from '@/lib/publicApiError';
 
 async function normaliseDepartures(list) {
   const { normaliseTour } = await import('@/services/toursService');
@@ -62,22 +62,14 @@ export async function getUpcomingDepartures(params = {}) {
     ...params,
   };
 
-  try {
-    const data = await publicFetch(`/upcoming-departures${toQuery(query)}`);
-    return await pickDepartures(data);
-  } catch (err) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('[getUpcomingDepartures]', err?.message || err);
-    }
-    if (shouldUseMockFallback()) return filterMockUpcoming(query);
-    if (typeof window === 'undefined') {
-      throw new ToursApiError(
-        'Could not load upcoming departures from the API.',
-        err
-      );
-    }
-    return [];
-  }
+  return withPublicDataFetch({
+    context: 'departures',
+    mock: () => filterMockUpcoming(query),
+    run: async () => {
+      const data = await publicFetch(`/upcoming-departures${toQuery(query)}`);
+      return pickDepartures(data);
+    },
+  });
 }
 
 export async function getUpcomingDepartureBySlug(slug) {
@@ -87,13 +79,19 @@ export async function getUpcomingDepartureBySlug(slug) {
     const [one] = await normaliseDepartures([data]);
     return one ?? null;
   } catch (err) {
-    if (shouldUseMockFallback()) {
-      const match = mockTours.find(
-        (t) => t.category === 'upcoming' && (t.slug === slug || String(t.id) === String(slug))
-      );
-      const [one] = match ? await normaliseDepartures([match]) : [];
-      return one ?? null;
-    }
-    return null;
+    if (isNotFoundError(err)) return null;
+    return withPublicDataFetch({
+      context: 'departures',
+      mock: async () => {
+        const match = mockTours.find(
+          (t) => t.category === 'upcoming' && (t.slug === slug || String(t.id) === String(slug))
+        );
+        const [one] = match ? await normaliseDepartures([match]) : [];
+        return one ?? null;
+      },
+      run: async () => {
+        throw err;
+      },
+    });
   }
 }

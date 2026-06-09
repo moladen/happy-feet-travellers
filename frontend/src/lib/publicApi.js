@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/constants/site';
+import { PublicApiError } from '@/lib/publicApiError';
 
 /**
  * Resolve API root for fetch(). Browser may use relative `/api` (Vercel/nginx proxy).
@@ -62,9 +63,20 @@ export async function publicFetch(path, options = {}) {
   });
 
   if (!res.ok) {
-    const err = new Error(`${options.method || 'GET'} ${normalized} ${res.status}`);
-    err.status = res.status;
-    throw err;
+    let body = null;
+    try {
+      body = await res.json();
+    } catch {
+      body = null;
+    }
+    throw PublicApiError.from(
+      {
+        message: body?.message,
+        status: res.status,
+        response: { status: res.status, data: body },
+      },
+      'generic'
+    );
   }
 
   const body = await res.json();

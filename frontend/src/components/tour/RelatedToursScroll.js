@@ -10,16 +10,8 @@ export default function RelatedToursScroll({ tours, whatsappNumber, tourKind = '
   if (!tours?.length) return null;
 
   if (tourKind === 'personalized') {
-    return (
-      <PersonalizedToursScroll tours={tours} cardVariant="experience" className="[--marquee-fade:#ffffff]" />
-    );
+    return <PersonalizedToursScroll tours={tours} cardVariant="experience" />;
   }
 
-  return (
-    <DepartureToursScroll
-      tours={tours}
-      whatsappNumber={whatsappNumber}
-      className="[--marquee-fade:#ffffff]"
-    />
-  );
+  return <DepartureToursScroll tours={tours} whatsappNumber={whatsappNumber} />;
 }

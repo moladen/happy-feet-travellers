@@ -39,6 +39,14 @@ export function Icon({ name, className = "h-5 w-5" }) {
           <path d="M15 4v4h4M9 12h6M9 16h6" />
         </svg>
       );
+    case "landing":
+      return (
+        <svg {...common}>
+          <path d="M4 8h16v12H4z" />
+          <path d="M4 8l8-4 8 4" />
+          <path d="M9 14h6M9 17h4" />
+        </svg>
+      );
     case "star":
       return (
         <svg {...common}>

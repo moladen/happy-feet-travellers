@@ -1,5 +1,8 @@
 import Link from 'next/link';
 import DepartureTourCard from '@/components/tour/DepartureTourCard';
+import SectionState from '@/components/common/SectionState';
+import { isFetchFailure } from '@/lib/publicApiError';
+import { USER_MESSAGES } from '@/lib/userMessages';
 import { getTours } from '@/services/api';
 
 export const metadata = {
@@ -11,7 +14,18 @@ export const dynamic = 'force-dynamic';
 
 export default async function CategoryPage({ params }) {
   const { category } = await params;
-  const tours = await getTours(category);
+  let tours = [];
+  let apiError = false;
+
+  try {
+    tours = await getTours(category);
+  } catch (err) {
+    if (isFetchFailure(err)) {
+      apiError = true;
+    } else {
+      throw err;
+    }
+  }
 
   const categoryTitles = {
     beaches: 'Beach Tours',
@@ -44,14 +58,23 @@ export default async function CategoryPage({ params }) {
         </div>
 
         {/* Empty State */}
-        {tours.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-xl text-gray-600 mb-4">No tours found in this category.</p>
-            <Link href="/upcoming-departures" className="text-blue-600 hover:text-blue-700">
-              View all tours
-            </Link>
-          </div>
-        )}
+        {apiError ? (
+          <SectionState
+            type="error"
+            title="Tours unavailable"
+            message={USER_MESSAGES.serviceUnavailable}
+            actionHref="/contact"
+            actionLabel="Contact our team"
+          />
+        ) : tours.length === 0 ? (
+          <SectionState
+            type="empty"
+            title="No tours in this category"
+            message={USER_MESSAGES.noTours}
+            actionHref="/upcoming-departures"
+            actionLabel="View all departures"
+          />
+        ) : null}
       </div>
     </div>
   );

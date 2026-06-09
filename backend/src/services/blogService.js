@@ -2,6 +2,7 @@ const prisma = require('@/config/database');
 const AppError = require('@/utils/AppError');
 const { withDatabaseErrors } = require('@/utils/databaseErrors');
 const { generateSlug } = require('@/utils/slugGenerator');
+const { getRelatedForBlog } = require('@/services/contentLinkingService');
 
 async function listBlogs(query) {
   return withDatabaseErrors(async () => {
@@ -37,7 +38,8 @@ async function getBlog(idOrSlug) {
       where: { OR: [{ id: String(idOrSlug) }, { slug: String(idOrSlug) }] },
     });
     if (!blog) throw AppError.notFound('Blog not found');
-    return blog;
+    const related = await getRelatedForBlog(blog);
+    return { ...blog, relatedTours: related.tours, relatedLandingPage: related.landingPage };
   });
 }
 
@@ -57,6 +59,9 @@ async function createBlog(payload) {
         seoDescription: payload.seoDescription || null,
         excerpt: payload.excerpt || null,
         category: payload.category || null,
+        topicKeys: Array.isArray(payload.topicKeys) ? payload.topicKeys : [],
+        relatedTourSlugs: Array.isArray(payload.relatedTourSlugs) ? payload.relatedTourSlugs : [],
+        landingPageSlug: payload.landingPageSlug || null,
         publishedAt: payload.publishedAt ? new Date(payload.publishedAt) : new Date(),
       },
     });

@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import RelatedToursSection from '@/components/content/RelatedToursSection';
+import { blogHref } from '@/lib/contentTopics';
 import { getBlogById, getBlogs } from '@/services/api';
 
 export const dynamic = 'force-dynamic';
@@ -28,8 +30,10 @@ export default async function BlogArticlePage({ params }) {
   if (!blog) notFound();
 
   const all = await getBlogs();
-  const others = all.filter((b) => String(b.id) !== String(id)).slice(0, 8);
+  const others = all.filter((b) => String(b.id) !== String(blog.id) && b.slug !== blog.slug).slice(0, 8);
   const body = paragraphs(blog.content);
+  const relatedTours = blog.relatedTours || [];
+  const relatedLandingPage = blog.relatedLandingPage || null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -93,6 +97,17 @@ export default async function BlogArticlePage({ params }) {
                 )}
               </div>
             </div>
+
+            <RelatedToursSection
+              tours={relatedTours}
+              landingPage={relatedLandingPage}
+              title={
+                relatedLandingPage?.title
+                  ? `Tours & packages — ${relatedLandingPage.title.replace(/Season.*/i, '').trim()}`
+                  : 'Related tours & departures'
+              }
+            />
+
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/blog"
@@ -115,7 +130,7 @@ export default async function BlogArticlePage({ params }) {
               <ul className="mt-4 space-y-4">
                 {others.map((b) => (
                   <li key={b.id} className="border-b border-[#eaf4fb] pb-4 last:border-0 last:pb-0">
-                    <Link href={`/blog/${b.id}`} className="font-medium text-primary hover:text-secondary">
+                    <Link href={blogHref(b)} className="font-medium text-primary hover:text-secondary">
                       {b.title}
                     </Link>
                     <p className="mt-1 text-xs text-foreground/65">{b.date}</p>

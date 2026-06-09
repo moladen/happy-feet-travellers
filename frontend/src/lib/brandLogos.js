@@ -3,7 +3,22 @@
  * @typedef {'light' | 'dark'} BrandLogoTone
  */
 
-export const BRAND_LOGO_IMAGE_SRC = '/happy-feet-logo-transparent.png';
+/** Compact mark for cream / light chrome (multiply blend) */
+export const BRAND_LOGO_ON_LIGHT_SRC = '/hft-logo.png';
+
+/** Full wordmark for dark hero overlay — white type on dark matte */
+export const BRAND_LOGO_ON_DARK_SRC = '/happy-feet-logo-transparent.png';
+
+/** @deprecated Use {@link getBrandLogoSrc} */
+export const BRAND_LOGO_IMAGE_SRC = BRAND_LOGO_ON_LIGHT_SRC;
+
+/**
+ * @param {BrandLogoTone} tone
+ * @returns {string}
+ */
+export function getBrandLogoSrc(tone) {
+  return tone === 'dark' ? BRAND_LOGO_ON_DARK_SRC : BRAND_LOGO_ON_LIGHT_SRC;
+}
 
 /** @type {Record<BrandLogoTone, string>} */
 export const BRAND_LOGO_TONE_LABEL = {

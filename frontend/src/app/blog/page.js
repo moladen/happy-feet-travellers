@@ -1,5 +1,8 @@
 import { getBlogs } from '@/services/api';
 import Link from 'next/link';
+import SectionState from '@/components/common/SectionState';
+import { isFetchFailure } from '@/lib/publicApiError';
+import { USER_MESSAGES } from '@/lib/userMessages';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +12,19 @@ export const metadata = {
 };
 
 export default async function BlogPage() {
-  const blogs = await getBlogs();
+  let blogs = [];
+  let apiError = false;
+
+  try {
+    blogs = await getBlogs();
+  } catch (err) {
+    if (isFetchFailure(err)) {
+      apiError = true;
+    } else {
+      throw err;
+    }
+  }
+
   const featured = blogs[0];
   const rest = blogs.slice(1);
 
@@ -27,6 +42,24 @@ export default async function BlogPage() {
       </div>
 
       <div className="container mx-auto px-4 py-14 lg:py-16">
+        {apiError ? (
+          <SectionState
+            type="error"
+            title="Stories unavailable"
+            message={USER_MESSAGES.serviceUnavailable}
+            actionHref="/contact"
+            actionLabel="Contact our team"
+          />
+        ) : blogs.length === 0 ? (
+          <SectionState
+            type="empty"
+            title="No stories yet"
+            message={USER_MESSAGES.noBlogs}
+            actionHref="/"
+            actionLabel="Back to home"
+          />
+        ) : (
+          <>
         {featured && (
           <article className="mb-16 overflow-hidden rounded-3xl border border-[#dceaf7] bg-white shadow-xl">
             <div className="grid lg:grid-cols-2">
@@ -123,6 +156,8 @@ export default async function BlogPage() {
             </div>
           </aside>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

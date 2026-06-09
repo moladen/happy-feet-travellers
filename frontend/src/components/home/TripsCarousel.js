@@ -6,6 +6,9 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { getUpcomingDepartures } from '@/services/api';
 import { getPublicSettings } from '@/services/settingsService';
 import DepartureToursScroll from '@/components/tour/DepartureToursScroll';
+import RannSeasonPromo from '@/components/campaign/RannSeasonPromo';
+import SectionState from '@/components/common/SectionState';
+import { USER_MESSAGES } from '@/lib/userMessages';
 
 const EASE = [0.22, 1, 0.36, 1];
 
@@ -140,36 +143,34 @@ export default function TripsCarousel() {
       <div className="upcoming-departures-section__atmosphere" aria-hidden />
       <div className="container relative z-10 mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeader lede={lede} />
+        <RannSeasonPromo className="mt-8" />
       </div>
 
       <div className="upcoming-departures-section__carousel-wrap upcoming-departures-section__carousel-wrap--fullbleed relative z-10">
         {loading ? (
           <div className="container mx-auto max-w-6xl px-4 sm:px-6">
+            <SectionState type="loading" loadingKey="departures" className="mb-4" />
             <LoadingSkeleton />
           </div>
           ) : list.length === 0 ? (
-            <p className="upcoming-departures-section__empty container mx-auto max-w-6xl px-4 sm:px-6">
-              {fetchError ? (
-                <>
-                  Could not reach the API — start the backend (<code className="text-sm">npm run dev</code> in{' '}
-                  <code className="text-sm">backend</code>) and check{' '}
-                  <code className="text-sm">frontend/.env.local</code>.
-                </>
-              ) : (
-                <>
-                  New departures are being curated —{' '}
-                  <Link href="/contact" className="font-semibold text-primary underline-offset-2 hover:underline">
-                    tell us where you want to go
-                  </Link>
-                  .
-                </>
-              )}
-            </p>
+            <div className="container mx-auto max-w-6xl px-4 sm:px-6">
+              <SectionState
+                type={fetchError ? 'error' : 'empty'}
+                className="upcoming-departures-section__empty max-w-lg"
+                title={fetchError ? 'Departures unavailable' : 'New journeys coming soon'}
+                message={
+                  fetchError
+                    ? USER_MESSAGES.serviceUnavailable
+                    : 'We are curating new group departures. Share your dream destination and we will help you plan.'
+                }
+                actionHref="/contact"
+                actionLabel={fetchError ? 'Contact our team' : 'Tell us your plans'}
+              />
+            </div>
           ) : (
           <DepartureToursScroll
             tours={list}
             whatsappNumber={whatsappNumber}
-            className="[--marquee-fade:var(--departures-fade,#ede5d6)]"
           />
         )}
       </div>

@@ -15,8 +15,8 @@
     "prisma:seed": "node prisma/seed.js",
     "seed:tours": "node scripts/seed-sample-tours.js",
     "smoke": "node scripts/smoke-api.js",
-    "demo:email": "node scripts/demo-enquiry-email.js",
-    "seed:team": "node scripts/seed-team-members.js"
+    "seed:team": "node scripts/seed-team-members.js",
+    "seed:landing-rann": "node scripts/seed-rann-landing.js"
   },
   "keywords": [
     "travel",
@@ -40,8 +40,7 @@
     "jsonwebtoken": "^9.0.2",
     "module-alias": "^2.2.3",
     "morgan": "^1.10.0",
-    "multer": "^2.1.1",
-    "nodemailer": "^8.0.7"
+    "multer": "^2.1.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2",

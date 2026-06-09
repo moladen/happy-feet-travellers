@@ -1,7 +1,11 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { TRUSTINDEX_LOADER_SRC, TRUSTINDEX_WIDGET_ID } from '@/lib/trustindex';
+import {
+  isTrustindexBlockedContent,
+  TRUSTINDEX_LOADER_SRC,
+  TRUSTINDEX_WIDGET_ID,
+} from '@/lib/trustindex';
 
 const HOST_ID = 'trustindex-testimonials-widget';
 
@@ -37,35 +41,10 @@ function collectTrustindexNodes(widgetId) {
   return Array.from(found).filter((el) => el.tagName !== 'SCRIPT');
 }
 
-function removeInternalVerifiedBadge(host) {
+function clearTrustindexContent(host) {
   if (!host) return;
-
-  const badgeText = 'Verified by Trustindex';
-
-  // We remove only the actual badge element (usually small link/button),
-  // not parent containers that might contain the same text.
-  const candidates = host.querySelectorAll('a, button, span, div, p');
-  candidates.forEach((el) => {
-    try {
-      const aria = (el.getAttribute('aria-label') || '').trim();
-      const title = (el.getAttribute('title') || '').trim();
-      const txt = (el.textContent || '').trim();
-
-      // Avoid removing big container nodes: badge element should be relatively leafy.
-      const childCount = el.childElementCount || 0;
-      const isLeafy = childCount <= 6;
-
-      const isBadge =
-        aria.includes(badgeText) ||
-        title.includes(badgeText) ||
-        (isLeafy && txt.includes(badgeText));
-
-      if (isBadge) {
-        el.remove();
-      }
-    } catch {
-      // ignore
-    }
+  Array.from(host.children).forEach((child) => {
+    if (child.tagName !== 'SCRIPT') child.remove();
   });
 }
 
@@ -80,17 +59,32 @@ function moveTrustindexIntoHost(host, widgetId) {
 
 /**
  * Loads Trustindex inside the testimonials section (not at document end).
- * next/script appends to body tail — Trustindex then renders after the footer.
+ * Calls onUnavailable when trial expired / paywall message appears.
  */
-export default function TrustindexWidget({ className = '' }) {
+export default function TrustindexWidget({ className = '', onUnavailable }) {
   const hostRef = useRef(null);
+  const unavailableRef = useRef(false);
 
   useEffect(() => {
     const host = hostRef.current;
     if (!host || !TRUSTINDEX_LOADER_SRC || !TRUSTINDEX_WIDGET_ID) return undefined;
 
-    if (host.querySelector('script[data-ti-loader="1"]')) {
+    const markUnavailable = () => {
+      if (unavailableRef.current) return;
+      unavailableRef.current = true;
+      clearTrustindexContent(host);
+      onUnavailable?.();
+    };
+
+    const syncWidget = () => {
       moveTrustindexIntoHost(host, TRUSTINDEX_WIDGET_ID);
+      if (isTrustindexBlockedContent(host.innerText)) {
+        markUnavailable();
+      }
+    };
+
+    if (host.querySelector('script[data-ti-loader="1"]')) {
+      syncWidget();
       return undefined;
     }
 
@@ -101,26 +95,21 @@ export default function TrustindexWidget({ className = '' }) {
     script.dataset.tiLoader = '1';
     host.appendChild(script);
 
-    const onLoaded = () => moveTrustindexIntoHost(host, TRUSTINDEX_WIDGET_ID);
-    script.addEventListener('load', onLoaded);
+    script.addEventListener('load', syncWidget);
 
-    const observer = new MutationObserver(() => {
-      moveTrustindexIntoHost(host, TRUSTINDEX_WIDGET_ID);
-    });
-    observer.observe(document.body, { childList: true });
+    const observer = new MutationObserver(syncWidget);
+    observer.observe(document.body, { childList: true, subtree: true });
 
-    const retries = [400, 1000, 2500, 5000].map((ms) => setTimeout(onLoaded, ms));
+    const retries = [400, 1000, 2500, 5000, 8000].map((ms) => setTimeout(syncWidget, ms));
 
     return () => {
-      script.removeEventListener('load', onLoaded);
+      script.removeEventListener('load', syncWidget);
       observer.disconnect();
       retries.forEach(clearTimeout);
       script.remove();
-      Array.from(host.children).forEach((child) => {
-        if (child.tagName !== 'SCRIPT') child.remove();
-      });
+      clearTrustindexContent(host);
     };
-  }, []);
+  }, [onUnavailable]);
 
   if (!TRUSTINDEX_WIDGET_ID || !TRUSTINDEX_LOADER_SRC) return null;
 

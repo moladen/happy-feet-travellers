@@ -1,5 +1,6 @@
 import { mockBlogs } from '@/data/mockData';
-import { publicFetch, shouldUseMockFallback } from '@/lib/publicApi';
+import { publicFetch } from '@/lib/publicApi';
+import { isNotFoundError, withPublicDataFetch } from '@/lib/publicApiError';
 
 const pickList = (data) => data?.blogs ?? (Array.isArray(data) ? data : []);
 
@@ -24,15 +25,14 @@ const normaliseBlog = (blog) => {
 const normaliseList = (list) => (Array.isArray(list) ? list.map(normaliseBlog) : []);
 
 export const getBlogs = async () => {
-  try {
-    const data = await publicFetch('/blogs');
-    return normaliseList(pickList(data));
-  } catch (err) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('[getBlogs]', err?.message || err);
-    }
-    return shouldUseMockFallback() ? mockBlogs.map(normaliseBlog) : [];
-  }
+  return withPublicDataFetch({
+    context: 'blog',
+    mock: () => mockBlogs.map(normaliseBlog),
+    run: async () => {
+      const data = await publicFetch('/blogs');
+      return normaliseList(pickList(data));
+    },
+  });
 };
 
 export const getBlogById = async (idOrSlug) => {
@@ -41,13 +41,18 @@ export const getBlogById = async (idOrSlug) => {
     const data = await publicFetch(`/blogs/${id}`);
     return normaliseBlog(data);
   } catch (err) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('[getBlogById]', err?.message || err);
-    }
-    if (!shouldUseMockFallback()) return null;
-    const match = mockBlogs.find(
-      (blog) => String(blog.id) === String(idOrSlug) || blog.slug === idOrSlug
-    );
-    return match ? normaliseBlog(match) : null;
+    if (isNotFoundError(err)) return null;
+    return withPublicDataFetch({
+      context: 'blog',
+      mock: () => {
+        const match = mockBlogs.find(
+          (blog) => String(blog.id) === String(idOrSlug) || blog.slug === idOrSlug
+        );
+        return match ? normaliseBlog(match) : null;
+      },
+      run: async () => {
+        throw err;
+      },
+    });
   }
 };

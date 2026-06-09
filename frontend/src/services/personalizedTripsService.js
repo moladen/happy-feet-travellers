@@ -1,6 +1,6 @@
 import { mockTours } from '@/data/mockData';
-import { publicFetch, shouldUseMockFallback } from '@/lib/publicApi';
-import { ToursApiError } from '@/services/toursService';
+import { publicFetch } from '@/lib/publicApi';
+import { isNotFoundError, withPublicDataFetch } from '@/lib/publicApiError';
 
 async function normalisePackages(list) {
   const { normaliseTour } = await import('@/services/toursService');
@@ -83,19 +83,14 @@ export async function getPersonalizedTrips(params = {}) {
     ...params,
   };
 
-  try {
-    const data = await publicFetch(`/personalized-trips${toQuery(query)}`);
-    return await pickPackages(data);
-  } catch (err) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('[getPersonalizedTrips]', err?.message || err);
-    }
-    if (shouldUseMockFallback()) return filterMock(query);
-    if (typeof window === 'undefined') {
-      throw new ToursApiError('Could not load personalized trips from the API.', err);
-    }
-    return [];
-  }
+  return withPublicDataFetch({
+    context: 'personalized',
+    mock: () => filterMock(query),
+    run: async () => {
+      const data = await publicFetch(`/personalized-trips${toQuery(query)}`);
+      return pickPackages(data);
+    },
+  });
 }
 
 export async function getPersonalizedTripsWithMeta(params = {}) {
@@ -109,8 +104,14 @@ export async function getPersonalizedTripsWithMeta(params = {}) {
       pagination: data?.pagination || null,
     };
   } catch (err) {
-    const packages = shouldUseMockFallback() ? await filterMock(query) : [];
-    return { packages, facets: null, pagination: null };
+    const packages = await withPublicDataFetch({
+      context: 'personalized',
+      mock: () => filterMock(query),
+      run: async () => {
+        throw err;
+      },
+    });
+    return { packages, facets: null, pagination: null, error: true };
   }
 }
 
@@ -121,16 +122,22 @@ export async function getPersonalizedTripBySlug(slug) {
     const [one] = await normalisePackages([data]);
     return one ?? null;
   } catch (err) {
-    if (shouldUseMockFallback()) {
-      const match = mockTours.find(
-        (t) =>
-          t.category === 'customized' &&
-          (t.slug === slug || String(t.id) === String(slug))
-      );
-      const [one] = match ? await normalisePackages([match]) : [];
-      return one ?? null;
-    }
-    return null;
+    if (isNotFoundError(err)) return null;
+    return withPublicDataFetch({
+      context: 'personalized',
+      mock: async () => {
+        const match = mockTours.find(
+          (t) =>
+            t.category === 'customized' &&
+            (t.slug === slug || String(t.id) === String(slug))
+        );
+        const [one] = match ? await normalisePackages([match]) : [];
+        return one ?? null;
+      },
+      run: async () => {
+        throw err;
+      },
+    });
   }
 }
 

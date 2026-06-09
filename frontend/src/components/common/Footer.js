@@ -1,36 +1,38 @@
 import Link from 'next/link';
 import BrandLogo from '@/components/common/BrandLogo';
-import NewsletterForm from '@/components/common/NewsletterForm';
 import SocialMediaIcons from '@/components/common/SocialMediaIcons';
 import { FOOTER_DESTINATION_LINKS } from '@/lib/footerDestinations';
 import {
   formatIndianPhone,
   mergeSiteSettings,
   SITE_PAYMENT_PAGE,
+  SITE_WHATSAPP_GROUP_URL,
   telHref,
   whatsappHref,
 } from '@/lib/siteContact';
 
+const BRAND_DESCRIPTION =
+  'Curated group departures and personalized journeys across India — planned with care, led with heart.';
+
 const exploreLinks = [
-  { href: '/upcoming-departures', label: 'Upcoming departures' },
-  { href: '/customized-trips', label: 'Personalized tours' },
-  { href: '/discover', label: 'Discover the world' },
-  { href: '/blog', label: 'Travel journal' },
+  { href: '/upcoming-departures', label: 'Upcoming Departures' },
+  { href: '/customized-trips', label: 'Personalized Tours' },
+  { href: '/discover', label: 'Discover The World' },
+  { href: '/blog', label: 'Travel Blogs' },
 ];
 
-const companyLinks = [
-  { href: '/about', label: 'About us' },
-  { href: '/contact', label: 'Contact' },
+const policyLinks = [
+  { href: '/policies/terms', label: 'Terms & Conditions' },
+  { href: '/policies/privacy', label: 'Privacy Policy' },
+  { href: '/policies/cancellation', label: 'Cancellation Policy' },
 ];
 
-const legalLinks = [
-  { href: '/policies/terms', label: 'Terms' },
-  { href: '/policies/privacy', label: 'Privacy' },
-  { href: '/policies/cancellation', label: 'Cancellation' },
-];
-
-function FooterHeading({ children }) {
-  return <h3 className="site-footer__heading">{children}</h3>;
+function FooterHeading({ children, id }) {
+  return (
+    <h3 className="site-footer__heading" id={id}>
+      {children}
+    </h3>
+  );
 }
 
 function FooterLink({ href, children }) {
@@ -107,65 +109,45 @@ export default function Footer({ settings: settingsProp }) {
   const settings = mergeSiteSettings(settingsProp);
   const phoneDisplay = formatIndianPhone(settings.whatsappNumber);
   const phoneHref = telHref(settings.whatsappNumber);
-  const waHref = whatsappHref(settings.whatsappNumber, "Hi, I'd like to know about your curated group tours.");
+  const waHref = whatsappHref(settings.whatsappNumber, "Hi! I'd like to enquire about Happy Feet Travellers tours.");
+  const waGroupHref = SITE_WHATSAPP_GROUP_URL;
+  const year = new Date().getFullYear();
 
   return (
-    <footer className="site-footer relative mt-10 overflow-hidden text-white md:mt-12">
-      <div className="site-footer__glow site-footer__glow--left" aria-hidden />
-      <div className="site-footer__glow site-footer__glow--right" aria-hidden />
-
-      <div className="site-footer__cta-strip">
-        <div className="container relative z-10 mx-auto max-w-6xl px-4">
-          <div className="site-footer__cta-inner">
-            <div className="site-footer__cta-copy">
-              <p className="site-footer__cta-eyebrow">Plan your next escape</p>
-              <p className="site-footer__cta-title">Curated journeys across India</p>
-            </div>
-            <div className="site-footer__cta-actions">
-              <Link href="/upcoming-departures" className="site-footer__btn site-footer__btn--primary">
-                View departures
-              </Link>
-              <a
-                href={waHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="site-footer__btn site-footer__btn--whatsapp"
-              >
-                <IconWhatsApp />
-                WhatsApp
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <footer className="site-footer site-chrome site-chrome--footer relative overflow-hidden text-foreground">
       <div className="site-footer__main container relative z-10 mx-auto max-w-6xl px-4">
         <div className="site-footer__grid">
           <div className="site-footer__brand">
-            <BrandLogo variant="footer" navTone="hero" href="/" />
-            <p className="site-footer__tagline">
-              {settings.footerTagline ||
-                'Experience-first group departures and personalized holidays — honest pricing and real support on WhatsApp.'}
+            <BrandLogo variant="nav" tone="light" href="/" />
+            <p className="site-footer__tagline">{BRAND_DESCRIPTION}</p>
+            <p className="site-footer__updates-lede">
+              Join our WhatsApp group for new departures, early-bird fares, and tour updates — straight from the Happy Feet team.
             </p>
-            <Link href={SITE_PAYMENT_PAGE} className="site-footer__payment-link">
-              Pay online securely
-            </Link>
-            <div className="site-footer__social-wrap">
-              <p className="site-footer__social-label">Follow our journeys</p>
-              <SocialMediaIcons
-                settings={settings}
-                size="sm"
-                forFooter
-                premiumFooter
-                className="site-footer__social-list"
-              />
+            <div className="site-footer__brand-actions">
+              <a
+                href={waGroupHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="site-footer__btn site-footer__btn--whatsapp-community"
+              >
+                <IconWhatsApp />
+                Join Our WhatsApp Group
+              </a>
+              <Link href={SITE_PAYMENT_PAGE} className="site-footer__btn site-footer__btn--outline">
+                Pay Online Securely
+              </Link>
             </div>
+            <SocialMediaIcons
+              settings={settings}
+              size="sm"
+              forFooter
+              premiumFooter
+              className="site-footer__social-list"
+            />
           </div>
 
           <nav className="site-footer__nav-col" aria-labelledby="footer-explore-heading">
-            <FooterHeading>
-              <span id="footer-explore-heading">Explore</span>
-            </FooterHeading>
+            <FooterHeading id="footer-explore-heading">Explore</FooterHeading>
             <ul className="site-footer__link-list">
               {exploreLinks.map((item) => (
                 <li key={item.href}>
@@ -175,20 +157,10 @@ export default function Footer({ settings: settingsProp }) {
             </ul>
           </nav>
 
-          <nav className="site-footer__nav-col" aria-labelledby="footer-company-heading">
-            <FooterHeading>
-              <span id="footer-company-heading">Company</span>
-            </FooterHeading>
+          <nav className="site-footer__nav-col" aria-labelledby="footer-destinations-heading">
+            <FooterHeading id="footer-destinations-heading">Popular Destinations</FooterHeading>
             <ul className="site-footer__link-list">
-              {companyLinks.map((item) => (
-                <li key={item.href}>
-                  <FooterLink href={item.href}>{item.label}</FooterLink>
-                </li>
-              ))}
-            </ul>
-            <FooterHeading>Policies</FooterHeading>
-            <ul className="site-footer__link-list">
-              {legalLinks.map((item) => (
+              {FOOTER_DESTINATION_LINKS.map((item) => (
                 <li key={item.href}>
                   <FooterLink href={item.href}>{item.label}</FooterLink>
                 </li>
@@ -197,48 +169,42 @@ export default function Footer({ settings: settingsProp }) {
           </nav>
 
           <div className="site-footer__contact-col">
-            <FooterHeading>Get in touch</FooterHeading>
+            <FooterHeading id="footer-contact-heading">Contact Information</FooterHeading>
             <ul className="site-footer__contact-list">
               <li>
-                <ContactRow icon={<IconPin />} label="Office">
+                <ContactRow icon={<IconPin />} label="Office Address">
                   {settings.officeAddress}
                 </ContactRow>
               </li>
               <li>
-                <ContactRow href={phoneHref} icon={<IconPhone />} label="Phone">
+                <ContactRow href={phoneHref} icon={<IconPhone />} label="Phone Number">
                   {phoneDisplay}
                 </ContactRow>
               </li>
               <li>
-                <ContactRow href={waHref} icon={<IconWhatsApp />} label="WhatsApp">
+                <ContactRow href={waHref} icon={<IconWhatsApp />} label="WhatsApp (Enquiries)">
                   {phoneDisplay}
                 </ContactRow>
               </li>
               <li>
-                <ContactRow href={`mailto:${settings.email}`} icon={<IconMail />} label="Email">
+                <ContactRow href={waGroupHref} icon={<IconWhatsApp />} label="WhatsApp Group">
+                  Tour updates &amp; announcements
+                </ContactRow>
+              </li>
+              <li>
+                <ContactRow href={`mailto:${settings.email}`} icon={<IconMail />} label="Email Address">
                   <span className="break-all">{settings.email}</span>
                 </ContactRow>
               </li>
             </ul>
-
-            <div className="site-footer__newsletter">
-              <p className="site-footer__newsletter-title">Trip updates in your inbox</p>
-              <p className="site-footer__newsletter-hint">New departures — no spam.</p>
-              <NewsletterForm source="footer" />
-            </div>
           </div>
         </div>
 
-        <nav className="site-footer__destinations" aria-labelledby="footer-destinations-heading">
-          <FooterHeading>
-            <span id="footer-destinations-heading">Popular destinations</span>
-          </FooterHeading>
-          <ul className="site-footer__destination-pills">
-            {FOOTER_DESTINATION_LINKS.map((item) => (
+        <nav className="site-footer__policies" aria-label="Policies">
+          <ul className="site-footer__policies-list">
+            {policyLinks.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className="site-footer__destination-pill">
-                  {item.label}
-                </Link>
+                <FooterLink href={item.href}>{item.label}</FooterLink>
               </li>
             ))}
           </ul>
@@ -248,9 +214,24 @@ export default function Footer({ settings: settingsProp }) {
       <div className="site-footer__bar">
         <div className="site-footer__bar-inner container relative z-10 mx-auto max-w-6xl px-4">
           <p className="site-footer__copyright">
-            © {new Date().getFullYear()} Happy Feet Travellers · Pune, Maharashtra
+            © {year} Happy Feet Travellers. All rights reserved.
           </p>
-          <p className="site-footer__bar-tagline">Curated group tours &amp; personalized holidays</p>
+          <ul className="site-footer__bar-policies">
+            {policyLinks.map((item) => (
+              <li key={`bar-${item.href}`}>
+                <Link href={item.href} className="site-footer__bar-link">
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <SocialMediaIcons
+            settings={settings}
+            size="sm"
+            forFooter
+            premiumFooter
+            className="site-footer__bar-social"
+          />
         </div>
       </div>
     </footer>

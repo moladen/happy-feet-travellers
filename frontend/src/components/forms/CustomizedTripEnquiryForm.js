@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { submitContactForm } from '@/services/api';
-
-const PHONE_RE = /^(?:\+?91[\s-]?)?[6-9]\d{9}$/;
+import { resolveFormErrorMessage, USER_MESSAGES } from '@/lib/userMessages';
+import { isValidIndianPhone, normalizeIndianPhone } from '@/lib/indianPhone';
 
 const labelClass = 'mb-2 block text-sm font-semibold text-primary';
 const fieldClass =
@@ -47,6 +47,7 @@ export default function CustomizedTripEnquiryForm({ categoryLabel = 'custom trip
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setError(null);
 
     if (!form.name.trim() || form.name.trim().length < 2) {
@@ -57,7 +58,7 @@ export default function CustomizedTripEnquiryForm({ categoryLabel = 'custom trip
       setError('Please enter a valid email address.');
       return;
     }
-    if (!PHONE_RE.test(form.phone.trim())) {
+    if (!isValidIndianPhone(form.phone)) {
       setError('Enter a valid 10-digit Indian mobile number.');
       return;
     }
@@ -77,31 +78,36 @@ export default function CustomizedTripEnquiryForm({ categoryLabel = 'custom trip
     ].filter(Boolean);
 
     setLoading(true);
-    const result = await submitContactForm({
-      name: form.name.trim(),
-      email: form.email.trim(),
-      whatsappNumber: form.phone.trim(),
-      message: messageParts.join('\n'),
-      source: 'customized-trips',
-      subject: `Custom quote: ${categoryLabel}`,
-    });
-    setLoading(false);
-
-    if (result.success) {
-      setSuccess(true);
-      setForm({
-        name: '',
-        email: '',
-        phone: '',
-        duration: '',
-        budget: '',
-        travelers: '1',
-        dates: '',
-        preferences: [],
-        notes: '',
+    try {
+      const result = await submitContactForm({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        whatsappNumber: normalizeIndianPhone(form.phone),
+        message: messageParts.join('\n'),
+        source: 'customized-trips',
+        subject: `Custom quote: ${categoryLabel}`,
       });
-    } else {
-      setError(result.message || 'Could not send your request. Please try again.');
+
+      if (result.success) {
+        setSuccess(true);
+        setForm({
+          name: '',
+          email: '',
+          phone: '',
+          duration: '',
+          budget: '',
+          travelers: '1',
+          dates: '',
+          preferences: [],
+          notes: '',
+        });
+      } else {
+        setError(resolveFormErrorMessage(result));
+      }
+    } catch {
+      setError(USER_MESSAGES.formSubmitFailed);
+    } finally {
+      setLoading(false);
     }
   };
 

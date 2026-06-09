@@ -26,6 +26,9 @@ model Tour {
   ctaData            Json?
   seoTitle           String?
   seoDescription     String?   @db.Text
+  topicKeys          String[]  @default([])
+  relatedBlogSlugs   String[]  @default([])
+  landingPageSlug    String?
   tags               String[]  @default([])
   groupSize          String?
   status             String    @default("active")
@@ -74,21 +77,24 @@ model Tour {
 }
 
 model Blog {
-  id              String   @id @default(cuid())
-  title           String
-  slug            String   @unique
-  excerpt         String?  @db.Text
-  category        String?
-  content         Json
-  coverImage      String
-  authorName      String
-  authorImage     String?
-  authorInstagram String?
-  seoTitle        String?
-  seoDescription  String?  @db.Text
-  publishedAt     DateTime @default(now())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               String   @id @default(cuid())
+  title            String
+  slug             String   @unique
+  excerpt          String?  @db.Text
+  category         String?
+  content          Json
+  coverImage       String
+  authorName       String
+  authorImage      String?
+  authorInstagram  String?
+  topicKeys        String[] @default([])
+  relatedTourSlugs String[] @default([])
+  landingPageSlug  String?
+  seoTitle         String?
+  seoDescription   String?  @db.Text
+  publishedAt      DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([slug])
   @@index([category])
@@ -106,20 +112,114 @@ model Testimonial {
   @@index([rating])
 }
 
+model LandingPage {
+  id                   String   @id @default(cuid())
+  title                String
+  slug                 String   @unique
+  status               String   @default("draft")
+  heroHeading          String?
+  heroSubheading       String?  @db.Text
+  heroBannerImage      String?
+  seasonDates          String?
+  ctaButtonText        String?
+  ctaButtonLink        String?
+  whatsappCtaLink      String?
+  whatsappGroupLink    String?
+  whatsappGroupEnabled Boolean  @default(true)
+  introContent         Json?
+  whyVisit             Json?
+  bestTimeToVisit      Json?
+  destinationHighlights Json?
+  fullMoonCalendar     Json?
+  customBlocks         Json?
+  formConfig           Json?
+  seoTitle             String?
+  seoDescription       String?  @db.Text
+  seoKeywords          String[] @default([])
+  ogImage              String?
+  publishedAt          DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  packages             LandingPackage[]
+  faqs                 LandingFaq[]
+  testimonials         LandingTestimonial[]
+  enquiries            Enquiry[]
+
+  @@index([slug])
+  @@index([status])
+}
+
+model LandingPackage {
+  id               String      @id @default(cuid())
+  landingPageId    String
+  landingPage      LandingPage @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+  slug             String
+  name             String
+  emoji            String?
+  featuredImage    String?
+  shortDescription String?     @db.Text
+  startingPrice    String?
+  duration         String?
+  highlights       String[]    @default([])
+  viewDetailsUrl   String?
+  detailContent    Json?
+  sortOrder        Int         @default(0)
+  active           Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@unique([landingPageId, slug])
+  @@index([landingPageId, sortOrder])
+}
+
+model LandingFaq {
+  id            String      @id @default(cuid())
+  landingPageId String
+  landingPage   LandingPage @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+  category      String      @default("travel")
+  question      String
+  answer        String      @db.Text
+  sortOrder     Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([landingPageId, sortOrder])
+}
+
+model LandingTestimonial {
+  id            String      @id @default(cuid())
+  landingPageId String
+  landingPage   LandingPage @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+  name          String
+  city          String?
+  image         String?
+  review        String      @db.Text
+  rating        Int         @default(5)
+  sortOrder     Int         @default(0)
+  active        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([landingPageId, sortOrder])
+}
+
 model Enquiry {
-  id        String   @id @default(cuid())
-  name      String
-  phone     String
-  email     String
-  message   String   @db.Text
-  source    String?
-  subject   String?
-  status    String   @default("new")
-  createdAt DateTime @default(now())
+  id            String       @id @default(cuid())
+  name          String
+  phone         String
+  email         String
+  message       String       @db.Text
+  source        String?
+  subject       String?
+  status        String       @default("new")
+  landingPageId String?
+  landingPage   LandingPage? @relation(fields: [landingPageId], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now())
 
   @@index([email])
   @@index([status])
   @@index([createdAt])
+  @@index([landingPageId])
 }
 
 model Subscriber {

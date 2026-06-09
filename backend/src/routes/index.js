@@ -13,6 +13,7 @@ const galleryRoutes = require('@/routes/galleryRoutes');
 const settingsRoutes = require('@/routes/settingsRoutes');
 const heroSlideRoutes = require('@/routes/heroSlideRoutes');
 const teamMemberRoutes = require('@/routes/teamMemberRoutes');
+const landingPageRoutes = require('@/routes/landingPageRoutes');
 
 const router = express.Router();
 
@@ -49,5 +50,6 @@ router.use('/auth', authRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/hero-slides', heroSlideRoutes);
 router.use('/team-members', teamMemberRoutes);
+router.use('/landing-pages', landingPageRoutes);
 
 module.exports = router;
