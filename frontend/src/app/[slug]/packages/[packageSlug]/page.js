@@ -56,7 +56,7 @@ export default async function LandingPackagePage({ params }) {
                 {pkg.emoji}
               </p>
             ) : null}
-            <h1 className="mt-2 font-display text-3xl font-bold md:text-4xl">{pkg.name}</h1>
+            <h1 className="mt-2 font-display text-3xl font-bold text-white md:text-4xl">{pkg.name}</h1>
             <p className="mt-3 text-sm text-white/88 md:text-base">{pkg.shortDescription}</p>
             <p className="mt-4 text-2xl font-bold text-[#ffc98a]">{pkg.startingPrice}</p>
             <p className="text-sm text-white/75">{pkg.duration}</p>
