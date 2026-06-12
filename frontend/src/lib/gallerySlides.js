@@ -93,7 +93,6 @@ export function buildTourGallerySlides(tour, resolveUrl) {
   if (Array.isArray(tour?.images)) {
     tour.images.forEach((item) => rawItems.push(item));
   }
-  if (tour?.coverImage) rawItems.push(tour.coverImage);
 
   const slides = rawItems
     .map((item, index) => {
@@ -131,6 +130,14 @@ export function buildTourGallerySlides(tour, resolveUrl) {
  * Landing page gallery — Rann slug uses curated set; others use whyVisit + highlights.
  */
 export function buildLandingGallerySlides(page) {
+  const apiGallery = page?.gallery || page?.customBlocks?.gallery;
+  if (Array.isArray(apiGallery) && apiGallery.length) {
+    return apiGallery
+      .map((slide, index) => normaliseSlide(slide, index, page?.title || RANN_SEASON_TITLE))
+      .filter(Boolean)
+      .map((slide) => ({ ...slide, image: sanitiseStockImageUrl(slide.image) }));
+  }
+
   const slug = String(page?.slug || '').toLowerCase();
   if (slug.includes('rann') || slug.includes('kutch')) {
     return RANN_GALLERY_SLIDES.map((slide) => ({

@@ -179,6 +179,21 @@ async function listLandingPages(query = {}) {
   });
 }
 
+function expandLandingPage(page) {
+  if (!page) return page;
+  const blocks = page.customBlocks && typeof page.customBlocks === 'object' ? page.customBlocks : {};
+  return {
+    ...page,
+    heroSocialProof: page.heroSocialProof ?? blocks.heroSocialProof ?? null,
+    groupBatches: page.groupBatches ?? blocks.groupBatches ?? null,
+    addOns: page.addOns ?? blocks.addOns ?? null,
+    trainInfo: page.trainInfo ?? blocks.trainInfo ?? null,
+    dholaviraSection: page.dholaviraSection ?? blocks.dholaviraSection ?? null,
+    videos: page.videos ?? blocks.videos ?? null,
+    gallery: page.gallery ?? blocks.gallery ?? null,
+  };
+}
+
 async function getLandingPage(idOrSlug, { admin = false } = {}) {
   return withDatabaseErrors(async () => {
     const where = { OR: [{ id: String(idOrSlug) }, { slug: String(idOrSlug) }] };
@@ -190,7 +205,7 @@ async function getLandingPage(idOrSlug, { admin = false } = {}) {
     if (!admin && page.status !== 'published') {
       throw AppError.notFound('Landing page not found');
     }
-    return page;
+    return admin ? page : expandLandingPage(page);
   });
 }
 

@@ -30,7 +30,10 @@ function buildApiPayload(formData) {
   const payload = {
     name: formData.name?.trim(),
     message: formData.message?.trim(),
-    subject: formData.subject?.trim() || (title !== 'General enquiry' ? title : null),
+    subject:
+      formData.destination?.trim() ||
+      formData.subject?.trim() ||
+      (title !== 'General enquiry' ? title : null),
     destination: formData.destination?.trim() || null,
     source: formData.source || 'contact-form',
     website: formData.website || '',
@@ -40,6 +43,8 @@ function buildApiPayload(formData) {
   if (phone) payload.whatsappNumber = phone;
   if (formData.email?.trim()) payload.email = formData.email.trim();
   if (formData.landingPageId?.trim()) payload.landingPageId = formData.landingPageId.trim();
+  if (formData.travellerType?.trim()) payload.travellerType = formData.travellerType.trim();
+  if (formData.travelInsuranceRequested) payload.travelInsuranceRequested = true;
 
   return { payload, title, phone };
 }

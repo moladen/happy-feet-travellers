@@ -25,7 +25,7 @@ const PAY_NOTE = 'Flexible hold · balance closer to departure';
  * Premium departure card with per-journey theme accents — CMS-driven via `tour` prop.
  */
 export default function DepartureTourCard({ tour, whatsappNumber, className = '' }) {
-  const imageSrc = tour?.image || tour?.coverImage || FALLBACK_IMAGE;
+  const imageSrc = tour?.coverImage || tour?.image || FALLBACK_IMAGE;
   const detailHref = getTourDetailHref(tour);
   const { slug: themeSlug } = getDepartureCardTheme(tour);
   const { icon: tagIcon, label: personalityLabel } = getDepartureExperienceTag(tour);

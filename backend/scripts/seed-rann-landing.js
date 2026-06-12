@@ -11,15 +11,56 @@ const payload = {
   title: 'Rann of Kutch Season 2026–2027',
   slug: SLUG,
   status: 'published',
-  heroHeading: 'Rann of Kutch Season 2026–2027',
+  heroHeading: "India's Most Magical Desert Festival Returns",
   heroSubheading:
-    'Premium White Desert journeys — group departures, family FIT plans, and full moon experiences across the Rann Utsav season.',
+    'Premium group departures from Pune & Mumbai | White Rann • Dholavira • Kutchi Culture • Full Moon Nights',
   heroBannerImage:
     'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=2400&h=1400&fit=crop',
   seasonDates: '5 November 2026 – 4 March 2027',
   ctaButtonText: 'Get Priority Access',
   ctaButtonLink: '#priority-interest',
   whatsappGroupEnabled: true,
+  customBlocks: {
+    heroSocialProof: [
+      '5+ years of group tours',
+      '8,000+ happy travellers',
+      'Trusted departures from Pune & Mumbai',
+    ],
+    whyVisitHeading:
+      'Experience the Magic of the Kutchi Culture — Exclusive Village Experience',
+    fullMoonSection: {
+      eyebrow: 'Rann Utsav Full Moon Package',
+      title: 'Full Moon Calendar',
+      lede:
+        'Premium departures on full moon nights — when the White Rann is at its most magical. Moonlit salt flats, festival lights, and our most sought-after group batches.',
+      backgroundImage:
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=2400&h=1400&fit=crop',
+      badgeLabel: 'Full Moon Special',
+    },
+    planningGuide: {
+      enabled: true,
+      eyebrow: 'Free download',
+      title: 'Free Rann Utsav Planning Guide 2026–27',
+      lede:
+        'A practical PDF for travellers comparing Rann Utsav Packages from Mumbai and Pune — batch dates, White Desert tour tips, Dholavira add-ons, and full moon planning.',
+      highlights: [
+        'Month-by-month batch calendar & full moon windows',
+        'Mumbai/Pune train booking checklist for group departures',
+        'White Desert tour & Kutch tour package comparison',
+        'Dholavira tour add-on ideas and packing essentials',
+      ],
+      pdfUrl: '/guides/rann-utsav-planning-guide-2026-27.pdf',
+      pdfFileName: 'Happy-Feet-Rann-Utsav-Planning-Guide-2026-27.pdf',
+      formTitle: 'Get your free planning guide',
+      formLede:
+        "Enter your details below. We'll send batch tips on WhatsApp and unlock your PDF instantly.",
+      submitLabel: 'Download Free Guide',
+      successLede:
+        'Your download should start automatically. Our team may also reach out on WhatsApp with batch updates.',
+      disclaimer:
+        'By downloading, you agree to receive Rann season updates on WhatsApp. Unsubscribe anytime.',
+    },
+  },
   introContent: {
     title: 'Introduction to Rann Utsav',
     paragraphs: [
@@ -75,11 +116,27 @@ const payload = {
     ],
   },
   fullMoonCalendar: [
-    { date: '24 November 2026', highlight: 'Batch 2 — Long Weekend + New Moon window' },
-    { date: '24 December 2026', highlight: 'Batch 4 — Christmas + Full Moon departure' },
-    { date: '22 January 2027', highlight: 'Batch 7 — Full Moon Supernight' },
-    { date: '21 February 2027', highlight: 'Batch 9 — Full Moon Special' },
-    { date: '20 March 2027', highlight: 'Season finale full moon atmosphere' },
+    {
+      batch: 4,
+      dates: '17 – 21 December 2026',
+      date: '17 – 21 December 2026',
+      price: '₹26,499',
+      highlight: 'Christmas special + full moon window',
+    },
+    {
+      batch: 7,
+      dates: '22 – 26 January 2027',
+      date: '22 – 26 January 2027',
+      price: '₹26,999',
+      highlight: 'Full Moon Supernight — signature White Rann experience',
+    },
+    {
+      batch: 9,
+      dates: '20 – 24 February 2027',
+      date: '20 – 24 February 2027',
+      price: '₹26,499',
+      highlight: 'Full Moon Special — second supernight window',
+    },
   ],
   formConfig: {
     enabled: true,
@@ -87,10 +144,17 @@ const payload = {
     successMessage:
       "Thank you — your request is received. Redirecting you to WhatsApp so our travel expert can share batch calendars and early-bird options.",
   },
-  seoTitle: 'Rann of Kutch Season 2026–27 | Happy Feet Travellers',
+  seoTitle: 'Rann Utsav Packages from Mumbai & Pune | White Desert Tour & Kutch Tour Package 2026–27',
   seoDescription:
-    'Priority access for Rann of Kutch Season 2026–27 departures, premium packages, batch calendar, add-ons, and early booking support.',
-  seoKeywords: ['Rann of Kutch', 'Rann Utsav 2026', 'Kutch tour packages', 'White Desert India'],
+    'Compare Rann Utsav Packages from Mumbai and Pune, White Desert tour dates, Dholavira tour add-ons, and Rann Utsav Full Moon Package batches for Season 2026–27.',
+  seoKeywords: [
+    'Rann Utsav Packages from Pune',
+    'Rann Utsav Packages from Mumbai',
+    'White Desert Tour',
+    'Dholavira Tour',
+    'Kutch Tour Package',
+    'Rann Utsav Full Moon Package',
+  ],
   packages: [
     {
       slug: 'classic-group-departure',
@@ -108,6 +172,9 @@ const payload = {
         'White Rann, Bhuj, Mandvi & cultural evenings',
         'Transparent inclusions and optional upgrades',
       ],
+      detailContent: {
+        audienceBadge: { emoji: '🔥', label: 'Most Popular', tone: 'popular' },
+      },
       sortOrder: 0,
     },
     {
@@ -144,6 +211,9 @@ const payload = {
         'Local stays with comfort-first selection',
         'Efficient for Western India road travellers',
       ],
+      detailContent: {
+        audienceBadge: { emoji: '💰', label: 'Best Value', tone: 'value' },
+      },
       sortOrder: 2,
     },
     {
@@ -162,6 +232,9 @@ const payload = {
         'Festival atmosphere with comfort upgrades',
         'Ideal for anniversary & celebration travel',
       ],
+      detailContent: {
+        audienceBadge: { emoji: '✨', label: 'Premium Experience', tone: 'premium' },
+      },
       sortOrder: 3,
     },
     {
@@ -180,6 +253,9 @@ const payload = {
         'Mix of Rann, Mandvi, Dholavira & extensions',
         'Dedicated planner on WhatsApp',
       ],
+      detailContent: {
+        audienceBadge: { emoji: '👨‍👩‍👧', label: 'Best for Families', tone: 'family' },
+      },
       sortOrder: 4,
     },
   ],

@@ -136,6 +136,7 @@ const schemas = {
     seoDescription: Joi.string().allow('', null),
     topicKeys: Joi.array().items(Joi.string().trim().max(80)).max(12),
     relatedTourSlugs: Joi.array().items(Joi.string().pattern(slugPattern)).max(16),
+    relatedPackageSlugs: Joi.array().items(Joi.string().pattern(slugPattern)).max(16),
     landingPageSlug: Joi.string().pattern(slugPattern).allow('', null),
     publishedAt: Joi.date(),
   }),
@@ -158,6 +159,7 @@ const schemas = {
     seoDescription: Joi.string().allow('', null),
     topicKeys: Joi.array().items(Joi.string().trim().max(80)).max(12),
     relatedTourSlugs: Joi.array().items(Joi.string().pattern(slugPattern)).max(16),
+    relatedPackageSlugs: Joi.array().items(Joi.string().pattern(slugPattern)).max(16),
     landingPageSlug: Joi.string().pattern(slugPattern).allow('', null),
     publishedAt: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()),
   }).min(1),
@@ -187,6 +189,8 @@ const schemas = {
     message: Joi.string().required().trim().min(10).max(2000),
     subject: Joi.string().trim().max(200).allow('', null),
     destination: Joi.string().trim().max(200).allow('', null),
+    travellerType: Joi.string().trim().valid('domestic', 'international').allow('', null),
+    travelInsuranceRequested: Joi.boolean().default(false),
     landingPageId: Joi.string().trim().allow('', null),
     source: Joi.string().trim().max(80).allow('', null),
     website: Joi.string().max(0).allow('', null),
@@ -198,19 +202,29 @@ const schemas = {
         email,
         destination,
         subject,
+        travellerType,
+        travelInsuranceRequested,
         website,
         _honeypot,
         ...rest
       } = value;
       const normalisedPhone = (phone || whatsappNumber || '').replace(/[\s-]/g, '');
       const normalisedEmail = (email || '').trim();
-      if (!normalisedPhone && !normalisedEmail) {
+      if (!normalisedPhone) {
         return helpers.error('any.custom', {
-          message: 'Provide a phone number or email address',
+          message: 'WhatsApp / phone number is required',
+        });
+      }
+      if (!phonePattern.test(normalisedPhone)) {
+        return helpers.error('any.custom', {
+          message: 'Enter a valid 10-digit Indian mobile number',
         });
       }
       const resolvedSubject =
-        (subject || '').trim() || (destination || '').trim() || null;
+        (destination || '').trim() || (subject || '').trim() || null;
+      const resolvedTravellerType = (travellerType || '').trim() || null;
+      const insuranceRequested =
+        resolvedTravellerType === 'domestic' && Boolean(travelInsuranceRequested);
       return {
         ...rest,
         phone: normalisedPhone,
@@ -218,6 +232,8 @@ const schemas = {
           normalisedEmail ||
           (normalisedPhone ? `lead+${normalisedPhone}@happyfeet.in` : 'enquiry@happyfeet.in'),
         subject: resolvedSubject,
+        travellerType: resolvedTravellerType,
+        travelInsuranceRequested: insuranceRequested,
         website: website || '',
         _honeypot: _honeypot || '',
       };
@@ -332,6 +348,32 @@ const schemas = {
     ),
     footerTagline: Joi.string().allow('', null).max(300),
     footerDetails: Joi.string().allow('', null).max(2000),
+    termsContent: Joi.string().allow('', null).max(100000),
+    privacyContent: Joi.string().allow('', null).max(100000),
+    cancellationPolicyContent: Joi.string().allow('', null).max(100000),
+    policiesLastUpdated: Joi.string().allow('', null).max(80),
+    heroCommunityQuote: Joi.string().allow('', null).max(500),
+    heroCommunityBannerUrl: Joi.string().allow('', null).max(2000),
+    heroCommunityAvatars: Joi.alternatives().try(
+      Joi.array().items(Joi.string().max(2000)).max(12),
+      Joi.string().allow('', null).max(50000)
+    ),
+    seasonPromoActive: Joi.boolean(),
+    seasonPromoBadge: Joi.string().allow('', null).max(80),
+    seasonPromoEyebrow: Joi.string().allow('', null).max(120),
+    seasonPromoTitle: Joi.string().allow('', null).max(200),
+    seasonPromoSubtitle: Joi.string().allow('', null).max(200),
+    seasonPromoDescription: Joi.string().allow('', null).max(2000),
+    seasonPromoImageUrl: Joi.string().allow('', null).max(2000),
+    seasonPromoTags: Joi.alternatives().try(
+      Joi.array().items(Joi.string().max(120)).max(8),
+      Joi.string().allow('', null).max(5000)
+    ),
+    seasonPromoPrimaryCtaLabel: Joi.string().allow('', null).max(80),
+    seasonPromoPrimaryCtaHref: Joi.string().allow('', null).max(500),
+    seasonPromoSecondaryCtaLabel: Joi.string().allow('', null).max(80),
+    seasonPromoSecondaryCtaHref: Joi.string().allow('', null).max(500),
+    aboutPageContent: Joi.alternatives().try(Joi.object(), Joi.string().allow('', null).max(200000)),
   }),
 
   adminLogin: Joi.object({

@@ -146,10 +146,6 @@ export default function ExperienceGallery({
 
   const canLoop = carouselSlides.length >= 3;
 
-  const memorySlides = display.filter((s) => s.type === 'memory').slice(0, 4);
-
-
-
   if (!display.length) return null;
 
 
@@ -166,7 +162,7 @@ export default function ExperienceGallery({
 
       <div className="experience-gallery__header">
 
-        <p className="experience-gallery__eyebrow">{eyebrow}</p>
+        {eyebrow ? <p className="experience-gallery__eyebrow">{eyebrow}</p> : null}
 
         <h2 id={headingId} className="experience-gallery__title">
 
@@ -267,54 +263,6 @@ export default function ExperienceGallery({
         </Swiper>
 
       </div>
-
-
-
-      {memorySlides.length > 0 ? (
-
-        <div className="experience-gallery__proof">
-
-          <p className="experience-gallery__proof-title">Traveller memories</p>
-
-          <div className="experience-gallery__proof-grid">
-
-            {memorySlides.map((slide, index) => (
-
-              <figure key={`proof-${index}`} className="experience-gallery__proof-card">
-
-                <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-
-                  <Image
-
-                    src={sanitiseStockImageUrl(slide.image)}
-
-                    alt=""
-
-                    fill
-
-                    sizes="160px"
-
-                    className="object-cover"
-
-                  />
-
-                </div>
-
-                {slide.caption ? (
-
-                  <figcaption className="experience-gallery__proof-caption">{slide.caption}</figcaption>
-
-                ) : null}
-
-              </figure>
-
-            ))}
-
-          </div>
-
-        </div>
-
-      ) : null}
 
     </section>
 

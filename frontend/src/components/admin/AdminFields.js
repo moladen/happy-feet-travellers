@@ -6,16 +6,11 @@ import { Icon } from "@/components/admin/AdminIcons";
 export function Field({ label, hint, children, className = "" }) {
   return (
     <label className={`block ${className}`.trim()}>
-      <div className="mb-2 min-h-[2.75rem]">
+      <div className={hint ? "mb-2 min-h-[2.75rem]" : "mb-1.5"}>
         <span className="block text-sm font-semibold leading-snug text-[#314559]">{label}</span>
-        <span
-          className={`mt-1 block min-h-[1rem] text-xs leading-snug text-[#6f8295] ${
-            hint ? "" : "invisible select-none"
-          }`}
-          aria-hidden={!hint}
-        >
-          {hint || "\u00a0"}
-        </span>
+        {hint ? (
+          <span className="mt-1 block text-xs leading-snug text-[#6f8295]">{hint}</span>
+        ) : null}
       </div>
       {children}
     </label>
@@ -47,7 +42,7 @@ export function TextArea({ value, className = "", ...props }) {
   );
 }
 
-export function SelectInput({ value, className = "", ...props }) {
+export function SelectInput({ value, className = "", options, children, ...props }) {
   const safeValue = value === null ? "" : value;
 
   return (
@@ -55,7 +50,15 @@ export function SelectInput({ value, className = "", ...props }) {
       {...props}
       value={safeValue}
       className={`w-full rounded-2xl border border-[#d5e1eb] bg-white px-4 py-3 text-sm text-[#33475b] outline-none transition focus:border-[#4fa3d1] ${className}`.trim()}
-    />
+    >
+      {Array.isArray(options) && options.length
+        ? options.map((option) => (
+            <option key={String(option.value)} value={option.value}>
+              {option.label}
+            </option>
+          ))
+        : children}
+    </select>
   );
 }
 

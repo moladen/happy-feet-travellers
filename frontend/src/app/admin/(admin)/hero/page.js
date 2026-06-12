@@ -5,13 +5,15 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import PageTransition from "@/components/admin/PageTransition";
-import { CardSection, Field, TextInput } from "@/components/admin/AdminFields";
+import { CardSection, Field, TextInput, AccordionSection } from "@/components/admin/AdminFields";
 import { Icon } from "@/components/admin/AdminIcons";
 import { emptyHeroSlideForm } from "@/lib/admin-data";
 import {
   HERO_IMAGE_ACCEPT,
   HERO_IMAGE_MAX_MB,
+  resolveAdminPreviewSrc,
   resolveHeroImageSrc,
+  resolveHeroImageSrcForAdmin,
   validateHeroImageFile,
 } from "@/lib/heroSlides";
 import {
@@ -21,6 +23,7 @@ import {
   reorderHeroSlides,
   updateHeroSlide,
 } from "@/services/adminService";
+import HeroCommunityEditor from "@/components/admin/HeroCommunityEditor";
 
 function buildHeroFormData(form, { requireImage = false, editingId = null } = {}) {
   const fd = new FormData();
@@ -43,6 +46,8 @@ export default function HeroManagementPage() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [communityNotice, setCommunityNotice] = useState("");
+  const [communityError, setCommunityError] = useState(false);
 
   const load = async () => {
     const result = await listHeroSlides();
@@ -100,7 +105,7 @@ export default function HeroManagementPage() {
       sortOrder: String(slide.sortOrder ?? ""),
       active: slide.active !== false,
       imageFile: null,
-      previewUrl: resolveHeroImageSrc(slide.src),
+      previewUrl: resolveHeroImageSrcForAdmin(slide.src) || resolveHeroImageSrc(slide.src),
     });
     setError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -122,26 +127,25 @@ export default function HeroManagementPage() {
     setSlides(result.data?.slides || order);
   };
 
-  const previewSrc =
-    form.previewUrl || (editing ? resolveHeroImageSrc(editing.src) : "");
+  const previewSrc = form.previewUrl
+    ? resolveAdminPreviewSrc(form.previewUrl)
+    : editing
+      ? resolveAdminPreviewSrc(editing.src)
+      : "";
 
   return (
-    <PageTransition className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-[28px] border border-[#e7eef4] bg-[linear-gradient(135deg,#fff8f1,#f4f9fd)] p-6 shadow-[0_24px_50px_-32px_rgba(31,78,121,0.45)] md:flex-row md:items-center md:justify-between">
+    <PageTransition className="w-full space-y-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#4f7b9d]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#4f7b9d]">
             Homepage hero
           </p>
-          <h1 className="mt-2 text-2xl font-bold text-[#17324d]">Hero Section Management</h1>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#5f6f7f]">
-            Upload high-resolution banner images (JPG, PNG, WebP up to {HERO_IMAGE_MAX_MB}MB). Changes
-            appear on the homepage carousel automatically.
-          </p>
+          <h1 className="mt-1 text-xl font-bold text-[#17324d] md:text-2xl">Hero Section Management</h1>
         </div>
         <Link
           href="/"
           target="_blank"
-          className="inline-flex items-center gap-2 self-start rounded-full border border-[#d8e7f2] bg-white px-4 py-2.5 text-sm font-semibold text-[#1f4e79] shadow-sm transition hover:border-[#4fa3d1]"
+          className="inline-flex items-center gap-2 rounded-full border border-[#d8e7f2] bg-white px-4 py-2 text-sm font-semibold text-[#1f4e79] shadow-sm transition hover:border-[#4fa3d1]"
         >
           <Icon name="eye" className="h-4 w-4" />
           Preview site
@@ -154,17 +158,120 @@ export default function HeroManagementPage() {
         </div>
       ) : null}
 
+      {communityNotice ? (
+        <div
+          className={`rounded-[26px] px-5 py-4 text-sm ${
+            communityError
+              ? "border border-[#f2d4bd] bg-[#fff5eb] text-[#a35a23]"
+              : "border border-[#d9e9d5] bg-[#f3fbf1] text-[#28623b]"
+          }`}
+        >
+          {communityNotice}
+        </div>
+      ) : null}
+
       {error ? (
         <div className="rounded-[26px] border border-[#f5c4c4] bg-[#fff0f0] px-5 py-4 text-sm text-[#9b2c2c]">
           {error}
         </div>
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] xl:items-start">
+      <div className="space-y-5">
         <CardSection
-          title={editing ? "Replace hero slide" : "Upload hero slide"}
-          description="Add destination tags and alt text for accessibility. Drag to reorder slides in the list."
+          title="Live carousel slides"
+          description={`${slides.length} slide${slides.length === 1 ? "" : "s"} · order matches homepage`}
         >
+          {!slides.length ? (
+            <p className="text-sm text-[#6f8295]">No slides yet. Expand &quot;Add hero slide&quot; below to upload your first banner.</p>
+          ) : (
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {slides.map((slide, index) => {
+                const src = resolveHeroImageSrc(slide.src);
+                return (
+                  <li
+                    key={slide.id}
+                    className="overflow-hidden rounded-[18px] border border-[#e7eef4] bg-white shadow-[0_8px_24px_-18px_rgba(31,78,121,0.35)]"
+                  >
+                    <div className="relative h-[100px] w-full bg-[#0a1628] sm:h-[110px]">
+                      <Image src={src} alt={slide.alt} fill unoptimized sizes="280px" className="object-cover" />
+                      {!slide.active ? (
+                        <span className="absolute left-2 top-2 rounded-full bg-[#06111b]/75 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white/80">
+                          Hidden
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="space-y-2.5 p-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-[#17324d]">
+                          {slide.emoji} {slide.tag || "Untitled"}
+                        </p>
+                        <p className="line-clamp-1 text-xs text-[#6f8295]">{slide.alt}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          type="button"
+                          disabled={busy || index === 0}
+                          onClick={() => moveSlide(index, -1)}
+                          className="rounded-lg border border-[#d5e1eb] px-2.5 py-1.5 text-xs font-semibold text-[#1f4e79] disabled:opacity-40"
+                          aria-label="Move up"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy || index === slides.length - 1}
+                          onClick={() => moveSlide(index, 1)}
+                          className="rounded-lg border border-[#d5e1eb] px-2.5 py-1.5 text-xs font-semibold text-[#1f4e79] disabled:opacity-40"
+                          aria-label="Move down"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => startEdit(slide)}
+                          className="rounded-lg bg-[#edf5fb] px-2.5 py-1.5 text-xs font-semibold text-[#1f4e79]"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={async () => {
+                            if (!window.confirm("Remove this hero slide from the homepage?")) return;
+                            setBusy(true);
+                            const result = await deleteHeroSlide(slide.id);
+                            setBusy(false);
+                            if (!result.success) {
+                              setMessage(result.message);
+                              return;
+                            }
+                            if (editing?.id === slide.id) resetForm();
+                            await load();
+                            setMessage("Hero slide removed.");
+                          }}
+                          className="rounded-lg border border-[#f5c4c4] px-2.5 py-1.5 text-xs font-semibold text-[#9b2c2c]"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </CardSection>
+
+        <CardSection
+          title="Manage banners"
+          description="Add a new slide or edit the traveler trust band below the homepage hero."
+        >
+          <AccordionSection
+            key={editing?.id || "new-slide"}
+            title={editing ? "Replace hero slide" : "Add hero slide"}
+            description="Upload image, alt text, and destination tag."
+            defaultOpen={!slides.length || Boolean(editing)}
+          >
           <form
             onSubmit={async (event) => {
               event.preventDefault();
@@ -191,7 +298,7 @@ export default function HeroManagementPage() {
               await load();
               setMessage(editing ? "Hero slide updated on the live site." : "Hero slide published to the homepage.");
             }}
-            className="space-y-5"
+            className="space-y-4"
           >
             <div
               onDragOver={(e) => e.preventDefault()}
@@ -202,8 +309,8 @@ export default function HeroManagementPage() {
               }}
               className="overflow-hidden rounded-[24px] border border-dashed border-[#c9dbe8] bg-[#f8fbfe]"
             >
-              <div className="relative aspect-[21/9] w-full min-h-[160px] bg-[#0a1628]">
-                {previewSrc ? (
+              {previewSrc ? (
+                <div className="relative h-[180px] w-full overflow-hidden bg-[#0a1628] md:h-[220px]">
                   <motion.div
                     key={previewSrc}
                     initial={{ opacity: 0, scale: 1.02 }}
@@ -211,13 +318,12 @@ export default function HeroManagementPage() {
                     transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                     className="absolute inset-0"
                   >
-                    <Image
+                    {/* Native img required — next/image does not support blob: preview URLs */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={previewSrc}
                       alt="Hero preview"
-                      fill
-                      unoptimized
-                      sizes="(max-width: 1280px) 100vw, 720px"
-                      className="object-cover"
+                      className="h-full w-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#061525]/80 via-transparent to-transparent" />
                     <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-2xl border border-white/20 bg-black/40 px-3 py-2 text-xs font-semibold text-white backdrop-blur-md">
@@ -225,16 +331,16 @@ export default function HeroManagementPage() {
                       <span>{form.tag || "Preview tag"}</span>
                     </div>
                   </motion.div>
-                ) : (
-                  <div className="grid h-full min-h-[160px] place-items-center p-8 text-center">
-                    <div>
-                      <Icon name="hero" className="mx-auto h-10 w-10 text-[#7ec8e3]" />
-                      <p className="mt-3 text-sm font-semibold text-white/90">No preview yet</p>
-                      <p className="mt-1 text-xs text-white/60">Upload a wide landscape image (1920×1080 recommended)</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="flex h-[120px] flex-col items-center justify-center gap-2 bg-[#eef5fb] px-6 text-center md:h-[132px]">
+                  <Icon name="hero" className="h-9 w-9 text-[#4fa3d1]" />
+                  <p className="text-sm font-semibold text-[#17324d]">No preview yet</p>
+                  <p className="max-w-md text-xs text-[#6f8295]">
+                    Upload a wide landscape image (1920×1080 recommended)
+                  </p>
+                </div>
+              )}
               <div className="flex flex-wrap items-center gap-3 border-t border-[#e7eef4] bg-white p-4">
                 <button
                   type="button"
@@ -248,7 +354,7 @@ export default function HeroManagementPage() {
                     type="button"
                     onClick={() => {
                       if (form.previewUrl?.startsWith("blob:")) URL.revokeObjectURL(form.previewUrl);
-                      setForm((c) => ({ ...c, imageFile: null, previewUrl: editing ? resolveHeroImageSrc(editing.src) : "" }));
+                      setForm((c) => ({ ...c, imageFile: null, previewUrl: editing ? resolveAdminPreviewSrc(editing.src) : "" }));
                     }}
                     className="rounded-full border border-[#d5e1eb] px-4 py-2 text-sm font-semibold text-[#425264] transition hover:border-[#f4a261]"
                   >
@@ -270,7 +376,7 @@ export default function HeroManagementPage() {
               </div>
             </div>
 
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Alt text (required)">
                 <TextInput
                   value={form.altText}
@@ -332,93 +438,18 @@ export default function HeroManagementPage() {
               ) : null}
             </div>
           </form>
-        </CardSection>
-
-        <CardSection
-          title="Live carousel slides"
-          description={`${slides.length} slide${slides.length === 1 ? "" : "s"} · order matches homepage`}
-        >
-          {!slides.length ? (
-            <p className="text-sm text-[#6f8295]">No slides yet. Upload your first hero banner above.</p>
-          ) : (
-            <ul className="space-y-4">
-              {slides.map((slide, index) => {
-                const src = resolveHeroImageSrc(slide.src);
-                return (
-                  <li
-                    key={slide.id}
-                    className="overflow-hidden rounded-[22px] border border-[#e7eef4] bg-white shadow-[0_12px_32px_-24px_rgba(31,78,121,0.4)]"
-                  >
-                    <div className="relative aspect-[16/7] w-full bg-[#0a1628]">
-                      <Image src={src} alt={slide.alt} fill unoptimized sizes="400px" className="object-cover" />
-                      {!slide.active ? (
-                        <span className="absolute left-3 top-3 rounded-full bg-[#06111b]/75 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/80">
-                          Hidden
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className="flex flex-wrap items-center justify-between gap-3 p-4">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[#17324d]">
-                          {slide.emoji} {slide.tag || "Untitled"}
-                        </p>
-                        <p className="truncate text-xs text-[#6f8295]">{slide.alt}</p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          disabled={busy || index === 0}
-                          onClick={() => moveSlide(index, -1)}
-                          className="rounded-xl border border-[#d5e1eb] px-3 py-2 text-xs font-semibold text-[#1f4e79] disabled:opacity-40"
-                          aria-label="Move up"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          disabled={busy || index === slides.length - 1}
-                          onClick={() => moveSlide(index, 1)}
-                          className="rounded-xl border border-[#d5e1eb] px-3 py-2 text-xs font-semibold text-[#1f4e79] disabled:opacity-40"
-                          aria-label="Move down"
-                        >
-                          ↓
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => startEdit(slide)}
-                          className="rounded-xl bg-[#edf5fb] px-3 py-2 text-xs font-semibold text-[#1f4e79]"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          disabled={busy}
-                          onClick={async () => {
-                            if (!window.confirm("Remove this hero slide from the homepage?")) return;
-                            setBusy(true);
-                            const result = await deleteHeroSlide(slide.id);
-                            setBusy(false);
-                            if (!result.success) {
-                              setMessage(result.message);
-                              return;
-                            }
-                            if (editing?.id === slide.id) resetForm();
-                            await load();
-                            setMessage("Hero slide removed.");
-                          }}
-                          className="rounded-xl border border-[#f5c4c4] px-3 py-2 text-xs font-semibold text-[#9b2c2c]"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          </AccordionSection>
         </CardSection>
       </div>
+
+      <HeroCommunityEditor
+        busy={busy}
+        setBusy={setBusy}
+        onMessage={(text, isErr = false) => {
+          setCommunityNotice(text);
+          setCommunityError(isErr);
+        }}
+      />
     </PageTransition>
   );
 }

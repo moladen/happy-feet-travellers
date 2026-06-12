@@ -1,7 +1,84 @@
 import RannSectionHeading from '@/components/rann/RannSectionHeading';
+import {
+  BATCH_THEME_LEGEND,
+  getBatchThemeLegendItem,
+  resolveBatchPresentation,
+} from '@/lib/rannBatchThemes';
+
+function BatchLegend() {
+  return (
+    <div className="rann-batch-legend mb-6 flex flex-wrap items-center gap-2 sm:gap-3">
+      <span className="mr-1 text-[11px] font-semibold uppercase tracking-wider text-foreground/55">
+        Special departures
+      </span>
+      {BATCH_THEME_LEGEND.map((key) => {
+        const theme = getBatchThemeLegendItem(key);
+        if (!theme) return null;
+        return (
+          <span key={key} className={`rann-batch-badge rann-batch-badge--legend ${theme.badgeClass}`}>
+            <span aria-hidden>{theme.emoji}</span>
+            {theme.label}
+          </span>
+        );
+      })}
+      <span className="rann-batch-badge rann-batch-badge--legend rann-batch-badge--standard">
+        Standard batch
+      </span>
+    </div>
+  );
+}
+
+function BatchCard({ batch }) {
+  const { primary, badges, isSpecial, cardClass } = resolveBatchPresentation(batch);
+
+  return (
+    <article className={`rann-batch-card ${cardClass}`}>
+      {isSpecial && primary.decor ? (
+        <span className="rann-batch-card__decor" aria-hidden>
+          {primary.decor}
+        </span>
+      ) : null}
+      {isSpecial && primary.emoji ? (
+        <span className="rann-batch-card__watermark" aria-hidden>
+          {primary.emoji}
+        </span>
+      ) : null}
+
+      <div className="rann-batch-card__head">
+        <span className="rann-batch-card__number">Batch #{batch.batch}</span>
+        {isSpecial ? (
+          <div className="flex flex-wrap justify-end gap-1.5">
+            {badges.map((theme) => (
+              <span key={theme.key} className={`rann-batch-badge ${theme.badgeClass}`}>
+                {theme.emoji ? <span aria-hidden>{theme.emoji}</span> : null}
+                {theme.label}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span className="rann-batch-badge rann-batch-badge--standard">Standard</span>
+        )}
+      </div>
+
+      <p className="rann-batch-card__dates">{batch.dates}</p>
+      <p className="rann-batch-card__price">{batch.price}</p>
+      <p className="rann-batch-card__highlight">{batch.highlight}</p>
+
+      {batch.tags?.length ? (
+        <div className="rann-batch-card__tags">
+          {batch.tags.map((tag) => (
+            <span key={tag} className="rann-batch-card__tag">
+              {tag}
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </article>
+  );
+}
 
 /**
- * @param {{ batches?: Array<{ batch: number; dates: string; price: string; highlight: string; tags?: string[] }> }} props
+ * @param {{ batches?: Array<{ batch: number; dates: string; price: string; highlight: string; tags?: string[]; specialTypes?: string[] }> }} props
  */
 export default function RannBatchCalendar({ batches = [] }) {
   if (!batches.length) return null;
@@ -12,46 +89,20 @@ export default function RannBatchCalendar({ batches = [] }) {
         <RannSectionHeading
           eyebrow="Group departures"
           title="2026–27 Batch Calendar"
-          lede="Ten planned group batches across the official Rann Utsav season — sleeper train coordination, fixed departures, and transparent starting prices."
+          lede="Ten planned group batches across the official Rann Utsav season — spot Full Moon, festive, and signature departures at a glance."
         />
-        <div className="overflow-x-auto rounded-2xl border border-[#e5d4bc] bg-white shadow-sm">
-          <table className="rann-batch-table w-full min-w-[640px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-[#efe6d8] bg-[#fffdf9] text-xs font-bold uppercase tracking-wider text-primary">
-                <th className="px-4 py-3 sm:px-5">Batch</th>
-                <th className="px-4 py-3 sm:px-5">Dates</th>
-                <th className="px-4 py-3 sm:px-5">Starting price</th>
-                <th className="hidden px-4 py-3 md:table-cell sm:px-5">Highlights</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#efe6d8]">
-              {batches.map((row) => (
-                <tr key={row.batch} className="transition hover:bg-[#fffaf1]">
-                  <td className="px-4 py-3.5 font-bold text-primary sm:px-5">#{row.batch}</td>
-                  <td className="px-4 py-3.5 font-medium text-foreground/90 sm:px-5">{row.dates}</td>
-                  <td className="px-4 py-3.5 font-bold text-cta sm:px-5">{row.price}</td>
-                  <td className="hidden px-4 py-3.5 md:table-cell sm:px-5">
-                    <p className="text-foreground/80">{row.highlight}</p>
-                    {row.tags?.length ? (
-                      <div className="mt-1.5 flex flex-wrap gap-1.5">
-                        {row.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-full border border-[#e5d4bc] bg-[#fffdf9] px-2 py-0.5 text-[10px] font-semibold text-foreground/70"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+        <BatchLegend />
+
+        <div className="rann-batch-grid">
+          {batches.map((row) => (
+            <BatchCard key={row.batch} batch={row} />
+          ))}
         </div>
-        <p className="mt-4 text-center text-xs text-foreground/65">
-          Prices indicative for Group Departure from Mumbai/Pune · 3AC upgrades &amp; add-ons quoted at confirmation
+
+        <p className="mt-6 text-center text-xs text-foreground/65">
+          Prices indicative for Group Departure from Mumbai/Pune · 3AC upgrades &amp; add-ons quoted at
+          confirmation
         </p>
       </div>
     </section>

@@ -18,7 +18,7 @@ export function mapTourToPackageCard(tour) {
     price: formatTourPriceLabel(tour),
     highlights: highlights.length ? highlights : ['Contact us for a tailored itinerary'],
     detail: tour.description || '',
-    image: tour.image || tour.coverImage,
+    image: tour.coverImage || tour.image,
   };
 }
 

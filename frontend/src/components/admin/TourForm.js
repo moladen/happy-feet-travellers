@@ -8,6 +8,7 @@ import {
   validateTourForAdminSite,
   prepareTourPayloadForAdmin,
 } from "@/lib/admin-data";
+import { ensureTourImagesUploaded } from "@/lib/ensureTourImages";
 import { CONTENT_TOPIC_EXAMPLES } from "@/lib/contentTopics";
 import { Icon } from "@/components/admin/AdminIcons";
 import ImageUploader from "@/components/admin/ImageUploader";
@@ -136,7 +137,12 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
       setActiveStep(cat === "customized" ? 0 : 1);
       return;
     }
-    await onSubmit(prepareTourPayloadForAdmin(form));
+    try {
+      const withUploadedImages = await ensureTourImagesUploaded(form);
+      await onSubmit(prepareTourPayloadForAdmin(withUploadedImages));
+    } catch (error) {
+      setFormError(error?.message || "Could not prepare images for save. Re-upload photos on the Media step.");
+    }
   };
 
   return (

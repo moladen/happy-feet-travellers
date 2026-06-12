@@ -14,6 +14,17 @@ function formatDestination(enquiry) {
   return 'General enquiry';
 }
 
+function formatTravellerType(value) {
+  if (value === 'domestic') return 'Domestic';
+  if (value === 'international') return 'International';
+  return '—';
+}
+
+function formatTravelInsurance(enquiry) {
+  if (!enquiry.travelInsuranceRequested) return 'Not requested';
+  return 'Yes (+₹200 per person — to be added in final quotation)';
+}
+
 function buildEnquiryEmail(enquiry) {
   const destination = formatDestination(enquiry);
   const submittedAt = enquiry.createdAt
@@ -24,8 +35,10 @@ function buildEnquiryEmail(enquiry) {
     ['Name', enquiry.name],
     ['Phone Number', enquiry.phone || '—'],
     ['Email', enquiry.email],
-    ['Destination / Tour', destination],
-    ['Message', enquiry.message],
+    ['Destination', destination],
+    ['Traveller type', formatTravellerType(enquiry.travellerType)],
+    ['Travel insurance', formatTravelInsurance(enquiry)],
+    ['Travel details', enquiry.message],
     ['Source', enquiry.source || 'website'],
     ['Submitted', submittedAt],
   ];

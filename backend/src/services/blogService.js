@@ -39,7 +39,12 @@ async function getBlog(idOrSlug) {
     });
     if (!blog) throw AppError.notFound('Blog not found');
     const related = await getRelatedForBlog(blog);
-    return { ...blog, relatedTours: related.tours, relatedLandingPage: related.landingPage };
+    return {
+      ...blog,
+      relatedTours: related.tours,
+      relatedPackages: related.packages,
+      relatedLandingPage: related.landingPage,
+    };
   });
 }
 
@@ -61,6 +66,7 @@ async function createBlog(payload) {
         category: payload.category || null,
         topicKeys: Array.isArray(payload.topicKeys) ? payload.topicKeys : [],
         relatedTourSlugs: Array.isArray(payload.relatedTourSlugs) ? payload.relatedTourSlugs : [],
+        relatedPackageSlugs: Array.isArray(payload.relatedPackageSlugs) ? payload.relatedPackageSlugs : [],
         landingPageSlug: payload.landingPageSlug || null,
         publishedAt: payload.publishedAt ? new Date(payload.publishedAt) : new Date(),
       },

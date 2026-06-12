@@ -18,7 +18,7 @@ const FALLBACK_IMAGE =
  */
 export default function PersonalizedTourCard({ tour, variant = 'default' }) {
   const isExperience = variant === 'experience';
-  const primarySrc = tour?.image || tour?.coverImage || FALLBACK_IMAGE;
+  const primarySrc = tour?.coverImage || tour?.image || FALLBACK_IMAGE;
   const [imageSrc, setImageSrc] = useState(primarySrc);
 
   useEffect(() => {
@@ -29,6 +29,8 @@ export default function PersonalizedTourCard({ tour, variant = 'default' }) {
   const ctaLabel = isExperience ? 'Explore this journey' : tour?.ctaData?.primaryLabel || 'Explore journey';
   const duration = tour?.durationLabel || tour?.duration || 'Flexible pace';
   const teaser = isExperience ? getPersonalizedStoryTeaser(tour) : getDefaultTeaser(tour);
+  const startingPriceAmount = resolveTourPriceAmount(tour?.startingPrice, tour?.price);
+  const showPriceRibbon = isExperience && startingPriceAmount > 0;
 
   return (
     <Link
@@ -47,6 +49,14 @@ export default function PersonalizedTourCard({ tour, variant = 'default' }) {
             }}
           />
           <div className="personalized-tour-card__overlay" aria-hidden />
+          {showPriceRibbon ? (
+            <div className="personalized-tour-card__price-ribbon" aria-label={`Starting from ₹${startingPriceAmount.toLocaleString('en-IN')}`}>
+              <span className="personalized-tour-card__price-ribbon-label">Starting From</span>
+              <span className="personalized-tour-card__price-ribbon-amount">
+                ₹{startingPriceAmount.toLocaleString('en-IN')}
+              </span>
+            </div>
+          ) : null}
           <div className="personalized-tour-card__tags" aria-label="Experience type">
             {tags.map((tag) => (
               <span key={`${tag.icon}-${tag.label}`} className="personalized-tour-card__tag">

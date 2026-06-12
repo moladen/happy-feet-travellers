@@ -1,6 +1,6 @@
 /**
  * SEO-friendly internal destination links for the site footer.
- * Uses existing upcoming-departures search (`q`) — no new routes required.
+ * Uses upcoming-departures search (`q`) and category filters (`sub`).
  */
 export const FOOTER_DESTINATION_LINKS = [
   { href: '/upcoming-departures?q=himachal', label: 'Himachal Tours' },

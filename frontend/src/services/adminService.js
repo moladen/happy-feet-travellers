@@ -1,4 +1,5 @@
 import apiClient, { extractApiError, unwrap } from "@/lib/apiClient";
+import { resolveUploadApiBase, UPLOAD_TIMEOUT_MS } from "@/constants/site";
 
 export const setAdminToken = (token) => {
   if (typeof window !== "undefined") {
@@ -64,6 +65,42 @@ export const updateTour = (id, payload) =>
 
 export const deleteTour = (id) =>
   run(() => apiClient.delete(`/tours/${id}`), "Could not delete tour.");
+
+export const uploadTourImage = (file) =>
+  run(async () => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const res = await apiClient.post("/media/tour-image", formData, {
+      baseURL: resolveUploadApiBase(),
+      timeout: UPLOAD_TIMEOUT_MS,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res;
+  }, "Could not upload image. Try a smaller photo or refresh and upload again.");
+
+export const uploadHeroImage = (file) =>
+  run(async () => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const res = await apiClient.post("/media/hero-image", formData, {
+      baseURL: resolveUploadApiBase(),
+      timeout: UPLOAD_TIMEOUT_MS,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res;
+  }, "Could not upload hero image. Try a smaller photo or refresh and upload again.");
+
+export const uploadGuidePdf = (file) =>
+  run(async () => {
+    const formData = new FormData();
+    formData.append("pdf", file);
+    const res = await apiClient.post("/media/guide-pdf", formData, {
+      baseURL: resolveUploadApiBase(),
+      timeout: UPLOAD_TIMEOUT_MS,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res;
+  }, "Could not upload PDF. Use a file under 20MB and try again.");
 
 /** Upcoming departures — dedicated API (auto-expiry, tags, featured). */
 export const listUpcomingDepartures = (params = {}) =>
@@ -231,3 +268,18 @@ export const updateSettings = (payload) =>
 
 export const listSubscribers = (params = {}) =>
   run(() => apiClient.get("/subscribers", { params }), "Could not load subscribers.");
+
+export const listLandingPages = (params = {}) =>
+  run(() => apiClient.get("/landing-pages", { params }), "Could not load landing pages.");
+
+export const getLandingPage = (idOrSlug) =>
+  run(() => apiClient.get(`/landing-pages/${idOrSlug}`), "Could not load this landing page.");
+
+export const createLandingPage = (payload) =>
+  run(() => apiClient.post("/landing-pages", payload), "Could not create landing page.");
+
+export const updateLandingPage = (id, payload) =>
+  run(() => apiClient.put(`/landing-pages/${id}`, payload), "Could not update landing page.");
+
+export const deleteLandingPage = (id) =>
+  run(() => apiClient.delete(`/landing-pages/${id}`), "Could not delete landing page.");

@@ -10,7 +10,7 @@ export const GOOGLE_REVIEWS_PROFILE_URL =
 export const GOOGLE_REVIEWS_SUMMARY = {
   rating: 4.8,
   maxRating: 5,
-  totalReviews: 52,
+  totalReviews: 202,
   label: 'Google Reviews',
 };
 

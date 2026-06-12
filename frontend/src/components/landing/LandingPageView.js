@@ -5,13 +5,15 @@ import RannPackageGridCard from '@/components/rann/RannPackageGridCard';
 import RannPackageShowcaseCard from '@/components/rann/RannPackageShowcaseCard';
 import RannSectionHeading from '@/components/rann/RannSectionHeading';
 import RannWhatsAppPriorityCta from '@/components/rann/RannWhatsAppPriorityCta';
-import Testimonials from '@/components/home/Testimonials';
 import LandingTestimonials from '@/components/landing/LandingTestimonials';
+import TravellerTrustSection from '@/components/home/TravellerTrustSection';
 import ExperienceGallery from '@/components/gallery/ExperienceGallery';
 import { buildLandingGallerySlides, withGalleryFallback } from '@/lib/gallerySlides';
 import { groupFaqsByCategory } from '@/services/landingPageService';
 import { RANN_WA_GROUP_MESSAGE, RANN_WA_PRIORITY_MESSAGE } from '@/lib/rannSeasonContent';
 import { whatsappHref } from '@/lib/siteContact';
+import LandingHeroPricingBadge from '@/components/landing/LandingHeroPricingBadge';
+import { resolveLandingHeroPricing } from '@/lib/landingHeroPricing';
 
 function FaqGroup({ title, items }) {
   if (!items?.length) return null;
@@ -63,44 +65,44 @@ export default function LandingPageView({ page, settings }) {
 
   const ctaHref = page.ctaButtonLink || '#priority-interest';
   const heroImage = page.heroBannerImage || 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=2400&h=1400&fit=crop';
+  const heroPricing = resolveLandingHeroPricing(page, packages);
 
   return (
     <div className="rann-landing bg-background">
       <section className="rann-landing-hero relative overflow-hidden">
-        <div className="absolute inset-0">
+        <div className="rann-landing-hero__media absolute inset-0">
           <Image
             src={heroImage}
             alt={page.heroHeading || page.title}
             fill
             priority
-            className="object-cover object-center"
+            className="object-cover object-center scale-105 rann-landing-hero__img"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#061525]/88 via-[#081a2d]/55 to-[#061525]/70" />
+          <div className="rann-landing-hero__overlay absolute inset-0" aria-hidden />
+          <div className="rann-landing-hero__glow rann-landing-hero__glow--coral" aria-hidden />
+          <div className="rann-landing-hero__glow rann-landing-hero__glow--navy" aria-hidden />
         </div>
         <div className="container relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20 lg:py-24">
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/80">
+            <p className="landing-hero-eyebrow">
+              <span className="landing-hero-eyebrow__dot" aria-hidden />
               Happy Feet Travellers presents
             </p>
-            <h1 className="mt-3 font-display text-4xl font-bold leading-tight text-white md:text-5xl lg:text-[3.25rem]">
+            <h1 className="rann-landing-hero__title mt-4 font-display text-4xl font-bold leading-[1.08] text-white md:text-5xl lg:text-[3.35rem]">
               {page.heroHeading || page.title}
             </h1>
+            <LandingHeroPricingBadge pricing={heroPricing} />
             {page.heroSubheading ? (
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/90 md:text-lg">
                 {page.heroSubheading}
               </p>
             ) : null}
             {page.seasonDates ? (
-              <p className="mt-4 inline-flex rounded-full border border-white/35 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
-                {page.seasonDates}
-              </p>
+              <p className="landing-hero-season-pill mt-4">{page.seasonDates}</p>
             ) : null}
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href={ctaHref}
-                className="inline-flex rounded-xl bg-cta px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_28px_-12px_rgba(231,111,81,0.55)] transition hover:bg-cta-hover"
-              >
+            <div className="landing-hero-actions mt-8">
+              <Link href={ctaHref} className="landing-hero-cta landing-hero-cta--primary">
                 {page.ctaButtonText || 'Get Priority Access'}
               </Link>
               {page.whatsappGroupEnabled !== false ? (
@@ -108,7 +110,7 @@ export default function LandingPageView({ page, settings }) {
                   href={waGroup}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-6 py-3.5 text-sm font-bold text-white transition hover:brightness-110"
+                  className="landing-hero-cta landing-hero-cta--whatsapp"
                 >
                   Join WhatsApp Priority Group
                 </a>
@@ -296,6 +298,8 @@ export default function LandingPageView({ page, settings }) {
         </section>
       ) : null}
 
+      <TravellerTrustSection />
+
       {formEnabled ? (
         <section className="section-tone-sand-soft py-12 md:py-16">
           <div className="container mx-auto max-w-5xl px-4 sm:px-6">
@@ -338,7 +342,9 @@ export default function LandingPageView({ page, settings }) {
         {pageTestimonials.length > 0 ? (
           <LandingTestimonials items={pageTestimonials} />
         ) : (
-          <Testimonials />
+          <p className="container mx-auto max-w-6xl px-4 pb-14 text-center text-sm text-foreground/65 sm:px-6">
+            Add landing-only reviews in Admin → Landing Pages.
+          </p>
         )}
       </section>
 

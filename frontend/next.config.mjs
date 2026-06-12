@@ -36,10 +36,13 @@ const nextConfig = {
   },
 
   async rewrites() {
-    if (!apiProxyTarget) return [];
+    const devBackend =
+      process.env.NODE_ENV === 'development' && !apiProxyTarget ? 'http://127.0.0.1:5000' : '';
+    const target = apiProxyTarget || devBackend;
+    if (!target) return [];
     return [
-      { source: '/api/:path*', destination: `${apiProxyTarget}/api/:path*` },
-      { source: '/uploads/:path*', destination: `${apiProxyTarget}/uploads/:path*` },
+      { source: '/api/:path*', destination: `${target}/api/:path*` },
+      { source: '/uploads/:path*', destination: `${target}/uploads/:path*` },
     ];
   },
 

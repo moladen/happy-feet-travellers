@@ -61,7 +61,7 @@ function getTourGalleryImages(tour) {
   if (Array.isArray(tour?.gallery) && tour.gallery.length) {
     return [...new Set(tour.gallery.map(getImageUrl).filter(Boolean))];
   }
-  const values = [...parseImageList(tour?.images), tour?.coverImage, tour?.image];
+  const values = [...parseImageList(tour?.images)];
   return [...new Set(values.map(getImageUrl).filter(Boolean))];
 }
 
@@ -101,7 +101,8 @@ function BulletList({ items, type = 'check' }) {
 export default function TourDetails({ tour, whatsappNumber }) {
   const gallery = getTourGalleryImages(tour);
   const displayGallery = gallery.length ? gallery : [FALLBACK_TOUR_IMAGE];
-  const heroImage = displayGallery[0];
+  const heroImage =
+    getImageUrl(tour?.coverImage) || getImageUrl(tour?.image) || displayGallery[0] || FALLBACK_TOUR_IMAGE;
   const experienceSlides = withGalleryFallback(
     buildTourGallerySlides(tour, (url) => getImageUrl(url) || url)
   );
@@ -163,11 +164,11 @@ export default function TourDetails({ tour, whatsappNumber }) {
           </section>
         ) : null}
 
-        {/* Traveller gallery — social proof */}
+        {/* Journey gallery */}
         <section className="rounded-2xl border border-[#dceaf7] bg-[#f8fbff] p-4 shadow-sm md:p-5">
           <ExperienceGallery
             slides={experienceSlides}
-            eyebrow="Traveller memories"
+            eyebrow=""
             title="See the journey before you book"
             lede="Destination landscapes, group moments, and real on-trip energy — the vibe of this tour in pictures."
           />

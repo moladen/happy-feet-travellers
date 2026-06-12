@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import RelatedToursSection from '@/components/content/RelatedToursSection';
+import RelatedPackagesSection from '@/components/content/RelatedPackagesSection';
 import { blogHref } from '@/lib/contentTopics';
 import { getBlogById, getBlogs } from '@/services/api';
 
@@ -32,14 +32,17 @@ export default async function BlogArticlePage({ params }) {
   const all = await getBlogs();
   const others = all.filter((b) => String(b.id) !== String(blog.id) && b.slug !== blog.slug).slice(0, 8);
   const body = paragraphs(blog.content);
-  const relatedTours = blog.relatedTours || [];
+  const relatedPackages = blog.relatedPackages || blog.relatedLandingPage?.packages || [];
   const relatedLandingPage = blog.relatedLandingPage || null;
+  const packagesTitle = relatedLandingPage?.title
+    ? `Rann Utsav packages — ${relatedLandingPage.title.replace(/\s*Season.*/i, '').trim() || relatedLandingPage.title}`
+    : 'Related packages';
 
   return (
-    <div className="min-h-screen bg-background">
-      <article className="border-b border-[#dceaf7] bg-gradient-to-br from-primary via-[#2a6094] to-secondary py-12 text-white md:py-16">
-        <div className="container mx-auto px-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/80">{blog.category}</p>
+    <div className="page-shell">
+      <article className="page-hero-brand py-10 md:py-14">
+        <div className="container mx-auto px-4 md:px-6">
+          <p className="section-eyebrow mb-3 text-white/80">{blog.category}</p>
           <h1 className="max-w-4xl text-3xl font-bold leading-tight md:text-5xl">{blog.title}</h1>
           <p className="mt-4 max-w-3xl text-lg text-white/90">{blog.excerpt}</p>
           <div className="mt-8 flex flex-wrap items-center gap-6 border-t border-white/20 pt-6">
@@ -78,7 +81,8 @@ export default async function BlogArticlePage({ params }) {
         </div>
       </article>
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="section-tone-cream py-10 md:py-14">
+        <div className="container mx-auto px-4 md:px-6">
         <div className="grid gap-12 lg:grid-cols-[1fr_300px]">
           <div className="min-w-0">
             <div className="overflow-hidden rounded-2xl border border-[#dceaf7] bg-white shadow-sm">
@@ -98,14 +102,10 @@ export default async function BlogArticlePage({ params }) {
               </div>
             </div>
 
-            <RelatedToursSection
-              tours={relatedTours}
+            <RelatedPackagesSection
+              packages={relatedPackages}
               landingPage={relatedLandingPage}
-              title={
-                relatedLandingPage?.title
-                  ? `Tours & packages — ${relatedLandingPage.title.replace(/Season.*/i, '').trim()}`
-                  : 'Related tours & departures'
-              }
+              title={packagesTitle}
             />
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -139,6 +139,7 @@ export default async function BlogArticlePage({ params }) {
               </ul>
             </div>
           </aside>
+        </div>
         </div>
       </div>
     </div>

@@ -82,6 +82,10 @@ async function createEnquiry(payload) {
 
         landingPageId: payload.landingPageId || null,
 
+        travellerType: payload.travellerType || null,
+
+        travelInsuranceRequested: Boolean(payload.travelInsuranceRequested),
+
       },
 
     })

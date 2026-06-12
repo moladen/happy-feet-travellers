@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CATEGORY_LABELS } from '@/components/rann/RannBestTimeSection';
+import { resolveRannPackageBadge } from '@/lib/rannSeasonContent';
 import { sanitiseStockImageUrl } from '@/lib/stockImages';
 
 const FALLBACK_IMAGE =
@@ -24,7 +24,7 @@ export default function RannPackageTourCard({ pkg, landingSlug, className = '' }
   const detailHref = `/${landingSlug}/packages/${pkg.slug}`;
   const category = pkg.category || 'group';
   const themeSlug = THEME_BY_CATEGORY[category] || 'scenic';
-  const categoryLabel = CATEGORY_LABELS[category] || 'Rann package';
+  const audienceBadge = resolveRannPackageBadge(pkg);
   const displayTitle = pkg.emoji ? `${pkg.emoji} ${pkg.name}` : pkg.name;
   const duration = pkg.duration || '';
   const priceLabel = pkg.startingPrice || 'Price on request';
@@ -49,10 +49,18 @@ export default function RannPackageTourCard({ pkg, landingSlug, className = '' }
               </span>
               Rann Season 2026–27
             </span>
-            <p className="departure-tour-card__group">
-              <span className="departure-tour-card__group-dot" aria-hidden />
-              {categoryLabel}
-            </p>
+            {audienceBadge ? (
+              <p
+                className={`departure-tour-card__audience-badge departure-tour-card__audience-badge--${audienceBadge.tone || 'default'}`}
+              >
+                {audienceBadge.emoji ? (
+                  <span className="departure-tour-card__audience-badge-emoji" aria-hidden>
+                    {audienceBadge.emoji}
+                  </span>
+                ) : null}
+                {audienceBadge.label}
+              </p>
+            ) : null}
           </div>
         </Link>
 

@@ -5,6 +5,7 @@ const { withDatabaseErrors } = require('@/utils/databaseErrors');
 const { generateSlug } = require('@/utils/slugGenerator');
 const { activeDepartureWhere } = require('@/utils/departureExpiry');
 const upcomingDepartureService = require('@/services/upcomingDepartureService');
+const { persistTourMediaInPayload } = require('@/utils/tourMedia');
 
 const MONTHS = [
   'january', 'february', 'march', 'april', 'may', 'june',
@@ -187,7 +188,7 @@ async function createTour(payload) {
     const exists = await prisma.tour.findUnique({ where: { slug } });
     if (exists) throw AppError.conflict('Tour with this title already exists');
 
-    const data = normaliseTourPayload({
+    const data = normaliseTourPayload(persistTourMediaInPayload({
       ...payload,
       slug,
       images: payload.images || [],
@@ -200,7 +201,7 @@ async function createTour(payload) {
       pickupPoints: payload.pickupPoints ?? null,
       supplements: payload.supplements ?? null,
       terms: payload.terms ?? null,
-    });
+    }));
 
     return prisma.tour.create({ data });
   });
@@ -217,7 +218,7 @@ async function updateTour(id, updateData) {
       });
     }
 
-    const data = normaliseTourPayload(updateData);
+    const data = normaliseTourPayload(persistTourMediaInPayload(updateData));
     if (data.title || data.slug) {
       const newSlug = generateSlug(data.slug || data.title);
       const conflict = await prisma.tour.findUnique({ where: { slug: newSlug } });

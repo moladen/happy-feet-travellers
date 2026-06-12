@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
+import FloatingTrustBar from "@/components/common/FloatingTrustBar";
 import LeadPopup from "@/components/common/LeadPopup";
 import ExitIntentPopup from "@/components/common/ExitIntentPopup";
 import { whatsappHref } from "@/lib/siteContact";
@@ -20,16 +21,17 @@ export default function AppChrome({ children, settings }) {
   return (
     <>
       <Navbar settings={settings} />
-      <main>{children}</main>
+      <main className="pb-14 md:pb-[3.75rem]">{children}</main>
       <Footer settings={settings} />
       <LeadPopup />
       <ExitIntentPopup />
+      <FloatingTrustBar />
 
       <a
         href={waLink}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full border border-white/25 bg-[#25D366]/95 text-white shadow-[0_12px_40px_-8px_rgba(46,125,50,0.55)] backdrop-blur-md transition hover:scale-[1.03] hover:bg-[#20bd5a] hover:shadow-[0_16px_48px_-8px_rgba(46,125,50,0.65)] md:bottom-28"
+        className="fixed bottom-[4.75rem] right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full border border-white/25 bg-[#25D366]/95 text-white shadow-[0_12px_40px_-8px_rgba(46,125,50,0.55)] backdrop-blur-md transition hover:scale-[1.03] hover:bg-[#20bd5a] hover:shadow-[0_16px_48px_-8px_rgba(46,125,50,0.65)] md:bottom-[5.25rem]"
         aria-label="Chat on WhatsApp"
       >
         <svg className="h-6 w-6 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden>

@@ -7,9 +7,20 @@ import {
   RANN_FAQS,
   RANN_GROUP_BATCHES,
   FULL_MOON_CALENDAR,
+  FULL_MOON_SECTION,
   RANN_HERO_IMAGE,
+  RANN_HERO_HEADING,
+  RANN_HERO_PRICING,
+  RANN_HERO_SOCIAL_PROOF,
+  RANN_HERO_SUBHEADING,
   RANN_PACKAGES,
+  RANN_PACKAGE_BADGES,
+  RANN_PLANNING_GUIDE,
+  resolvePlanningGuide,
+  RANN_SEO_BLOG_FALLBACKS,
+  RANN_SEO_DESCRIPTION,
   RANN_SEO_KEYWORDS,
+  RANN_SEO_TITLE,
   RANN_SEASON_DATES,
   RANN_SEASON_TITLE,
   RANN_SLUG,
@@ -33,7 +44,12 @@ function mapPackages() {
     duration: pkg.duration,
     highlights: pkg.highlights,
     viewDetailsUrl: null,
-    detailContent: { paragraphs: pkg.detailParagraphs, idealFor: pkg.idealFor },
+    detailContent: {
+      paragraphs: pkg.detailParagraphs,
+      idealFor: pkg.idealFor,
+      audienceBadge: RANN_PACKAGE_BADGES[pkg.slug] || null,
+    },
+    audienceBadge: RANN_PACKAGE_BADGES[pkg.slug] || null,
     sortOrder: index,
     active: true,
   }));
@@ -54,9 +70,10 @@ export function buildStaticRannPage() {
     slug: RANN_SLUG,
     title: RANN_SEASON_TITLE,
     status: 'published',
-    heroHeading: RANN_SEASON_TITLE,
-    heroSubheading:
-      'Premium White Desert journeys — 10 group batches, five package paths, and private family tours across the official Rann Utsav season.',
+    heroHeading: RANN_HERO_HEADING,
+    heroSubheading: RANN_HERO_SUBHEADING,
+    heroSocialProof: RANN_HERO_SOCIAL_PROOF,
+    heroPricing: RANN_HERO_PRICING,
     heroBannerImage: RANN_HERO_IMAGE,
     seasonDates: RANN_SEASON_DATES,
     ctaButtonText: 'Get Priority Access',
@@ -75,16 +92,18 @@ export function buildStaticRannPage() {
     trainInfo: RANN_TRAIN_INFO,
     dholaviraSection: RANN_DHOLAVIRA,
     videos: RANN_VIDEOS,
-    customBlocks: [],
+    customBlocks: {
+      planningGuide: RANN_PLANNING_GUIDE,
+      fullMoonSection: FULL_MOON_SECTION,
+    },
     formConfig: {
       enabled: true,
       redirectToWhatsApp: true,
       successMessage:
         'Thank you — your request is received. Redirecting you to WhatsApp so our travel expert can share batch calendars and early-bird options.',
     },
-    seoTitle: `${RANN_SEASON_TITLE} | Happy Feet Travellers`,
-    seoDescription:
-      'Master campaign page for Rann of Kutch Season 2026–27 — 10 group batches, package comparison, add-ons, train info, priority access, and WhatsApp updates.',
+    seoTitle: RANN_SEO_TITLE,
+    seoDescription: RANN_SEO_DESCRIPTION,
     seoKeywords: RANN_SEO_KEYWORDS,
     ogImage: RANN_HERO_IMAGE,
     packages: mapPackages(),
@@ -113,43 +132,102 @@ function matchesRannContent(item, slug) {
   return /rann|kutch|white desert|rann utsav|gujarat/.test(hay);
 }
 
+export async function fetchLandingPackageRelated(slug, packageSlug) {
+  try {
+    const data = await publicFetch(
+      `/landing-pages/${encodeURIComponent(slug)}/packages/${encodeURIComponent(packageSlug)}/related`
+    );
+    return {
+      blogs: data?.blogs || [],
+      landingPage: data?.landingPage || null,
+      package: data?.package || null,
+    };
+  } catch {
+    return { blogs: [], landingPage: null, package: null };
+  }
+}
+
 export async function fetchRannRelatedContent(slug = RANN_SLUG) {
   try {
-    const [toursPayload, blogsPayload] = await Promise.all([
-      publicFetch('/tours?limit=60'),
-      publicFetch('/blogs?limit=40'),
-    ]);
-    const tours = (toursPayload?.tours || toursPayload || []).filter((t) => matchesRannContent(t, slug));
-    const blogs = (blogsPayload?.blogs || blogsPayload || []).filter((b) => matchesRannContent(b, slug));
-    return { tours: tours.slice(0, 6), blogs: blogs.slice(0, 6) };
+    const blogsPayload = await publicFetch('/blogs?limit=40');
+    const fromApi = (blogsPayload?.blogs || blogsPayload || []).filter((b) => matchesRannContent(b, slug));
+    const blogs = fromApi.length >= 3 ? fromApi.slice(0, 6) : [...fromApi, ...RANN_SEO_BLOG_FALLBACKS].slice(0, 6);
+    return { blogs };
   } catch {
-    return { tours: [], blogs: [] };
+    return { blogs: RANN_SEO_BLOG_FALLBACKS.slice(0, 6) };
   }
+}
+
+function hasItems(value) {
+  return Array.isArray(value) && value.length > 0;
+}
+
+function pickApiOrFallback(apiValue, fallback) {
+  if (apiValue === null || apiValue === undefined) return fallback;
+  if (typeof apiValue === 'string' && !apiValue.trim()) return fallback;
+  if (Array.isArray(apiValue) && !apiValue.length) return fallback;
+  if (typeof apiValue === 'object' && !Array.isArray(apiValue) && !Object.keys(apiValue).length) {
+    return fallback;
+  }
+  return apiValue;
+}
+
+/** API content wins; static defaults only fill gaps (used for Rann campaign). */
+function mergeLandingWithStaticDefaults(page, staticDefaults) {
+  const blocks = page.customBlocks && typeof page.customBlocks === 'object' ? page.customBlocks : {};
+  return {
+    ...staticDefaults,
+    ...page,
+    title: pickApiOrFallback(page.title, staticDefaults.title),
+    heroHeading: pickApiOrFallback(page.heroHeading, staticDefaults.heroHeading),
+    heroSubheading: pickApiOrFallback(page.heroSubheading, staticDefaults.heroSubheading),
+    heroBannerImage: pickApiOrFallback(page.heroBannerImage, staticDefaults.heroBannerImage),
+    seasonDates: pickApiOrFallback(page.seasonDates, staticDefaults.seasonDates),
+    heroSocialProof: pickApiOrFallback(
+      page.heroSocialProof ?? blocks.heroSocialProof,
+      staticDefaults.heroSocialProof
+    ),
+    heroPricing: pickApiOrFallback(
+      page.heroPricing ?? blocks.heroPricing,
+      staticDefaults.heroPricing
+    ),
+    gallery: pickApiOrFallback(page.gallery ?? blocks.gallery, staticDefaults.gallery),
+    introContent: pickApiOrFallback(page.introContent, staticDefaults.introContent),
+    whyVisit: pickApiOrFallback(page.whyVisit, staticDefaults.whyVisit),
+    bestTimeToVisit: pickApiOrFallback(page.bestTimeToVisit, staticDefaults.bestTimeToVisit),
+    fullMoonCalendar: pickApiOrFallback(page.fullMoonCalendar, staticDefaults.fullMoonCalendar),
+    groupBatches: pickApiOrFallback(page.groupBatches ?? blocks.groupBatches, staticDefaults.groupBatches),
+    earlyPlanning: pickApiOrFallback(page.earlyPlanning, staticDefaults.earlyPlanning),
+    addOns: pickApiOrFallback(page.addOns ?? blocks.addOns, staticDefaults.addOns),
+    trainInfo: pickApiOrFallback(page.trainInfo ?? blocks.trainInfo, staticDefaults.trainInfo),
+    dholaviraSection: pickApiOrFallback(
+      page.dholaviraSection ?? blocks.dholaviraSection,
+      staticDefaults.dholaviraSection
+    ),
+    videos: pickApiOrFallback(page.videos ?? blocks.videos, staticDefaults.videos),
+    packages: Array.isArray(page.packages) ? page.packages : staticDefaults.packages,
+    faqs: Array.isArray(page.faqs) ? page.faqs : staticDefaults.faqs,
+    testimonials: Array.isArray(page.testimonials) ? page.testimonials : staticDefaults.testimonials,
+    ctaButtonText: pickApiOrFallback(page.ctaButtonText, staticDefaults.ctaButtonText),
+    ctaButtonLink: pickApiOrFallback(page.ctaButtonLink, staticDefaults.ctaButtonLink),
+    seoTitle: pickApiOrFallback(page.seoTitle, staticDefaults.seoTitle),
+    seoDescription: pickApiOrFallback(page.seoDescription, staticDefaults.seoDescription),
+    ogImage: pickApiOrFallback(page.ogImage, staticDefaults.ogImage),
+    planningGuide: resolvePlanningGuide({
+      ...page,
+      customBlocks: {
+        ...(staticDefaults.customBlocks || {}),
+        ...(typeof page.customBlocks === 'object' && !Array.isArray(page.customBlocks) ? page.customBlocks : {}),
+      },
+    }),
+  };
 }
 
 export async function fetchLandingPageBySlug(slug) {
   try {
     const page = await publicFetch(`/landing-pages/${encodeURIComponent(slug)}`);
     if (slug === RANN_SLUG) {
-      const staticDefaults = buildStaticRannPage();
-      return {
-        ...staticDefaults,
-        ...page,
-        title: page.title || staticDefaults.title,
-        heroHeading: page.heroHeading || staticDefaults.heroHeading,
-        packages: staticDefaults.packages,
-        faqs: staticDefaults.faqs,
-        whyVisit: staticDefaults.whyVisit,
-        groupBatches: staticDefaults.groupBatches,
-        earlyPlanning: staticDefaults.earlyPlanning,
-        addOns: staticDefaults.addOns,
-        trainInfo: staticDefaults.trainInfo,
-        introContent: staticDefaults.introContent,
-        bestTimeToVisit: staticDefaults.bestTimeToVisit,
-        fullMoonCalendar: staticDefaults.fullMoonCalendar,
-        dholaviraSection: staticDefaults.dholaviraSection,
-        videos: staticDefaults.videos,
-      };
+      return mergeLandingWithStaticDefaults(page, buildStaticRannPage());
     }
     return page;
   } catch (err) {

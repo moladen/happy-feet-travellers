@@ -14,6 +14,8 @@ Vercel server → `http://103.22.140.216:5080/api/...` (server-to-server, allowe
 
 Apply to **Production** (and Preview if needed). **Redeploy.**
 
+**Admin image uploads:** Vercel’s `/api` proxy rejects request bodies above ~4.5 MB. The admin panel auto-compresses photos before upload. For very large originals, redeploy after each frontend change. Long-term: add `https://api.YOURDOMAIN.com` and set `NEXT_PUBLIC_API_DIRECT_URL` in Vercel (see `frontend/.env.example`).
+
 ## VPS
 
 No HTTPS required on the API. Keep Docker on port 5080.
