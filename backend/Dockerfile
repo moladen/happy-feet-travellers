@@ -9,13 +9,11 @@ WORKDIR /app
 RUN apk add --no-cache openssl
 
 COPY package.json ./
+COPY prisma ./prisma
 
 RUN npm install
 
-COPY prisma ./prisma
 COPY src ./src
-
-RUN npx prisma generate
 
 FROM node:20-alpine AS production
 
@@ -27,8 +25,9 @@ ENV NODE_ENV=production
 ENV PORT=5000
 
 COPY package.json ./
+COPY prisma ./prisma
 
-RUN npm install --omit=dev \
+RUN npm install --omit=dev --ignore-scripts \
   && npm install prisma@5.8.0 --no-save \
   && npm cache clean --force
 
