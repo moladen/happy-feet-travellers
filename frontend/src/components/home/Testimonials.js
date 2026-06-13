@@ -23,10 +23,12 @@ export default function Testimonials() {
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="section-eyebrow mb-2">Voices from the road</p>
-          <h2 className="section-title mb-3 text-2xl md:text-3xl lg:text-4xl">Journeys remembered</h2>
+          <h2 className="section-title mb-3 text-2xl md:text-3xl lg:text-4xl">
+            Explored India &amp; Beyond With Us
+          </h2>
           <p className="testimonials-section__lede">
-            Real stories from travellers who explored India with us — moments of wonder, comfort, and
-            connection along the way.
+            Real stories from travellers who explored India and beyond with Happy Feet Travellers —
+            moments of wonder, comfort, adventure, and meaningful connections along the way.
           </p>
         </motion.header>
 

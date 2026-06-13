@@ -4,6 +4,28 @@ export { RANN_SEASON_PATH, RANN_SEASON_TITLE, RANN_SEASON_DATES };
 
 export const RANN_SLUG = 'rann-of-kutch-season-2026-27';
 
+export const RANN_HERO_HEADING = "India's Most Magical Desert Festival Returns";
+
+export const RANN_HERO_SUBHEADING =
+  'Premium group departures from Pune & Mumbai | White Rann • Dholavira • Kutchi Culture • Full Moon Nights';
+
+export const RANN_HERO_SOCIAL_PROOF = [
+  '5+ years of group tours',
+  '8,000+ happy travellers',
+  'Trusted departures from Pune & Mumbai',
+];
+
+export const RANN_HERO_PRICING = 'Packages from ₹18,999 to ₹31,999';
+
+export const RANN_PRIORITY_MONTH_OPTIONS = [
+  'November 2026',
+  'December 2026',
+  'January 2027',
+  'February 2027',
+  'March 2027',
+  'Flexible',
+];
+
 export const RANN_WA_GROUP_MESSAGE =
   'Hi, I would like to join the Happy Feet Travellers Rann of Kutch Season 2026–27 WhatsApp Priority Group.';
 
@@ -27,11 +49,69 @@ const IMG = {
   train: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&fit=crop&w=1200&q=80',
 };
 
+export const RANN_PLANNING_GUIDE = {
+  enabled: true,
+  eyebrow: 'Free download',
+  title: 'Free Rann Utsav Planning Guide 2026–27',
+  lede:
+    'A practical PDF for travellers comparing Rann Utsav Packages from Mumbai and Pune — batch dates, White Desert tour tips, Dholavira add-ons, and full moon planning.',
+  highlights: [
+    'Month-by-month batch calendar & full moon windows',
+    'Mumbai/Pune train booking checklist for group departures',
+    'White Desert tour & Kutch tour package comparison',
+    'Dholavira tour add-on ideas and packing essentials',
+  ],
+  pdfUrl: '/guides/rann-utsav-planning-guide-2026-27.pdf',
+  pdfFileName: 'Happy-Feet-Rann-Utsav-Planning-Guide-2026-27.pdf',
+  formTitle: 'Get your free planning guide',
+  formLede:
+    "Enter your details below. We'll send batch tips on WhatsApp and unlock your PDF instantly.",
+  submitLabel: 'Download Free Guide',
+  successTitle: 'Your guide is ready',
+  successLede:
+    'Your download should start automatically. Our team may also reach out on WhatsApp with batch updates.',
+  downloadAgainLabel: 'Download PDF again',
+  disclaimer: 'By downloading, you agree to receive Rann season updates on WhatsApp. Unsubscribe anytime.',
+};
+
+/** CMS planning guide with static fallbacks. */
+export function resolvePlanningGuide(page) {
+  const fromBlocks =
+    page?.customBlocks?.planningGuide && typeof page.customBlocks.planningGuide === 'object'
+      ? page.customBlocks.planningGuide
+      : page?.planningGuide && typeof page.planningGuide === 'object'
+        ? page.planningGuide
+        : null;
+
+  if (!fromBlocks) return { ...RANN_PLANNING_GUIDE };
+  if (fromBlocks.enabled === false) return { ...RANN_PLANNING_GUIDE, enabled: false };
+
+  return {
+    enabled: true,
+    eyebrow: fromBlocks.eyebrow?.trim() || RANN_PLANNING_GUIDE.eyebrow,
+    title: fromBlocks.title?.trim() || RANN_PLANNING_GUIDE.title,
+    lede: fromBlocks.lede?.trim() || RANN_PLANNING_GUIDE.lede,
+    highlights:
+      Array.isArray(fromBlocks.highlights) && fromBlocks.highlights.length
+        ? fromBlocks.highlights.filter(Boolean)
+        : RANN_PLANNING_GUIDE.highlights,
+    pdfUrl: String(fromBlocks.pdfUrl || '').trim() || RANN_PLANNING_GUIDE.pdfUrl,
+    pdfFileName: String(fromBlocks.pdfFileName || '').trim() || RANN_PLANNING_GUIDE.pdfFileName,
+    formTitle: fromBlocks.formTitle?.trim() || RANN_PLANNING_GUIDE.formTitle,
+    formLede: fromBlocks.formLede?.trim() || RANN_PLANNING_GUIDE.formLede,
+    submitLabel: fromBlocks.submitLabel?.trim() || RANN_PLANNING_GUIDE.submitLabel,
+    successTitle: fromBlocks.successTitle?.trim() || RANN_PLANNING_GUIDE.successTitle,
+    successLede: fromBlocks.successLede?.trim() || RANN_PLANNING_GUIDE.successLede,
+    downloadAgainLabel: fromBlocks.downloadAgainLabel?.trim() || RANN_PLANNING_GUIDE.downloadAgainLabel,
+    disclaimer: fromBlocks.disclaimer?.trim() || RANN_PLANNING_GUIDE.disclaimer,
+  };
+}
+
 export const RANN_UTSAV_INTRO = {
   title: 'Introduction to Rann Utsav',
   paragraphs: [
-    "Rann Utsav is Gujarat's signature winter celebration — White Desert vistas, folk music, handicraft villages, and thoughtfully paced travel across Kutch.",
-    'Happy Feet Travellers designs the season around comfort-first movement, honest pricing, and practical expertise so you experience the desert without planning stress.',
+    "Rann Utsav is Gujarat's signature winter celebration — a White Desert tour experience with folk music, handicraft villages, and thoughtfully paced travel across Kutch.",
+    'Happy Feet Travellers designs each Kutch tour package around comfort-first movement, honest pricing, and practical expertise so you experience the desert without planning stress.',
   ],
   summary: [
     'White Rann under moonlit skies',
@@ -41,15 +121,20 @@ export const RANN_UTSAV_INTRO = {
   ],
 };
 
+export const RANN_WHY_VISIT_HEADING =
+  'Experience the Magic of the Kutchi Culture — Exclusive Village Experience';
+
 export const WHY_VISIT_RANN = [
   {
-    title: 'White Desert',
-    description: 'Endless salt flats that glow at sunrise and turn surreal under festival lights and full moon nights.',
+    title: 'White Desert Tour',
+    description:
+      'Endless salt flats that glow at sunrise — the signature White Desert tour highlight under festival lights and full moon nights.',
     image: IMG.whiteDesert,
   },
   {
-    title: 'Dholavira',
-    description: 'UNESCO World Heritage Harappan site — one of the deepest heritage layers on any Kutch itinerary.',
+    title: 'Dholavira Tour',
+    description:
+      'UNESCO World Heritage Harappan site — the essential Dholavira tour layer on any well-planned Kutch itinerary.',
     image: IMG.dholavira,
   },
   {
@@ -127,6 +212,7 @@ export const RANN_GROUP_BATCHES = [
     price: '₹26,499',
     highlight: 'Christmas special + full moon window',
     tags: ['Full moon', 'Premium demand'],
+    specialTypes: ['christmas', 'full-moon'],
   },
   {
     batch: 5,
@@ -141,6 +227,7 @@ export const RANN_GROUP_BATCHES = [
     price: '₹25,999',
     highlight: 'Pongal week — balanced pacing for families',
     tags: ['Family friendly'],
+    specialTypes: ['kite-festival'],
   },
   {
     batch: 7,
@@ -148,6 +235,7 @@ export const RANN_GROUP_BATCHES = [
     price: '₹26,999',
     highlight: 'Full Moon Supernight — signature White Rann experience',
     tags: ['Full moon', 'Flagship'],
+    specialTypes: ['full-moon'],
   },
   {
     batch: 8,
@@ -155,6 +243,7 @@ export const RANN_GROUP_BATCHES = [
     price: '₹25,499',
     highlight: 'Valentine week — couples & small groups',
     tags: ['Couples'],
+    specialTypes: ['valentine'],
   },
   {
     batch: 9,
@@ -162,6 +251,7 @@ export const RANN_GROUP_BATCHES = [
     price: '₹26,499',
     highlight: 'Full Moon Special — second supernight window',
     tags: ['Full moon'],
+    specialTypes: ['full-moon'],
   },
   {
     batch: 10,
@@ -172,6 +262,21 @@ export const RANN_GROUP_BATCHES = [
   },
 ];
 
+/** Choice badges — shown on package cards instead of generic category labels. */
+export const RANN_PACKAGE_BADGES = {
+  'classic-group-departure': { emoji: '🔥', label: 'Most Popular', tone: 'popular' },
+  'bhuj-package': { emoji: '💰', label: 'Best Value', tone: 'value' },
+  'premium-tent-city': { emoji: '✨', label: 'Premium Experience', tone: 'premium' },
+  'customized-family-couple': { emoji: '👨‍👩‍👧', label: 'Best for Families', tone: 'family' },
+};
+
+export function resolveRannPackageBadge(pkg) {
+  if (!pkg) return null;
+  const fromPkg = pkg.audienceBadge || pkg.detailContent?.audienceBadge;
+  if (fromPkg?.label) return fromPkg;
+  return RANN_PACKAGE_BADGES[pkg.slug] || null;
+}
+
 export const RANN_PACKAGES = [
   {
     slug: 'classic-group-departure',
@@ -181,7 +286,7 @@ export const RANN_PACKAGES = [
     startingPrice: '₹24,999',
     image: IMG.group,
     shortDescription:
-      'Fixed-date group journey with train coordination from Mumbai/Pune, curated sightseeing, and White Rann highlights.',
+      'Rann Utsav Packages from Mumbai and Pune — fixed-date group journey with train coordination, curated sightseeing, and White Desert tour highlights.',
     highlights: [
       'Small-group pacing with experienced trip lead',
       'Sleeper train assistance from Mumbai / Pune',
@@ -224,7 +329,7 @@ export const RANN_PACKAGES = [
     startingPrice: '₹16,999',
     image: IMG.bhuj,
     shortDescription:
-      'Land-only package from Bhuj — ideal when you self-book trains or flights and want a local expert on the ground.',
+      'Flexible Kutch tour package from Bhuj — ideal when you self-book transport and want local experts for your White Desert tour.',
     highlights: [
       'Bhuj-based start and end',
       'White Rann, handicraft villages & Dholavira option',
@@ -245,7 +350,7 @@ export const RANN_PACKAGES = [
     startingPrice: '₹28,999',
     image: IMG.tent,
     shortDescription:
-      'Elevated Rann Utsav stay with premium tent city nights, curated dining, and priority desert access.',
+      'Rann Utsav Full Moon Package upgrade — premium tent city nights, curated dining, and priority White Desert tour access.',
     highlights: [
       'Premium tent city accommodation',
       'Priority White Rann session planning',
@@ -390,15 +495,74 @@ export const BEST_TIME_TO_VISIT = {
   points: WHY_EARLY_PLANNING.points.map((p) => p.description),
 };
 
-export const FULL_MOON_CALENDAR = RANN_GROUP_BATCHES.filter((b) =>
-  b.tags?.some((t) => /full moon/i.test(t))
-).map((b) => ({
-  batch: b.batch,
-  dates: b.dates,
-  price: b.price,
-  highlight: b.highlight,
-  label: b.highlight,
-}));
+export const FULL_MOON_SECTION = {
+  eyebrow: 'Rann Utsav Full Moon Package',
+  title: 'Full Moon Calendar',
+  lede:
+    'Premium departures on full moon nights — when the White Rann is at its most magical. Moonlit salt flats, festival lights, and our most sought-after group batches.',
+  backgroundImage: IMG.fullMoon,
+  badgeLabel: 'Full Moon Special',
+};
+
+/** Fixed full-moon departure batches — always exactly these three. */
+export const FULL_MOON_BATCH_NUMBERS = [4, 7, 9];
+
+export function buildFullMoonCalendarEntries(entries, { useDefaults = true } = {}) {
+  const hasEntries = Array.isArray(entries) && entries.length > 0;
+  const byBatch = new Map(
+    (hasEntries ? entries : [])
+      .map((entry) => [Number(entry.batch), entry])
+      .filter(([batch]) => FULL_MOON_BATCH_NUMBERS.includes(batch))
+  );
+
+  if (!hasEntries && !useDefaults) return [];
+
+  return FULL_MOON_BATCH_NUMBERS.map((batchNum) => {
+    const entry = byBatch.get(batchNum);
+    const defaults = RANN_GROUP_BATCHES.find((row) => row.batch === batchNum);
+    if (!defaults) return null;
+
+    const dates = String(entry?.dates || entry?.date || defaults.dates || '').trim();
+    return {
+      batch: batchNum,
+      dates,
+      date: dates,
+      price: String(entry?.price || defaults.price || '').trim() || null,
+      highlight: String(entry?.highlight || entry?.label || defaults.highlight || '').trim() || null,
+      label: String(entry?.highlight || entry?.label || defaults.highlight || '').trim() || null,
+      tags: Array.isArray(entry?.tags) && entry.tags.length ? entry.tags : defaults.tags || [],
+    };
+  }).filter(Boolean);
+}
+
+export const FULL_MOON_CALENDAR = buildFullMoonCalendarEntries();
+
+export function resolveFullMoonSection(page) {
+  const block =
+    page?.customBlocks?.fullMoonSection && typeof page.customBlocks.fullMoonSection === 'object'
+      ? page.customBlocks.fullMoonSection
+      : page?.fullMoonSection && typeof page.fullMoonSection === 'object'
+        ? page.fullMoonSection
+        : null;
+  const defaults = FULL_MOON_SECTION;
+
+  if (!block) return { ...defaults };
+  if (block.enabled === false) return { ...defaults, enabled: false };
+
+  return {
+    enabled: true,
+    eyebrow: String(block.eyebrow || '').trim() || defaults.eyebrow,
+    title: String(block.title || '').trim() || defaults.title,
+    lede: String(block.lede || '').trim() || defaults.lede,
+    backgroundImage: String(block.backgroundImage || '').trim() || defaults.backgroundImage,
+    badgeLabel: String(block.badgeLabel || '').trim() || defaults.badgeLabel,
+  };
+}
+
+export function resolveFullMoonCalendar(page) {
+  const fromApi = Array.isArray(page?.fullMoonCalendar) ? page.fullMoonCalendar : [];
+  return buildFullMoonCalendarEntries(fromApi.length ? fromApi : undefined);
+}
 
 export function getRannPackageBySlug(slug) {
   return RANN_PACKAGES.find((p) => p.slug === slug) ?? null;
@@ -415,8 +579,8 @@ export const RANN_FAQS = {
       a: '5 November 2026 – 4 March 2027 during Rann Utsav. December–January is peak; book early for full moon batches.',
     },
     {
-      q: 'How do I reach Kutch?',
-      a: 'Via Bhuj (train/flight) or Ahmedabad with road transfer. Group departures include train coordination from Mumbai/Pune.',
+      q: 'How do I reach Kutch for a White Desert tour?',
+      a: 'Via Bhuj (train/flight) or Ahmedabad with road transfer. Rann Utsav Packages from Mumbai and Pune include train coordination on group departures.',
     },
     {
       q: 'Is the White Desert suitable for families and seniors?',
@@ -429,8 +593,16 @@ export const RANN_FAQS = {
   ],
   package: [
     {
+      q: 'What is the difference between Rann Utsav Packages from Pune and Mumbai?',
+      a: 'Both join the same curated Kutch tour package and batch dates. We coordinate sleeper trains from your preferred city — Pune or Mumbai — with identical desert routing once you reach Bhuj.',
+    },
+    {
+      q: 'What is included in a Rann Utsav Full Moon Package batch?',
+      a: 'Full moon batches (December, January, February) include priority White Desert tour sessions under moonlit skies, with slightly elevated seasonal pricing and higher demand — book early for confirmed berths.',
+    },
+    {
       q: 'What is the difference between Group Departure and Customized tours?',
-      a: 'Group Departure has fixed dates and shared batches; Customized Family tours are private with flexible pacing.',
+      a: 'Group Departure has fixed dates and shared batches; Customized Family tours are private Kutch tour packages with flexible pacing.',
     },
     {
       q: 'Can I join from Ahmedabad only?',
@@ -441,8 +613,8 @@ export const RANN_FAQS = {
       a: 'Bhuj Land Package covers ground services from Bhuj onward; we guide you on train/flight options separately.',
     },
     {
-      q: 'Can we add Dholavira or Dwarka extensions?',
-      a: 'Yes — see Add-Ons section. Extensions are subject to season dates and drive times.',
+      q: 'Can we add a Dholavira tour or Dwarka extensions?',
+      a: 'Yes — see Add-On Experiences. Dholavira tour add-ons and spiritual extensions are subject to season dates and drive times.',
     },
   ],
   booking: [
@@ -495,11 +667,53 @@ export const RANN_SEO_KEYWORDS = [
   'Rann of Kutch',
   'Rann Utsav 2026',
   'Rann Utsav 2027',
+  'Rann Utsav Packages from Pune',
+  'Rann Utsav Packages from Mumbai',
+  'White Desert Tour',
+  'Dholavira Tour',
+  'Kutch Tour Package',
+  'Rann Utsav Full Moon Package',
   'Kutch tour packages',
   'White Desert India',
-  'Dholavira tour',
   'Mandvi beach Kutch',
   'Rann group departure',
   'Bhuj Rann package',
   'Gujarat winter travel',
+];
+
+export const RANN_SEO_TITLE =
+  'Rann Utsav Packages from Mumbai & Pune | White Desert Tour & Kutch Tour Package 2026–27';
+
+export const RANN_SEO_DESCRIPTION =
+  'Compare Rann Utsav Packages from Mumbai and Pune, White Desert tour dates, Dholavira tour add-ons, and Rann Utsav Full Moon Package batches for Season 2026–27. Priority access & free planning guide.';
+
+/** SEO-rich blog cards when CMS has few Rann-tagged posts. */
+export const RANN_SEO_BLOG_FALLBACKS = [
+  {
+    id: 'seo-rann-pune-packages',
+    title: 'Rann Utsav Packages from Pune: Train Routes & Batch Planning',
+    excerpt:
+      'How Pune travellers can lock sleeper berths, compare Kutch tour package options, and pick the right White Desert tour dates.',
+    category: 'Kutch',
+    href: '/blog',
+    image: IMG.whiteDesert,
+  },
+  {
+    id: 'seo-rann-mumbai-packages',
+    title: 'Rann Utsav Packages from Mumbai: What to Expect in 2026–27',
+    excerpt:
+      'A practical guide to Mumbai group departures, full moon batches, and when to book your Rann Utsav Full Moon Package.',
+    category: 'Guides',
+    href: '/blog',
+    image: IMG.fullMoon,
+  },
+  {
+    id: 'seo-dholavira-tour',
+    title: 'Dholavira Tour Add-On: UNESCO Heritage on Your Kutch Itinerary',
+    excerpt:
+      'Why the Dholavira tour belongs on your Kutch tour package — routing tips, drive times, and pairing with the White Desert tour.',
+    category: 'Heritage',
+    href: '/blog',
+    image: IMG.dholavira,
+  },
 ];

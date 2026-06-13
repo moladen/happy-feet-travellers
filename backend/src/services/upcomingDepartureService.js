@@ -6,12 +6,18 @@ const {
   DEPARTURE_STATUS,
   UPCOMING_CATEGORY,
 } = require('@/constants/upcomingDepartures');
+const { persistTourMediaInPayload } = require('@/utils/tourMedia');
 const {
   activeDepartureWhere,
   expiredDepartureWhere,
   isDepartureStillActive,
   isDepartureDateStillValid,
 } = require('@/utils/departureExpiry');
+const {
+  expandSearchTerms,
+  buildTextSearchOr,
+  buildSubCategoryOr,
+} = require('@/constants/departureSearchKeywords');
 
 const MONTHS = [
   'january', 'february', 'march', 'april', 'may', 'june',
@@ -156,9 +162,7 @@ function buildListWhere(query, { admin = false } = {}) {
     where.destination = { contains: String(query.destination), mode: 'insensitive' };
   }
 
-  if (query.subCategory) {
-    where.subCategory = String(query.subCategory);
-  }
+  const filterAnd = [];
 
   if (query.tag) {
     where.tags = { has: String(query.tag) };
@@ -190,15 +194,18 @@ function buildListWhere(query, { admin = false } = {}) {
     }
   }
 
+  if (query.subCategory) {
+    filterAnd.push({ OR: buildSubCategoryOr(query.subCategory) });
+  }
+
   const search = String(query.search || query.q || '').trim();
   if (search) {
-    where.OR = [
-      { title: { contains: search, mode: 'insensitive' } },
-      { description: { contains: search, mode: 'insensitive' } },
-      { destination: { contains: search, mode: 'insensitive' } },
-      { departureCity: { contains: search, mode: 'insensitive' } },
-      { tags: { has: search } },
-    ];
+    const terms = expandSearchTerms(search);
+    filterAnd.push({ OR: buildTextSearchOr(terms) });
+  }
+
+  if (filterAnd.length) {
+    where.AND = [...(where.AND || []), ...filterAnd];
   }
 
   return where;
@@ -275,40 +282,37 @@ async function getDeparture(idOrSlug) {
 
     if (!tour) throw AppError.notFound('Upcoming departure not found');
 
-    if (tour.status === DEPARTURE_STATUS.ARCHIVED || !isDepartureStillActive(tour)) {
-      throw AppError.notFound('This departure is no longer available');
-    }
-
     return mapDeparture(tour);
   });
 }
 
 async function createDeparture(payload) {
   return withDatabaseErrors(async () => {
-    const slug = buildSlug(payload);
+    const mediaPayload = persistTourMediaInPayload(payload);
+    const slug = buildSlug(mediaPayload);
     const exists = await prisma.tour.findUnique({ where: { slug } });
     if (exists) throw AppError.conflict('A departure with this slug already exists');
 
     const data = normalisePayload(
       {
-        ...payload,
+        ...mediaPayload,
         slug,
-        images: payload.images || [],
-        highlights: payload.highlights || [],
-        inclusions: payload.inclusions || [],
-        exclusions: payload.exclusions || [],
-        thingsToCarry: payload.thingsToCarry || [],
-        tags: normaliseTags(payload.tags),
-        itinerary: payload.itinerary ?? null,
-        faqs: payload.faqs ?? null,
-        pickupPoints: payload.pickupPoints ?? null,
-        supplements: payload.supplements ?? null,
-        terms: payload.terms ?? null,
+        images: mediaPayload.images || [],
+        highlights: mediaPayload.highlights || [],
+        inclusions: mediaPayload.inclusions || [],
+        exclusions: mediaPayload.exclusions || [],
+        thingsToCarry: mediaPayload.thingsToCarry || [],
+        tags: normaliseTags(mediaPayload.tags),
+        itinerary: mediaPayload.itinerary ?? null,
+        faqs: mediaPayload.faqs ?? null,
+        pickupPoints: mediaPayload.pickupPoints ?? null,
+        supplements: mediaPayload.supplements ?? null,
+        terms: mediaPayload.terms ?? null,
       },
       { isCreate: true }
     );
 
-    const explicitStatus = payload.status !== undefined ? String(payload.status).toLowerCase() : null;
+    const explicitStatus = mediaPayload.status !== undefined ? String(mediaPayload.status).toLowerCase() : null;
     applyWebsitePublishStatus(data, data, explicitStatus);
 
     const created = await prisma.tour.create({ data });
@@ -323,7 +327,7 @@ async function updateDeparture(id, payload) {
     });
     if (!existing) throw AppError.notFound('Upcoming departure not found');
 
-    const data = normalisePayload(payload);
+    const data = normalisePayload(persistTourMediaInPayload(payload));
     if (data.title || data.slug || data.startDate) {
       const newSlug = buildSlug({
         slug: data.slug || data.title || existing.title,

@@ -6,6 +6,7 @@ const {
   deleteLandingPage,
   listLandingEnquiries,
 } = require('@/services/landingPageService');
+const { getRelatedForLandingPackage } = require('@/services/contentLinkingService');
 
 async function getLandingPages(req, res, next) {
   try {
@@ -65,6 +66,15 @@ async function getLandingPageEnquiries(req, res, next) {
   }
 }
 
+async function getLandingPackageRelated(req, res, next) {
+  try {
+    const data = await getRelatedForLandingPackage(req.params.landingSlug, req.params.packageSlug);
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   getLandingPages,
   getLandingPageById,
@@ -72,4 +82,5 @@ module.exports = {
   putLandingPage,
   removeLandingPage,
   getLandingPageEnquiries,
+  getLandingPackageRelated,
 };

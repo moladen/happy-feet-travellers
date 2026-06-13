@@ -1,6 +1,7 @@
 import ContactReachSection from '@/components/contact/ContactReachSection';
 import { getPublicSettings } from '@/services/settingsService';
 import {
+  buildGoogleMapsEmbedUrl,
   formatIndianPhone,
   mergeSiteSettings,
   resolveGatewayPaymentUrl,
@@ -81,6 +82,7 @@ export default async function ContactPage() {
   const email = settings.email || 'info@happyfeet.com';
   const payHref = resolveGatewayPaymentUrl(settings);
   const office = settings.officeAddress || 'Baner Road, Pune – 411045, Maharashtra, India';
+  const mapEmbedUrl = buildGoogleMapsEmbedUrl();
 
   const detailRows = [
     {
@@ -138,10 +140,9 @@ export default async function ContactPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#0f1c2e] via-primary to-[#2d4f6e] text-white">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_85%_70%_at_20%_15%,rgba(255,255,255,0.12),transparent_55%)]" />
-        <div className="container relative z-10 mx-auto max-w-6xl px-4 py-10 md:px-6 md:py-12">
+    <div className="page-shell">
+      <div className="page-hero-brand py-10 md:py-14">
+        <div className="container relative z-10 mx-auto max-w-6xl px-4 md:px-6">
           <p className="section-eyebrow mb-3 text-white/80">Contact</p>
           <h1 className="font-display mb-3 max-w-3xl text-3xl font-bold leading-tight text-white md:text-4xl lg:text-5xl">
             We&apos;re here to help you travel
@@ -188,7 +189,7 @@ export default async function ContactPage() {
                 <div className="aspect-[21/9] min-h-[220px] w-full md:min-h-[280px] lg:h-80">
                   <iframe
                     title="Happy Feet Travellers — Pune location"
-                    src="https://www.google.com/maps?q=Baner,Pune,Maharashtra&output=embed"
+                    src={mapEmbedUrl}
                     className="h-full w-full border-0"
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"

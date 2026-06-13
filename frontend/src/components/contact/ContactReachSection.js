@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Pacifico } from 'next/font/google';
-import ContactForm from '@/components/forms/ContactForm';
+import BookingForm from '@/components/forms/BookingForm';
 
 const pacifico = Pacifico({ weight: '400', subsets: ['latin'] });
 
@@ -33,7 +33,7 @@ export default function ContactReachSection() {
               </div>
             </div>
 
-            <ContactForm variant="reach" headingId="contact-reach-heading" />
+            <BookingForm variant="reach" headingId="contact-reach-heading" />
           </div>
         </div>
       </div>

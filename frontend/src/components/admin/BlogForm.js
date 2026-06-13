@@ -131,6 +131,16 @@ export default function BlogForm({ form, setForm, onSubmit, busy, mode = "create
             />
           </Field>
         </div>
+        <Field
+          label="Related package slugs (optional)"
+          hint="Landing package slugs — e.g. classic-group-departure, bhuj-package"
+        >
+          <TextInput
+            value={form.relatedPackageSlugsText}
+            onChange={(event) => updateField("relatedPackageSlugsText", event.target.value)}
+            placeholder="classic-group-departure, premium-tent-city"
+          />
+        </Field>
       </CardSection>
 
       <CardSection title="SEO fields" description="Improve discoverability without cluttering the main writing flow.">

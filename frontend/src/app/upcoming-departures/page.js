@@ -72,12 +72,12 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
   );
 
   return (
-    <div className="upcoming-departures-page min-h-screen">
-      <div className="bg-gradient-to-r from-primary to-secondary py-12 text-white">
-        <div className="container mx-auto px-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/80">Group departures</p>
+    <div className="upcoming-departures-page page-shell">
+      <div className="page-hero-brand py-10 md:py-14">
+        <div className="container mx-auto px-4 md:px-6">
+          <p className="section-eyebrow mb-3 text-white/80">Group departures</p>
           <h1 className="mb-2 font-display text-4xl font-bold text-white md:text-5xl">Upcoming departures</h1>
-          <p className="max-w-2xl text-base text-white/88 md:text-lg">
+          <p className="max-w-2xl text-base text-white/90 md:text-lg">
             Curated journeys across India — browse by month, explore full itineraries, and reserve your seat with
             confidence.
           </p>

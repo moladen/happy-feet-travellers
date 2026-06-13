@@ -124,20 +124,60 @@ function mapBlogCard(blog) {
   };
 }
 
-function mapLandingPackage(pkg, landingSlug) {
+function mapLandingPackage(pkg, landingSlug, landingTitle) {
   return {
     id: pkg.id,
     slug: pkg.slug,
     name: pkg.name,
+    emoji: pkg.emoji,
     startingPrice: pkg.startingPrice,
     duration: pkg.duration,
     featuredImage: pkg.featuredImage,
     shortDescription: pkg.shortDescription,
     href: `/${landingSlug}/packages/${pkg.slug}`,
+    landingSlug,
+    landingTitle: landingTitle || null,
   };
 }
 
-async function fetchLandingWithPackages(slug) {
+function haystackForPackage(pkg) {
+  const detail = pkg.detailContent && typeof pkg.detailContent === 'object' ? pkg.detailContent : {};
+  return [
+    pkg.slug,
+    pkg.name,
+    pkg.shortDescription,
+    ...(pkg.highlights || []),
+    ...(detail.topicKeys || []),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+}
+
+function collectPackageTopics(pkg, landingSlug) {
+  const keys = new Set(splitTopicKeys(pkg.topicKeys));
+  const detail = pkg.detailContent && typeof pkg.detailContent === 'object' ? pkg.detailContent : {};
+  splitTopicKeys(detail.topicKeys).forEach((key) => keys.add(key));
+  const slugKey = normalizeTopic(pkg.slug);
+  const nameKey = normalizeTopic(pkg.name);
+  if (slugKey) keys.add(slugKey);
+  if (nameKey) keys.add(nameKey);
+  if (landingSlug) {
+    keys.add(normalizeTopic(landingSlug));
+    const base = String(landingSlug).replace(/-season.*$/i, '').replace(/-\d{4}.*$/i, '');
+    if (base) keys.add(normalizeTopic(base));
+  }
+  return [...keys];
+}
+
+function packageMatchesTopics(pkg, topics) {
+  if (!topics.length) return false;
+  const hay = haystackForPackage(pkg);
+  const pkgTopics = collectPackageTopics(pkg);
+  return topics.some((topic) => pkgTopics.includes(topic) || topicMatchesHaystack(topic, hay));
+}
+
+async function fetchLandingPackagesContext(slug) {
   if (!slug) return null;
   const page = await prisma.landingPage.findFirst({
     where: { slug: String(slug), status: 'published' },
@@ -150,7 +190,18 @@ async function fetchLandingWithPackages(slug) {
     slug: page.slug,
     title: page.title,
     href: `/${page.slug}`,
-    packages: page.packages.map((p) => mapLandingPackage(p, page.slug)),
+    packages: page.packages,
+  };
+}
+
+async function fetchLandingWithPackages(slug) {
+  const context = await fetchLandingPackagesContext(slug);
+  if (!context) return null;
+  return {
+    slug: context.slug,
+    title: context.title,
+    href: context.href,
+    packages: context.packages.map((pkg) => mapLandingPackage(pkg, context.slug, context.title)),
   };
 }
 
@@ -159,11 +210,29 @@ function explicitSlugs(list) {
   return [...new Set(list.map((s) => String(s).trim()).filter(Boolean))];
 }
 
+function resolveRelatedPackages(blog, landingContext, topics) {
+  if (!landingContext?.packages?.length) return [];
+
+  const manualPackageSlugs = explicitSlugs(blog.relatedPackageSlugs);
+  let selected = landingContext.packages;
+
+  if (manualPackageSlugs.length) {
+    selected = selected.filter((pkg) => manualPackageSlugs.includes(pkg.slug));
+  } else if (topics.length) {
+    const matched = selected.filter((pkg) => packageMatchesTopics(pkg, topics));
+    if (matched.length) selected = matched;
+  }
+
+  return selected
+    .slice(0, 6)
+    .map((pkg) => mapLandingPackage(pkg, landingContext.slug, landingContext.title));
+}
+
 async function getRelatedForBlog(blog) {
   const topics = collectBlogTopics(blog);
   const manualTourSlugs = explicitSlugs(blog.relatedTourSlugs);
 
-  const [explicitTours, activeTours, landing] = await Promise.all([
+  const [explicitTours, activeTours, landingContext] = await Promise.all([
     manualTourSlugs.length
       ? prisma.tour.findMany({
           where: { slug: { in: manualTourSlugs }, status: 'active' },
@@ -175,7 +244,7 @@ async function getRelatedForBlog(blog) {
       orderBy: [{ featured: 'desc' }, { updatedAt: 'desc' }],
       take: 80,
     }),
-    fetchLandingWithPackages(blog.landingPageSlug),
+    fetchLandingPackagesContext(blog.landingPageSlug),
   ]);
 
   const seen = new Set();
@@ -196,10 +265,84 @@ async function getRelatedForBlog(blog) {
     }
   }
 
+  const packages = resolveRelatedPackages(blog, landingContext, topics);
+  const landingPage = landingContext
+    ? {
+        slug: landingContext.slug,
+        title: landingContext.title,
+        href: landingContext.href,
+        packages,
+      }
+    : null;
+
   return {
     tours,
-    landingPage: landing,
+    packages,
+    landingPage,
     topicKeys: topics,
+  };
+}
+
+async function getRelatedForLandingPackage(landingSlug, packageSlug) {
+  const page = await prisma.landingPage.findFirst({
+    where: { slug: String(landingSlug), status: 'published' },
+    include: {
+      packages: {
+        where: { slug: String(packageSlug), active: true },
+        take: 1,
+      },
+    },
+  });
+
+  const pkg = page?.packages?.[0];
+  if (!page || !pkg) {
+    return { blogs: [], landingPage: null, package: null };
+  }
+
+  const topics = collectPackageTopics(pkg, page.slug);
+  const detail = pkg.detailContent && typeof pkg.detailContent === 'object' ? pkg.detailContent : {};
+  const manualBlogSlugs = explicitSlugs(detail.relatedBlogSlugs);
+
+  const [explicitBlogs, recentBlogs] = await Promise.all([
+    manualBlogSlugs.length
+      ? prisma.blog.findMany({
+          where: { slug: { in: manualBlogSlugs } },
+          orderBy: { publishedAt: 'desc' },
+          take: 12,
+        })
+      : [],
+    prisma.blog.findMany({
+      orderBy: { publishedAt: 'desc' },
+      take: 60,
+    }),
+  ]);
+
+  const seen = new Set();
+  const blogs = [];
+
+  for (const blog of explicitBlogs) {
+    if (seen.has(blog.id)) continue;
+    seen.add(blog.id);
+    blogs.push(mapBlogCard(blog));
+  }
+
+  for (const blog of recentBlogs) {
+    if (seen.has(blog.id) || blogs.length >= 6) continue;
+    if (!topics.length && !manualBlogSlugs.length) continue;
+    if (manualBlogSlugs.includes(blog.slug) || blogMatchesTopics(blog, topics)) {
+      seen.add(blog.id);
+      blogs.push(mapBlogCard(blog));
+    }
+  }
+
+  return {
+    blogs,
+    landingPage: {
+      slug: page.slug,
+      title: page.title,
+      href: `/${page.slug}`,
+    },
+    package: mapLandingPackage(pkg, page.slug, page.title),
   };
 }
 
@@ -250,6 +393,8 @@ async function getRelatedForTour(tour) {
 module.exports = {
   getRelatedForBlog,
   getRelatedForTour,
+  getRelatedForLandingPackage,
   collectBlogTopics,
   collectTourTopics,
+  collectPackageTopics,
 };

@@ -14,6 +14,7 @@ const settingsRoutes = require('@/routes/settingsRoutes');
 const heroSlideRoutes = require('@/routes/heroSlideRoutes');
 const teamMemberRoutes = require('@/routes/teamMemberRoutes');
 const landingPageRoutes = require('@/routes/landingPageRoutes');
+const mediaRoutes = require('@/routes/mediaRoutes');
 
 const router = express.Router();
 
@@ -51,5 +52,6 @@ router.use('/settings', settingsRoutes);
 router.use('/hero-slides', heroSlideRoutes);
 router.use('/team-members', teamMemberRoutes);
 router.use('/landing-pages', landingPageRoutes);
+router.use('/media', mediaRoutes);
 
 module.exports = router;

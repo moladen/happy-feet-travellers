@@ -5,8 +5,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { buildCustomizedTripsUrl } from '@/lib/personalizedTripSearch';
-import { FALLBACK_HERO_SLIDES } from '@/lib/heroSlides';
+import { FALLBACK_HERO_SLIDES, resolveHeroImageSrc } from '@/lib/heroSlides';
+import { resolveHeroCommunity } from '@/lib/heroCommunity';
 import { fetchPublicHeroSlides } from '@/services/heroSlidesService';
+import { getPublicSettings } from '@/services/settingsService';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import Typewriter from '@/components/common/Typewriter';
 
@@ -57,14 +59,7 @@ const HERO_HEADLINE_SEQUENCES = [
   ],
 ];
 
-const COMMUNITY_AVATARS = [
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=128&h=128&fit=crop',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=128&h=128&fit=crop',
-  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=128&h=128&fit=crop',
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop',
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=128&h=128&fit=crop',
-  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=128&h=128&fit=crop',
-];
+const DEFAULT_COMMUNITY = resolveHeroCommunity(null);
 
 const HERO_SELECT_ARROW = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231F4E79'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`;
 
@@ -126,6 +121,7 @@ function HeroSlideLayer({ item, isActive, reduceMotion, priority }) {
           alt={isActive ? item.alt : ''}
           fill
           priority={priority}
+          unoptimized={String(item.src || '').includes('/uploads')}
           sizes="100vw"
           className="hero-slide-image object-cover object-[center_38%] sm:object-center"
         />
@@ -178,14 +174,27 @@ export default function HeroSection() {
   const [searchQuery, setSearchQuery] = useState('');
   const [journeyType, setJourneyType] = useState('');
   const [activeMood, setActiveMood] = useState(null);
+  const [community, setCommunity] = useState(DEFAULT_COMMUNITY);
 
   useEffect(() => {
     let active = true;
     (async () => {
       const next = await fetchPublicHeroSlides();
-      if (!active || !next.length) return;
+      if (!active || !next?.length) return;
       setSlides(next);
       setSlide(0);
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const settings = await getPublicSettings();
+      if (!active) return;
+      setCommunity(resolveHeroCommunity(settings));
     })();
     return () => {
       active = false;
@@ -305,18 +314,38 @@ export default function HeroSection() {
                   </Link>
                 </div>
 
-                <div className="hero-community hero-community--premium">
+                <div
+                  className={`hero-community hero-community--premium${community.bannerUrl ? ' hero-community--banner' : ''}`}
+                  style={
+                    community.bannerUrl
+                      ? { backgroundImage: `url(${resolveHeroImageSrc(community.bannerUrl)})` }
+                      : undefined
+                  }
+                >
                   <div className="hero-community__glass">
                     <div className="hero-community__collage" aria-hidden>
-                      {COMMUNITY_AVATARS.map((src, i) => (
-                        <span key={src} className="hero-community__avatar" style={{ zIndex: 12 - i }}>
-                          <Image src={src} alt="" width={64} height={64} className="h-full w-full object-cover" />
-                        </span>
-                      ))}
+                      {(community.avatars.length ? community.avatars : DEFAULT_COMMUNITY.avatars)
+                        .map((src) => resolveHeroImageSrc(src))
+                        .filter(Boolean)
+                        .slice(0, 12)
+                        .map((src, i) => (
+                          <span
+                            key={`${src}-${i}`}
+                            className="hero-community__avatar"
+                            style={{ zIndex: 12 - i }}
+                          >
+                            <Image
+                              src={resolveHeroImageSrc(src)}
+                              alt=""
+                              width={64}
+                              height={64}
+                              unoptimized
+                              className="h-full w-full object-cover"
+                            />
+                          </span>
+                        ))}
                     </div>
-                    <p className="hero-community__quote">
-                      Trusted by travelers who value comfort, transparency, and meaningful journeys.
-                    </p>
+                    <p className="hero-community__quote">{community.quote}</p>
                   </div>
                 </div>
               </motion.div>

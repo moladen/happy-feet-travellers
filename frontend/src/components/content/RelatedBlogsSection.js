@@ -47,7 +47,7 @@ export default function RelatedBlogsSection({
             {blogs.map((blog) => (
               <li key={blog.id || blog.slug}>
                 <Link
-                  href={blogHref(blog)}
+                  href={blog.href || blogHref(blog)}
                   className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#dceaf7] bg-[#f8fbff] shadow-sm transition hover:border-cta/35 hover:shadow-md"
                 >
                   <div className="relative aspect-[16/10] bg-section-alt">

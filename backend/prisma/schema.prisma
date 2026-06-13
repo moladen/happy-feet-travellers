@@ -88,8 +88,9 @@ model Blog {
   authorImage      String?
   authorInstagram  String?
   topicKeys        String[] @default([])
-  relatedTourSlugs String[] @default([])
-  landingPageSlug  String?
+  relatedTourSlugs    String[] @default([])
+  relatedPackageSlugs String[] @default([])
+  landingPageSlug     String?
   seoTitle         String?
   seoDescription   String?  @db.Text
   publishedAt      DateTime @default(now())
@@ -204,17 +205,19 @@ model LandingTestimonial {
 }
 
 model Enquiry {
-  id            String       @id @default(cuid())
-  name          String
-  phone         String
-  email         String
-  message       String       @db.Text
-  source        String?
-  subject       String?
-  status        String       @default("new")
-  landingPageId String?
-  landingPage   LandingPage? @relation(fields: [landingPageId], references: [id], onDelete: SetNull)
-  createdAt     DateTime     @default(now())
+  id                       String       @id @default(cuid())
+  name                     String
+  phone                    String
+  email                    String
+  message                  String       @db.Text
+  source                   String?
+  subject                  String?
+  travellerType            String?
+  travelInsuranceRequested Boolean      @default(false)
+  status                   String       @default("new")
+  landingPageId            String?
+  landingPage              LandingPage? @relation(fields: [landingPageId], references: [id], onDelete: SetNull)
+  createdAt                DateTime     @default(now())
 
   @@index([email])
   @@index([status])
@@ -286,6 +289,26 @@ model SiteSettings {
   paymentLink    String?
   footerTagline  String?
   footerDetails  String?  @db.Text
+  termsContent              String?  @db.Text
+  privacyContent            String?  @db.Text
+  cancellationPolicyContent String?  @db.Text
+  policiesLastUpdated       String?
+  heroCommunityQuote        String?  @db.Text
+  heroCommunityBannerUrl    String?
+  heroCommunityAvatars      String?  @db.Text
+  seasonPromoActive         Boolean  @default(true)
+  seasonPromoBadge          String?
+  seasonPromoEyebrow        String?
+  seasonPromoTitle          String?
+  seasonPromoSubtitle       String?
+  seasonPromoDescription    String?  @db.Text
+  seasonPromoImageUrl       String?
+  seasonPromoTags           String?  @db.Text
+  seasonPromoPrimaryCtaLabel   String?
+  seasonPromoPrimaryCtaHref    String?
+  seasonPromoSecondaryCtaLabel String?
+  seasonPromoSecondaryCtaHref  String?
+  aboutPageContent             String?  @db.Text
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

@@ -1,4 +1,10 @@
 import { parsePriceInput, resolveTourPriceAmount } from '@/lib/tourPrice';
+import {
+  buildFullMoonCalendarEntries,
+  FULL_MOON_SECTION,
+  RANN_PLANNING_GUIDE,
+  RANN_SLUG,
+} from '@/lib/rannSeasonContent';
 
 export { parsePriceInput, resolveTourPriceAmount };
 
@@ -28,6 +34,12 @@ export const navigationItems = [
     icon: "blogs",
   },
   {
+    href: "/admin/landing-pages",
+    label: "Landing Pages",
+    caption: "Campaign & seasonal pages",
+    icon: "landing",
+  },
+  {
     href: "/admin/testimonials",
     label: "Testimonials",
     caption: "Guest trust signals",
@@ -42,13 +54,19 @@ export const navigationItems = [
   {
     href: "/admin/hero",
     label: "Hero Section",
-    caption: "Homepage banner slides",
+    caption: "Homepage banner & trust band",
     icon: "hero",
   },
   {
-    href: "/admin/team",
-    label: "Team Management",
-    caption: "About us · introductions",
+    href: "/admin/season-highlight",
+    label: "Season Highlight",
+    caption: "Featured campaign card",
+    icon: "landing",
+  },
+  {
+    href: "/admin/about",
+    label: "About Us",
+    caption: "Company story & page copy",
     icon: "team",
   },
   {
@@ -66,7 +84,7 @@ export const navigationItems = [
   {
     href: "/admin/settings",
     label: "Settings",
-    caption: "Website contact data",
+    caption: "Contact, footer & policies",
     icon: "settings",
   },
 ];
@@ -190,6 +208,7 @@ export const emptyBlogForm = {
   content: "<p>Start writing your travel story here...</p>",
   topicKeysText: "",
   relatedTourSlugsText: "",
+  relatedPackageSlugsText: "",
   landingPageSlug: "",
   seoTitle: "",
   seoDescription: "",
@@ -220,6 +239,25 @@ export const emptySettings = {
   paymentLink: "",
   footerTagline: "",
   footerDetails: "",
+  termsContent: "",
+  privacyContent: "",
+  cancellationPolicyContent: "",
+  policiesLastUpdated: "",
+  heroCommunityQuote: "",
+  heroCommunityBannerUrl: "",
+  heroCommunityAvatars: [],
+  seasonPromoActive: true,
+  seasonPromoBadge: "",
+  seasonPromoEyebrow: "",
+  seasonPromoTitle: "",
+  seasonPromoSubtitle: "",
+  seasonPromoDescription: "",
+  seasonPromoImageUrl: "",
+  seasonPromoTags: [],
+  seasonPromoPrimaryCtaLabel: "",
+  seasonPromoPrimaryCtaHref: "",
+  seasonPromoSecondaryCtaLabel: "",
+  seasonPromoSecondaryCtaHref: "",
 };
 
 export function generateSlug(value) {
@@ -575,6 +613,10 @@ export function buildBlogPayload(form) {
     content: normalizeBlogContentForApi(form.content),
     seoTitle: (form.seoTitle || "").trim(),
     seoDescription: (form.seoDescription || "").trim(),
+    topicKeys: splitLines(form.topicKeysText),
+    relatedTourSlugs: splitLines(form.relatedTourSlugsText),
+    relatedPackageSlugs: splitLines(form.relatedPackageSlugsText),
+    landingPageSlug: (form.landingPageSlug || "").trim() || null,
   };
   if (form.publishDate) {
     payload.publishedAt = form.publishDate;
@@ -593,6 +635,7 @@ export function createBlogForm(record) {
     content: normalizeBlogContentForForm(record.content),
     topicKeysText: joinLines(record.topicKeys),
     relatedTourSlugsText: joinLines(record.relatedTourSlugs),
+    relatedPackageSlugsText: joinLines(record.relatedPackageSlugs),
     landingPageSlug: record.landingPageSlug || "",
   };
 }
@@ -622,6 +665,16 @@ export function normaliseSettings(payload) {
   if (!payload || typeof payload !== "object") return out;
   for (const key of Object.keys(emptySettings)) {
     const value = payload[key];
+    if (key === "heroCommunityAvatars" || key === "seasonPromoTags") {
+      out[key] = Array.isArray(value)
+        ? value.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      continue;
+    }
+    if (key === "seasonPromoActive") {
+      out[key] = value === true || value === "true" || value === 1 || value === "1";
+      continue;
+    }
     out[key] = value == null ? "" : String(value);
   }
   return out;
@@ -640,6 +693,28 @@ export function buildSettingsPayload(form) {
     paymentLink: normalised.paymentLink.trim(),
     footerTagline: normalised.footerTagline.trim(),
     footerDetails: normalised.footerDetails.trim(),
+    termsContent: normalised.termsContent.trim(),
+    privacyContent: normalised.privacyContent.trim(),
+    cancellationPolicyContent: normalised.cancellationPolicyContent.trim(),
+    policiesLastUpdated: normalised.policiesLastUpdated.trim(),
+    heroCommunityQuote: normalised.heroCommunityQuote.trim(),
+    heroCommunityBannerUrl: normalised.heroCommunityBannerUrl.trim(),
+    heroCommunityAvatars: normalised.heroCommunityAvatars,
+    seasonPromoActive: Boolean(normalised.seasonPromoActive),
+    seasonPromoBadge: normalised.seasonPromoBadge.trim(),
+    seasonPromoEyebrow: normalised.seasonPromoEyebrow.trim(),
+    seasonPromoTitle: normalised.seasonPromoTitle.trim(),
+    seasonPromoSubtitle: normalised.seasonPromoSubtitle.trim(),
+    seasonPromoDescription: normalised.seasonPromoDescription.trim(),
+    seasonPromoImageUrl: normalised.seasonPromoImageUrl.trim(),
+    seasonPromoTags: normalised.seasonPromoTags,
+    seasonPromoPrimaryCtaLabel: normalised.seasonPromoPrimaryCtaLabel.trim(),
+    seasonPromoPrimaryCtaHref: normalised.seasonPromoPrimaryCtaHref.trim(),
+    seasonPromoSecondaryCtaLabel: normalised.seasonPromoSecondaryCtaLabel.trim(),
+    seasonPromoSecondaryCtaHref: normalised.seasonPromoSecondaryCtaHref.trim(),
+    ...(form.aboutPageContent !== undefined && form.aboutPageContent !== null
+      ? { aboutPageContent: form.aboutPageContent }
+      : {}),
   };
 }
 
@@ -650,4 +725,370 @@ export function groupDeparturesByMonth(tours) {
     groups[key].push(tour);
     return groups;
   }, {});
+}
+
+export const landingStatusOptions = [
+  { value: "draft", label: "Draft" },
+  { value: "published", label: "Published" },
+];
+
+export const emptyLandingPackage = {
+  slug: "",
+  name: "",
+  emoji: "🏜️",
+  featuredImage: "",
+  shortDescription: "",
+  startingPrice: "",
+  duration: "",
+  highlightsText: "",
+  audienceBadge: "",
+  topicKeysText: "",
+  relatedBlogSlugsText: "",
+  active: true,
+};
+
+export const emptyLandingGallerySlide = {
+  image: "",
+  caption: "",
+  type: "destination",
+};
+
+export const emptyLandingWhyVisit = {
+  title: "",
+  description: "",
+  image: "",
+};
+
+export const emptyLandingFaq = {
+  category: "travel",
+  question: "",
+  answer: "",
+};
+
+export const emptyLandingTestimonial = {
+  name: "",
+  city: "",
+  image: "",
+  review: "",
+  rating: "5",
+  active: true,
+};
+
+export const emptyLandingFullMoon = {
+  batch: "",
+  date: "",
+  price: "",
+  highlight: "",
+};
+
+export const emptyLandingForm = {
+  title: "",
+  slug: "",
+  status: "draft",
+  heroHeading: "",
+  heroSubheading: "",
+  heroBannerImage: "",
+  seasonDates: "",
+  heroSocialProofText: "",
+  introTitle: "",
+  introParagraphsText: "",
+  introSummaryText: "",
+  bestTimeSeason: "",
+  bestTimePointsText: "",
+  ctaButtonText: "",
+  ctaButtonLink: "",
+  whatsappCtaLink: "",
+  whatsappGroupLink: "",
+  whatsappGroupEnabled: true,
+  seoTitle: "",
+  seoDescription: "",
+  ogImage: "",
+  _customBlocks: {},
+  _packages: [],
+  _gallerySlides: [],
+  _whyVisit: [],
+  _fullMoonCalendar: [],
+  fullMoonEnabled: true,
+  fullMoonEyebrow: "",
+  fullMoonTitle: "",
+  fullMoonLede: "",
+  fullMoonBackgroundImage: "",
+  fullMoonBadgeLabel: "",
+  _faqs: [],
+  _testimonials: [],
+  planningGuideEnabled: true,
+  planningGuideEyebrow: "",
+  planningGuideTitle: "",
+  planningGuideLede: "",
+  planningGuideHighlightsText: "",
+  planningGuidePdfUrl: "",
+  planningGuidePdfFileName: "",
+  planningGuideFormTitle: "",
+  planningGuideFormLede: "",
+  planningGuideSubmitLabel: "",
+  planningGuideSuccessLede: "",
+  planningGuideDisclaimer: "",
+};
+
+function mapPlanningGuideForForm(guide, slug) {
+  const defaults = slug === RANN_SLUG ? RANN_PLANNING_GUIDE : {};
+  const g = guide && typeof guide === "object" ? guide : {};
+
+  return {
+    planningGuideEnabled: g.enabled !== false,
+    planningGuideEyebrow: g.eyebrow || defaults.eyebrow || "",
+    planningGuideTitle: g.title || defaults.title || "",
+    planningGuideLede: g.lede || defaults.lede || "",
+    planningGuideHighlightsText: joinLines(
+      Array.isArray(g.highlights) && g.highlights.length ? g.highlights : defaults.highlights || []
+    ),
+    planningGuidePdfUrl: g.pdfUrl || defaults.pdfUrl || "",
+    planningGuidePdfFileName: g.pdfFileName || defaults.pdfFileName || "",
+    planningGuideFormTitle: g.formTitle || defaults.formTitle || "",
+    planningGuideFormLede: g.formLede || defaults.formLede || "",
+    planningGuideSubmitLabel: g.submitLabel || defaults.submitLabel || "",
+    planningGuideSuccessLede: g.successLede || defaults.successLede || "",
+    planningGuideDisclaimer: g.disclaimer || defaults.disclaimer || "",
+  };
+}
+
+export const landingFaqCategoryOptions = [
+  { value: "travel", label: "Travel" },
+  { value: "package", label: "Package" },
+  { value: "booking", label: "Booking" },
+];
+
+export const landingGalleryTypeOptions = [
+  { value: "destination", label: "Destination" },
+  { value: "memory", label: "Traveller memory" },
+];
+
+function mapLandingPackageForForm(pkg) {
+  return {
+    slug: pkg.slug || "",
+    name: pkg.name || "",
+    emoji: pkg.emoji || "🏜️",
+    featuredImage: pkg.featuredImage || "",
+    shortDescription: pkg.shortDescription || "",
+    startingPrice: pkg.startingPrice || "",
+    duration: pkg.duration || "",
+    highlightsText: joinLines(pkg.highlights),
+    audienceBadge: pkg.detailContent?.audienceBadge || pkg.audienceBadge || "",
+    topicKeysText: joinLines(pkg.detailContent?.topicKeys),
+    relatedBlogSlugsText: joinLines(pkg.detailContent?.relatedBlogSlugs),
+    active: pkg.active !== false,
+  };
+}
+
+export function createLandingForm(record) {
+  if (!record) return { ...emptyLandingForm };
+  const intro = record.introContent && typeof record.introContent === "object" ? record.introContent : {};
+  const bestTime =
+    record.bestTimeToVisit && typeof record.bestTimeToVisit === "object" ? record.bestTimeToVisit : {};
+  const blocks = record.customBlocks && typeof record.customBlocks === "object" ? record.customBlocks : {};
+  const socialProof = blocks.heroSocialProof || record.heroSocialProof || [];
+  const gallery = blocks.gallery || record.gallery || [];
+
+  return {
+    ...emptyLandingForm,
+    title: record.title || "",
+    slug: record.slug || generateSlug(record.title),
+    status: record.status || "draft",
+    heroHeading: record.heroHeading || "",
+    heroSubheading: record.heroSubheading || "",
+    heroBannerImage: record.heroBannerImage || "",
+    seasonDates: record.seasonDates || "",
+    heroSocialProofText: joinLines(socialProof),
+    introTitle: intro.title || "",
+    introParagraphsText: joinLines(intro.paragraphs),
+    introSummaryText: joinLines(intro.summary),
+    bestTimeSeason: bestTime.season || "",
+    bestTimePointsText: joinLines(bestTime.points || bestTime.highlights),
+    ctaButtonText: record.ctaButtonText || "",
+    ctaButtonLink: record.ctaButtonLink || "",
+    whatsappCtaLink: record.whatsappCtaLink || "",
+    whatsappGroupLink: record.whatsappGroupLink || "",
+    whatsappGroupEnabled: record.whatsappGroupEnabled !== false,
+    seoTitle: record.seoTitle || "",
+    seoDescription: record.seoDescription || "",
+    ogImage: record.ogImage || "",
+    _customBlocks: blocks,
+    _packages: Array.isArray(record.packages) ? record.packages.map(mapLandingPackageForForm) : [],
+    _gallerySlides: Array.isArray(gallery) ? gallery.map((slide) => ({ ...emptyLandingGallerySlide, ...slide })) : [],
+    _whyVisit: Array.isArray(record.whyVisit) ? record.whyVisit.map((item) => ({ ...emptyLandingWhyVisit, ...item })) : [],
+    _fullMoonCalendar: (() => {
+      const rows = Array.isArray(record.fullMoonCalendar) ? record.fullMoonCalendar : [];
+      const useDefaults = record.slug === RANN_SLUG;
+      return buildFullMoonCalendarEntries(rows.length ? rows : undefined, { useDefaults }).map((item) => ({
+        batch: item.batch != null ? String(item.batch) : "",
+        date: item.date || item.dates || "",
+        price: item.price || "",
+        highlight: item.highlight || item.label || "",
+      }));
+    })(),
+    fullMoonEnabled: blocks.fullMoonSection?.enabled !== false,
+    fullMoonEyebrow: blocks.fullMoonSection?.eyebrow || FULL_MOON_SECTION.eyebrow || "",
+    fullMoonTitle: blocks.fullMoonSection?.title || FULL_MOON_SECTION.title || "",
+    fullMoonLede: blocks.fullMoonSection?.lede || FULL_MOON_SECTION.lede || "",
+    fullMoonBackgroundImage: blocks.fullMoonSection?.backgroundImage || FULL_MOON_SECTION.backgroundImage || "",
+    fullMoonBadgeLabel: blocks.fullMoonSection?.badgeLabel || FULL_MOON_SECTION.badgeLabel || "",
+    _faqs: Array.isArray(record.faqs)
+      ? record.faqs.map((faq) => ({
+          category: faq.category || "travel",
+          question: faq.question || "",
+          answer: faq.answer || "",
+        }))
+      : [],
+    _testimonials: Array.isArray(record.testimonials)
+      ? record.testimonials.map((item) => ({
+          name: item.name || "",
+          city: item.city || "",
+          image: item.image || "",
+          review: item.review || "",
+          rating: String(item.rating || 5),
+          active: item.active !== false,
+        }))
+      : [],
+    ...mapPlanningGuideForForm(blocks.planningGuide, record.slug),
+  };
+}
+
+export function buildLandingPayload(form) {
+  const heroSocialProof = splitLines(form.heroSocialProofText);
+  const customBlocks = { ...(form._customBlocks || {}) };
+  if (heroSocialProof.length) customBlocks.heroSocialProof = heroSocialProof;
+  if (Array.isArray(form._gallerySlides) && form._gallerySlides.length) {
+    customBlocks.gallery = form._gallerySlides
+      .filter((slide) => String(slide.image || "").trim())
+      .map((slide) => ({
+        image: String(slide.image || "").trim(),
+        caption: String(slide.caption || "").trim(),
+        type: slide.type === "memory" ? "memory" : "destination",
+      }));
+  }
+
+  const planningHighlights = splitLines(form.planningGuideHighlightsText);
+  customBlocks.fullMoonSection = {
+    enabled: form.fullMoonEnabled !== false,
+    eyebrow: (form.fullMoonEyebrow || "").trim() || null,
+    title: (form.fullMoonTitle || "").trim() || null,
+    lede: (form.fullMoonLede || "").trim() || null,
+    backgroundImage: (form.fullMoonBackgroundImage || "").trim() || null,
+    badgeLabel: (form.fullMoonBadgeLabel || "").trim() || null,
+  };
+
+  customBlocks.planningGuide = {
+    enabled: form.planningGuideEnabled !== false,
+    eyebrow: (form.planningGuideEyebrow || "").trim() || null,
+    title: (form.planningGuideTitle || "").trim() || null,
+    lede: (form.planningGuideLede || "").trim() || null,
+    highlights: planningHighlights.length ? planningHighlights : null,
+    pdfUrl:
+      (form.planningGuidePdfUrl || "").trim() ||
+      (form.planningGuideEnabled !== false ? RANN_PLANNING_GUIDE.pdfUrl : null),
+    pdfFileName:
+      (form.planningGuidePdfFileName || "").trim() ||
+      (form.planningGuideEnabled !== false ? RANN_PLANNING_GUIDE.pdfFileName : null),
+    formTitle: (form.planningGuideFormTitle || "").trim() || null,
+    formLede: (form.planningGuideFormLede || "").trim() || null,
+    submitLabel: (form.planningGuideSubmitLabel || "").trim() || null,
+    successLede: (form.planningGuideSuccessLede || "").trim() || null,
+    disclaimer: (form.planningGuideDisclaimer || "").trim() || null,
+  };
+
+  const payload = {
+    title: (form.title || "").trim(),
+    slug: generateSlug(form.slug || form.title),
+    status: String(form.status || "draft").toLowerCase(),
+    heroHeading: (form.heroHeading || "").trim() || null,
+    heroSubheading: (form.heroSubheading || "").trim() || null,
+    heroBannerImage: (form.heroBannerImage || "").trim() || null,
+    seasonDates: (form.seasonDates || "").trim() || null,
+    ctaButtonText: (form.ctaButtonText || "").trim() || null,
+    ctaButtonLink: (form.ctaButtonLink || "").trim() || null,
+    whatsappCtaLink: (form.whatsappCtaLink || "").trim() || null,
+    whatsappGroupLink: (form.whatsappGroupLink || "").trim() || null,
+    whatsappGroupEnabled: Boolean(form.whatsappGroupEnabled),
+    introContent: {
+      title: (form.introTitle || "").trim(),
+      paragraphs: splitLines(form.introParagraphsText),
+      summary: splitLines(form.introSummaryText),
+    },
+    bestTimeToVisit: {
+      season: (form.bestTimeSeason || "").trim(),
+      points: splitLines(form.bestTimePointsText),
+    },
+    whyVisit: (form._whyVisit || [])
+      .filter((item) => String(item.title || "").trim())
+      .map((item) => ({
+        title: String(item.title || "").trim(),
+        description: String(item.description || "").trim(),
+        image: String(item.image || "").trim() || null,
+      })),
+    fullMoonCalendar: buildFullMoonCalendarEntries(form._fullMoonCalendar || []).map((item) => ({
+      batch: item.batch,
+      dates: item.dates,
+      date: item.date,
+      price: item.price,
+      highlight: item.highlight,
+    })),
+    customBlocks: Object.keys(customBlocks).length ? customBlocks : null,
+    seoTitle: (form.seoTitle || "").trim() || null,
+    seoDescription: (form.seoDescription || "").trim() || null,
+    ogImage: (form.ogImage || "").trim() || null,
+  };
+
+  if (Array.isArray(form._packages)) {
+    payload.packages = form._packages
+      .filter((pkg) => String(pkg.name || "").trim())
+      .map((pkg, index) => {
+        const audienceBadge = String(pkg.audienceBadge || "").trim();
+        const topicKeys = splitLines(pkg.topicKeysText);
+        const relatedBlogSlugs = splitLines(pkg.relatedBlogSlugsText);
+        const detailContent = {};
+        if (audienceBadge) detailContent.audienceBadge = audienceBadge;
+        if (topicKeys.length) detailContent.topicKeys = topicKeys;
+        if (relatedBlogSlugs.length) detailContent.relatedBlogSlugs = relatedBlogSlugs;
+        return {
+          slug: generateSlug(pkg.slug || pkg.name),
+          name: String(pkg.name || "").trim(),
+          emoji: String(pkg.emoji || "").trim() || null,
+          featuredImage: String(pkg.featuredImage || "").trim() || null,
+          shortDescription: String(pkg.shortDescription || "").trim() || null,
+          startingPrice: String(pkg.startingPrice || "").trim() || null,
+          duration: String(pkg.duration || "").trim() || null,
+          highlights: splitLines(pkg.highlightsText),
+          active: pkg.active !== false,
+          sortOrder: index,
+          detailContent: Object.keys(detailContent).length ? detailContent : null,
+        };
+      });
+  }
+
+  if (Array.isArray(form._faqs)) {
+    payload.faqs = form._faqs
+      .filter((faq) => String(faq.question || "").trim() && String(faq.answer || "").trim())
+      .map((faq, index) => ({
+        category: String(faq.category || "travel").toLowerCase(),
+        question: String(faq.question || "").trim(),
+        answer: String(faq.answer || "").trim(),
+        sortOrder: index,
+      }));
+  }
+
+  if (Array.isArray(form._testimonials)) {
+    payload.testimonials = form._testimonials
+      .filter((item) => String(item.name || "").trim() && String(item.review || "").trim())
+      .map((item, index) => ({
+        name: String(item.name || "").trim(),
+        city: String(item.city || "").trim() || null,
+        image: String(item.image || "").trim() || null,
+        review: String(item.review || "").trim(),
+        rating: Math.min(5, Math.max(1, parseInt(item.rating, 10) || 5)),
+        active: item.active !== false,
+        sortOrder: index,
+      }));
+  }
+
+  return payload;
 }

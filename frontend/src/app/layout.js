@@ -1,6 +1,8 @@
 import { Oswald, Poppins } from "next/font/google";
 import "./globals.css";
 import AppChrome from "@/components/common/AppChrome";
+import JsonLd from "@/components/seo/JsonLd";
+import { buildOrganizationSchema } from "@/lib/schema/organization";
 import { getPublicSettings } from "@/services/settingsService";
 
 const poppins = Poppins({
@@ -25,6 +27,7 @@ export const metadata = {
 
 export default async function RootLayout({ children }) {
   const settings = await getPublicSettings();
+  const organizationSchema = buildOrganizationSchema(settings);
 
   return (
     <html
@@ -32,6 +35,7 @@ export default async function RootLayout({ children }) {
       className={`${poppins.variable} ${oswald.variable} h-full antialiased`}
     >
       <body className="page-canvas min-h-full flex flex-col font-sans text-foreground">
+        <JsonLd data={organizationSchema} />
         <AppChrome settings={settings}>{children}</AppChrome>
       </body>
     </html>

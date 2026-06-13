@@ -1,17 +1,10 @@
 "use client";
 
-import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/admin/AdminIcons";
-
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+import { compressImageFile } from "@/lib/compressImage";
+import { isImageFile, resolveAdminPreviewSrc, validateHeroImageFile } from "@/lib/heroSlides";
+import { uploadTourImage } from "@/services/adminService";
 
 const inputClassName =
   "w-full min-w-0 rounded-2xl border border-[#d5e1eb] bg-white px-4 py-3 text-sm text-[#33475b] outline-none transition focus:border-[#4fa3d1]";
@@ -19,38 +12,137 @@ const inputClassName =
 const buttonClassName =
   "inline-flex h-[46px] shrink-0 items-center justify-center rounded-2xl border border-[#d5e1eb] bg-white px-5 text-sm font-semibold text-[#1f4e79] transition hover:border-[#4fa3d1] whitespace-nowrap";
 
+function replaceImageValue(images, multiple, fromValue, toValue) {
+  if (!multiple) return toValue || "";
+  return (images || []).map((item) => (item === fromValue ? toValue : item)).filter(Boolean);
+}
+
+function AdminImagePreview({ src, alt = "" }) {
+  const [failed, setFailed] = useState(false);
+  const resolved = resolveAdminPreviewSrc(src);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  if (!resolved || failed) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#edf2f7] px-4 text-center text-xs text-[#6f8295]">
+        <Icon name="gallery" className="h-6 w-6 text-[#9aabb9]" />
+        <span>{failed ? "Preview unavailable — remove and upload again as JPG/PNG." : "No preview"}</span>
+      </div>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={resolved}
+      alt={alt}
+      className="h-full w-full object-cover"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 export default function ImageUploader({
   label,
   helperText,
   images,
   onChange,
   multiple = false,
+  uploadImage = uploadTourImage,
 }) {
   const inputRef = useRef(null);
+  const previewUrlsRef = useRef(new Set());
   const [url, setUrl] = useState("");
-  const list = multiple ? images || [] : images ? [images] : [];
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const imageList = multiple
+    ? Array.isArray(images)
+      ? images
+      : []
+    : typeof images === "string" && images
+      ? [images]
+      : [];
+  const list = imageList.filter(Boolean);
+
+  const trackPreview = (previewUrl) => {
+    previewUrlsRef.current.add(previewUrl);
+  };
+
+  const releasePreview = (previewUrl) => {
+    if (!previewUrl || !String(previewUrl).startsWith("blob:")) return;
+    if (!previewUrlsRef.current.has(previewUrl)) return;
+    URL.revokeObjectURL(previewUrl);
+    previewUrlsRef.current.delete(previewUrl);
+  };
 
   const pushImages = (nextImages) => {
     if (multiple) {
-      onChange([...(images || []), ...nextImages].filter(Boolean));
+      onChange([...imageList, ...nextImages].filter(Boolean));
       return;
     }
     onChange(nextImages[0] || "");
   };
 
   const handleFiles = async (files) => {
-    const fileList = Array.from(files || []).filter((file) => file.type.startsWith("image/"));
-    if (!fileList.length) return;
-    const encoded = await Promise.all(fileList.map(readFileAsDataUrl));
-    pushImages(encoded);
+    const fileList = Array.from(files || []).filter(isImageFile);
+    if (!fileList.length) {
+      setUploadError("Could not read the selected file. Use JPG, PNG, or WebP.");
+      return;
+    }
+
+    setUploadError("");
+    setUploading(true);
+
+    let gallery = multiple ? [...imageList] : typeof images === "string" ? images : "";
+
+    for (const file of fileList) {
+      const validationError = validateHeroImageFile(file);
+      if (validationError) {
+        setUploadError(validationError);
+        continue;
+      }
+
+      const previewUrl = URL.createObjectURL(file);
+      trackPreview(previewUrl);
+      gallery = multiple ? [...gallery, previewUrl] : previewUrl;
+      onChange(gallery);
+
+      try {
+        const compressed = await compressImageFile(file);
+        const result = await uploadImage(compressed);
+        if (!result.success || !result.data?.url) {
+          setUploadError(result.message || "Could not upload image.");
+          gallery = replaceImageValue(gallery, multiple, previewUrl, "");
+          onChange(gallery);
+          releasePreview(previewUrl);
+          continue;
+        }
+
+        gallery = replaceImageValue(gallery, multiple, previewUrl, result.data.url);
+        onChange(gallery);
+        releasePreview(previewUrl);
+      } catch (error) {
+        setUploadError(error?.message || "Could not process this photo.");
+        gallery = replaceImageValue(gallery, multiple, previewUrl, "");
+        onChange(gallery);
+        releasePreview(previewUrl);
+      }
+    }
+
+    setUploading(false);
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   const removeImage = (image) => {
+    releasePreview(image);
     if (!multiple) {
       onChange("");
       return;
     }
-    onChange((images || []).filter((item) => item !== image));
+    onChange((Array.isArray(images) ? images : []).filter((item) => item !== image));
   };
 
   return (
@@ -65,7 +157,7 @@ export default function ImageUploader({
           onDragOver={(event) => event.preventDefault()}
           onDrop={async (event) => {
             event.preventDefault();
-            await handleFiles(event.dataTransfer.files);
+            if (!uploading) await handleFiles(event.dataTransfer.files);
           }}
           className="border-b border-dashed border-[#c9dbe8] bg-[#f8fbfe] p-5 text-center"
         >
@@ -74,19 +166,20 @@ export default function ImageUploader({
           </div>
           <p className="mt-4 text-sm font-semibold text-[#17324d]">Drag and drop travel images here</p>
           <p className="mt-1 text-xs text-[#6d8093]">
-            {multiple ? "Multiple images supported" : "Use one hero image"} or upload from your device.
+            {multiple ? "Multiple images supported" : "Use one hero image"} — JPG, PNG, or WebP from your device.
           </p>
           <button
             type="button"
+            disabled={uploading}
             onClick={() => inputRef.current?.click()}
-            className="mt-4 rounded-full bg-[#1f4e79] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#173b5d]"
+            className="mt-4 rounded-full bg-[#1f4e79] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#173b5d] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Choose file
+            {uploading ? "Uploading…" : "Choose file"}
           </button>
           <input
             ref={inputRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
             multiple={multiple}
             className="hidden"
             onChange={(event) => handleFiles(event.target.files)}
@@ -114,22 +207,19 @@ export default function ImageUploader({
         </div>
       </div>
 
+      {uploadError ? (
+        <p className="text-sm text-[#b42318]">{uploadError}</p>
+      ) : null}
+
       {list.length ? (
         <div className={multiple ? "grid w-full grid-cols-1 gap-4 sm:grid-cols-2" : "w-full"}>
           {list.map((image, index) => (
             <div
-              key={`${index}-${String(image).slice(0, 32)}`}
+              key={`${index}-${String(image).slice(0, 48)}`}
               className="group relative w-full overflow-hidden rounded-[24px] border border-[#e7eef4] bg-white p-2 shadow-[0_12px_32px_-24px_rgba(31,78,121,0.45)]"
             >
               <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[18px] bg-[#edf2f7]">
-                <Image
-                  src={image}
-                  alt=""
-                  fill
-                  unoptimized
-                  sizes="(max-width: 640px) 100vw, 400px"
-                  className="object-cover"
-                />
+                <AdminImagePreview src={image} />
               </div>
               <button
                 type="button"

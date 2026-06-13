@@ -81,7 +81,14 @@ function IconWhatsApp() {
   );
 }
 
-function ContactRow({ href, icon, label, children }) {
+function ContactRow({ href, icon, label, children, variant }) {
+  const rowClass = [
+    'site-footer__contact-row',
+    variant ? `site-footer__contact-row--${variant}` : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   const inner = (
     <>
       <span className="site-footer__contact-icon" aria-hidden>
@@ -96,13 +103,13 @@ function ContactRow({ href, icon, label, children }) {
 
   if (href) {
     return (
-      <a href={href} className="site-footer__contact-row">
+      <a href={href} className={rowClass}>
         {inner}
       </a>
     );
   }
 
-  return <div className="site-footer__contact-row">{inner}</div>;
+  return <div className={rowClass}>{inner}</div>;
 }
 
 export default function Footer({ settings: settingsProp }) {
@@ -173,7 +180,7 @@ export default function Footer({ settings: settingsProp }) {
             <ul className="site-footer__contact-list">
               <li>
                 <ContactRow icon={<IconPin />} label="Office Address">
-                  {settings.officeAddress}
+                  <span className="site-footer__contact-value--address">{settings.officeAddress}</span>
                 </ContactRow>
               </li>
               <li>
@@ -182,18 +189,18 @@ export default function Footer({ settings: settingsProp }) {
                 </ContactRow>
               </li>
               <li>
-                <ContactRow href={waHref} icon={<IconWhatsApp />} label="WhatsApp (Enquiries)">
+                <ContactRow href={waHref} icon={<IconWhatsApp />} label="WhatsApp (Enquiries)" variant="whatsapp">
                   {phoneDisplay}
                 </ContactRow>
               </li>
               <li>
-                <ContactRow href={waGroupHref} icon={<IconWhatsApp />} label="WhatsApp Group">
+                <ContactRow href={waGroupHref} icon={<IconWhatsApp />} label="WhatsApp Group" variant="whatsapp">
                   Tour updates &amp; announcements
                 </ContactRow>
               </li>
               <li>
                 <ContactRow href={`mailto:${settings.email}`} icon={<IconMail />} label="Email Address">
-                  <span className="break-all">{settings.email}</span>
+                  <span className="site-footer__contact-value--email">{settings.email}</span>
                 </ContactRow>
               </li>
             </ul>

@@ -29,11 +29,11 @@ export default async function BlogPage() {
   const rest = blogs.slice(1);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b border-[#dceaf7] bg-gradient-to-br from-primary via-[#2a6094] to-secondary py-14 text-white">
-        <div className="container mx-auto px-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/80">Stories & guides</p>
-          <h1 className="text-4xl font-bold md:text-5xl">Travel Blog</h1>
+    <div className="page-shell">
+      <div className="page-hero-brand py-10 md:py-14">
+        <div className="container mx-auto px-4 md:px-6">
+          <p className="section-eyebrow mb-3 text-white/80">Stories & guides</p>
+          <h1 className="font-display text-4xl font-bold text-white md:text-5xl">Travel Blog</h1>
           <p className="mt-3 max-w-2xl text-lg text-white/90">
             Inspiration, packing tips, and destination notes from our team — written for curious travellers planning their
             next journey across India.
@@ -41,7 +41,8 @@ export default async function BlogPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-14 lg:py-16">
+      <div className="section-tone-cream py-14 lg:py-16">
+        <div className="container mx-auto px-4 md:px-6">
         {apiError ? (
           <SectionState
             type="error"
@@ -158,6 +159,7 @@ export default async function BlogPage() {
         </div>
           </>
         )}
+        </div>
       </div>
     </div>
   );

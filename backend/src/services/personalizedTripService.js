@@ -2,6 +2,7 @@ const prisma = require('@/config/database');
 const AppError = require('@/utils/AppError');
 const { withDatabaseErrors } = require('@/utils/databaseErrors');
 const { generateSlug } = require('@/utils/slugGenerator');
+const { persistTourMediaInPayload } = require('@/utils/tourMedia');
 const {
   PERSONALIZED_CATEGORY,
   PACKAGE_STATUS,
@@ -282,26 +283,27 @@ async function getPackage(idOrSlug, { admin = false } = {}) {
 
 async function createPackage(payload) {
   return withDatabaseErrors(async () => {
-    const slug = generateSlug(payload.slug || payload.title);
+    const mediaPayload = persistTourMediaInPayload(payload);
+    const slug = generateSlug(mediaPayload.slug || mediaPayload.title);
     const exists = await prisma.tour.findUnique({ where: { slug } });
     if (exists) throw AppError.conflict('A package with this slug already exists');
 
     const data = normalisePayload(
       {
-        ...payload,
+        ...mediaPayload,
         slug,
-        images: payload.images || [],
-        highlights: payload.highlights || [],
-        inclusions: payload.inclusions || [],
-        exclusions: payload.exclusions || [],
-        thingsToCarry: payload.thingsToCarry || [],
-        tags: normaliseTags(payload.tags),
-        itinerary: payload.itinerary ?? null,
-        faqs: payload.faqs ?? null,
-        pickupPoints: payload.pickupPoints ?? null,
-        supplements: payload.supplements ?? null,
-        terms: payload.terms ?? null,
-        ctaData: payload.ctaData ?? null,
+        images: mediaPayload.images || [],
+        highlights: mediaPayload.highlights || [],
+        inclusions: mediaPayload.inclusions || [],
+        exclusions: mediaPayload.exclusions || [],
+        thingsToCarry: mediaPayload.thingsToCarry || [],
+        tags: normaliseTags(mediaPayload.tags),
+        itinerary: mediaPayload.itinerary ?? null,
+        faqs: mediaPayload.faqs ?? null,
+        pickupPoints: mediaPayload.pickupPoints ?? null,
+        supplements: mediaPayload.supplements ?? null,
+        terms: mediaPayload.terms ?? null,
+        ctaData: mediaPayload.ctaData ?? null,
       },
       { isCreate: true }
     );
@@ -318,7 +320,7 @@ async function updatePackage(id, payload) {
     });
     if (!existing) throw AppError.notFound('Personalized trip package not found');
 
-    const data = normalisePayload(payload);
+    const data = normalisePayload(persistTourMediaInPayload(payload));
     if (data.title || data.slug) {
       const newSlug = generateSlug(data.slug || data.title || existing.title);
       const conflict = await prisma.tour.findUnique({ where: { slug: newSlug } });

@@ -20,10 +20,15 @@ const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
-app.use(helmet());
+app.use(
+  helmet({
+    // Admin (localhost:3000) and site (Vercel) load /uploads from another origin/port.
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
 app.use(compression());
-app.use(express.json({ limit: '12mb' }));
-app.use(express.urlencoded({ extended: true, limit: '12mb' }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 const isAllowedCorsOrigin = (origin) => {
   if (!origin) return true;

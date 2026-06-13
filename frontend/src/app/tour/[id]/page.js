@@ -2,6 +2,10 @@ import Link from 'next/link';
 import RelatedBlogsSection from '@/components/content/RelatedBlogsSection';
 import TourDetails from '@/components/tour/TourDetails';
 import RelatedToursScroll from '@/components/tour/RelatedToursScroll';
+import JsonLd from '@/components/seo/JsonLd';
+import { buildFaqSchema } from '@/lib/schema/faq';
+import { getSiteUrl } from '@/lib/schema/siteUrl';
+import { buildTourTravelPackageSchema } from '@/lib/schema/travelPackage';
 import { getTourById, getTours, getPersonalizedTrips } from '@/services/api';
 import { getPublicSettings } from '@/services/settingsService';
 import SectionState from '@/components/common/SectionState';
@@ -60,9 +64,16 @@ export default async function TourPage({ params }) {
   const related = allTours.filter((t) => String(t.id) !== String(tour.id)).slice(0, 8);
   const toursListHref = isCustomized ? '/customized-trips' : '/upcoming-departures';
   const toursListLabel = isCustomized ? 'Personalized tours' : 'Upcoming departures';
+  const tourKey = tour.slug || tour.id;
+  const tourUrl = `${getSiteUrl()}/tour/${encodeURIComponent(tourKey)}`;
+  const structuredData = [
+    buildTourTravelPackageSchema(tour, tourUrl),
+    buildFaqSchema(tour.faqs),
+  ].filter(Boolean);
 
   return (
     <div className="min-h-screen bg-background">
+      <JsonLd data={structuredData} />
       <div className="border-b border-[#dceaf7] bg-white">
         <div className="container mx-auto px-4 py-2.5 sm:px-6">
           <div className="flex flex-wrap items-center gap-2 text-sm text-foreground/75">

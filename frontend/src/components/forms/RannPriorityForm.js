@@ -4,16 +4,9 @@ import { useState } from 'react';
 import { submitContactForm } from '@/services/api';
 import { resolveFormErrorMessage, USER_MESSAGES } from '@/lib/userMessages';
 import { isValidIndianPhone, normalizeIndianPhone } from '@/lib/indianPhone';
-import { PACKAGE_INTEREST_LABELS, RANN_SEASON_TITLE } from '@/lib/rannSeasonContent';
+import { PACKAGE_INTEREST_LABELS, RANN_PRIORITY_MONTH_OPTIONS, RANN_SEASON_TITLE } from '@/lib/rannSeasonContent';
 
-const MONTH_OPTIONS = [
-  'November 2026',
-  'December 2026',
-  'January 2027',
-  'February 2027',
-  'March 2027',
-  'Flexible',
-];
+const MONTH_OPTIONS = RANN_PRIORITY_MONTH_OPTIONS;
 
 const initialData = {
   name: '',

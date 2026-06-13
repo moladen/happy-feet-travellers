@@ -1,5 +1,20 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
+const {
+  DEFAULT_CANCELLATION_HTML,
+  DEFAULT_POLICIES_LAST_UPDATED,
+  DEFAULT_PRIVACY_HTML,
+  DEFAULT_TERMS_HTML,
+} = require('../src/constants/defaultPolicies');
+
+const DEFAULT_HERO_COMMUNITY_AVATARS = [
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=128&h=128&fit=crop',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=128&h=128&fit=crop',
+  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=128&h=128&fit=crop',
+  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop',
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=128&h=128&fit=crop',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=128&h=128&fit=crop',
+];
 require('dotenv').config();
 
 const prisma = new PrismaClient();
@@ -565,6 +580,32 @@ const siteSettings = {
   footerTagline: "Affordable group tours · Trusted local experts",
   footerDetails:
     "Pune-based small-group travel. Fixed departures and customised trips across India — run by people who've actually been there.",
+  termsContent: DEFAULT_TERMS_HTML,
+  privacyContent: DEFAULT_PRIVACY_HTML,
+  cancellationPolicyContent: DEFAULT_CANCELLATION_HTML,
+  policiesLastUpdated: DEFAULT_POLICIES_LAST_UPDATED,
+  heroCommunityQuote:
+    'Trusted by travelers who value comfort, transparency, and meaningful journeys.',
+  heroCommunityBannerUrl: null,
+  heroCommunityAvatars: JSON.stringify(DEFAULT_HERO_COMMUNITY_AVATARS),
+  seasonPromoActive: true,
+  seasonPromoBadge: 'Season 2026–27',
+  seasonPromoEyebrow: 'Group departures & customized tours',
+  seasonPromoTitle: 'Rann of Kutch Season 2026–2027',
+  seasonPromoSubtitle: '5 November 2026 – 4 March 2027',
+  seasonPromoDescription:
+    'White Desert nights, curated group batches, and private journeys for families and friends — plan early for the best inventory and pricing.',
+  seasonPromoImageUrl:
+    'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=1400&h=700&fit=crop',
+  seasonPromoTags: JSON.stringify([
+    '10 group batches',
+    'FIT & family packages',
+    'Early-bird priority',
+  ]),
+  seasonPromoPrimaryCtaLabel: 'Explore season page',
+  seasonPromoPrimaryCtaHref: '/rann-of-kutch-season-2026-27',
+  seasonPromoSecondaryCtaLabel: 'Get priority access',
+  seasonPromoSecondaryCtaHref: '/rann-of-kutch-season-2026-27#priority-interest',
 };
 
 const heroSlides = [

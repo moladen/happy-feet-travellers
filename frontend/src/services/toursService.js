@@ -83,21 +83,25 @@ const parseImageList = (value) => {
 
 export const normaliseTour = (tour) => {
   if (!tour || typeof tour !== 'object') return tour;
-  const images = [
+
+  const galleryOnly = [
     ...parseImageList(tour.gallery),
     ...parseImageList(tour.images),
-    tour.coverImage,
-    tour.image,
   ]
     .map(imageFromValue)
     .filter(Boolean);
-  const gallery = [...new Set(images)];
+  const gallery = [...new Set(galleryOnly)];
+
+  const coverImage = imageFromValue(tour.coverImage);
+  const legacyImage = imageFromValue(tour.image);
+  const cardImage = coverImage || legacyImage || gallery[0] || DEFAULT_TOUR_IMAGE;
+
   const price = resolveTourPriceAmount(tour.startingPrice, tour.price);
   return {
     ...tour,
     price,
     startingPrice: price,
-    image: gallery[0] || DEFAULT_TOUR_IMAGE,
+    image: cardImage,
     gallery,
     date: tour.date || tour.dateLabel || formatDateRange(tour.startDate, tour.endDate) || 'Dates on request',
     duration: tour.durationLabel || tour.duration,
@@ -195,41 +199,69 @@ function mergePersonalizedFields(tour, pkg) {
   };
 }
 
-export const getTourById = async (idOrSlug) => {
-  const id = encodeURIComponent(String(idOrSlug));
-  try {
-    const data = await publicFetch(`/tours/${id}`);
-    const tour = normaliseTour(data);
-    if (String(tour?.category || '').toLowerCase() === 'upcoming') {
-      try {
-        const departure = await publicFetch(`/upcoming-departures/${id}`);
-        return normaliseTour({ ...tour, ...departure });
-      } catch {
-        return tour;
-      }
-    }
-    if (String(tour?.category || '').toLowerCase() === 'customized') {
-      try {
-        const pkg = await publicFetch(`/personalized-trips/${id}`);
-        return mergePersonalizedFields(tour, pkg);
-      } catch {
-        return tour;
-      }
-    }
-    return tour;
-  } catch (err) {
+function slugCandidates(idOrSlug) {
+  const raw = String(idOrSlug || '').trim();
+  if (!raw) return [];
+  const candidates = [raw];
+  const withoutDate = raw.replace(/-\d{4}-\d{2}-\d{2}$/, '');
+  if (withoutDate !== raw) candidates.push(withoutDate);
+  return [...new Set(candidates)];
+}
+
+async function fetchTourRecord(encodedId) {
+  const data = await publicFetch(`/tours/${encodedId}`);
+  const tour = normaliseTour(data);
+
+  if (String(tour?.category || '').toLowerCase() === 'upcoming') {
     try {
-      const pkg = await publicFetch(`/personalized-trips/${id}`);
-      return mergePersonalizedFields(normaliseTour(pkg), pkg);
+      const departure = await publicFetch(`/upcoming-departures/${encodedId}`);
+      return normaliseTour({ ...tour, ...departure });
     } catch {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[getTourById]', err?.message || err);
-      }
-      if (!shouldUseMockFallback()) return null;
-      const match = mockTours.find(
-        (tour) => String(tour.id) === String(idOrSlug) || tour.slug === idOrSlug
-      );
-      return match ? normaliseTour(match) : null;
+      return tour;
     }
   }
+
+  if (String(tour?.category || '').toLowerCase() === 'customized') {
+    try {
+      const pkg = await publicFetch(`/personalized-trips/${encodedId}`);
+      return mergePersonalizedFields(tour, pkg);
+    } catch {
+      return tour;
+    }
+  }
+
+  return tour;
+}
+
+export const getTourById = async (idOrSlug) => {
+  const candidates = slugCandidates(idOrSlug);
+
+  for (const candidate of candidates) {
+    const encodedId = encodeURIComponent(candidate);
+    try {
+      return await fetchTourRecord(encodedId);
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[getTourById]', candidate, err?.message || err);
+      }
+    }
+  }
+
+  for (const candidate of candidates) {
+    const encodedId = encodeURIComponent(candidate);
+    try {
+      const pkg = await publicFetch(`/personalized-trips/${encodedId}`);
+      return mergePersonalizedFields(normaliseTour(pkg), pkg);
+    } catch {
+      /* try next candidate */
+    }
+  }
+
+  if (!shouldUseMockFallback()) return null;
+  const match = mockTours.find((tour) =>
+    candidates.some(
+      (candidate) => String(tour.id) === String(candidate) || tour.slug === candidate
+    )
+  );
+  return match ? normaliseTour(match) : null;
 };

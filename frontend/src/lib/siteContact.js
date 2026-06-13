@@ -61,6 +61,9 @@ function resolveSocialField(value, fallback) {
 
 export function mergeSiteSettings(settings) {
   if (!settings || typeof settings !== 'object') return { ...DEFAULT_SITE_CONTACT };
+  const heroCommunityAvatars = Array.isArray(settings.heroCommunityAvatars)
+    ? settings.heroCommunityAvatars.filter(Boolean)
+    : [];
   return {
     ...DEFAULT_SITE_CONTACT,
     ...settings,
@@ -73,7 +76,31 @@ export function mergeSiteSettings(settings) {
     paymentLink: settings.paymentLink?.trim()
       ? settings.paymentLink.trim()
       : DEFAULT_SITE_CONTACT.paymentLink,
+    heroCommunityQuote: settings.heroCommunityQuote ?? null,
+    heroCommunityBannerUrl: settings.heroCommunityBannerUrl ?? null,
+    heroCommunityAvatars,
+    seasonPromoActive: settings.seasonPromoActive ?? true,
+    seasonPromoBadge: settings.seasonPromoBadge ?? null,
+    seasonPromoEyebrow: settings.seasonPromoEyebrow ?? null,
+    seasonPromoTitle: settings.seasonPromoTitle ?? null,
+    seasonPromoSubtitle: settings.seasonPromoSubtitle ?? null,
+    seasonPromoDescription: settings.seasonPromoDescription ?? null,
+    seasonPromoImageUrl: settings.seasonPromoImageUrl ?? null,
+    seasonPromoTags: Array.isArray(settings.seasonPromoTags) ? settings.seasonPromoTags : [],
+    seasonPromoPrimaryCtaLabel: settings.seasonPromoPrimaryCtaLabel ?? null,
+    seasonPromoPrimaryCtaHref: settings.seasonPromoPrimaryCtaHref ?? null,
+    seasonPromoSecondaryCtaLabel: settings.seasonPromoSecondaryCtaLabel ?? null,
+    seasonPromoSecondaryCtaHref: settings.seasonPromoSecondaryCtaHref ?? null,
   };
+}
+
+/** Google Maps pin for the contact page map (separate from office address text). */
+export const OFFICE_MAP_QUERY = 'Chinchwad,Pune,Maharashtra';
+
+/** Google Maps embed for contact page. */
+export function buildGoogleMapsEmbedUrl(query = OFFICE_MAP_QUERY) {
+  const encoded = encodeURIComponent(String(query || OFFICE_MAP_QUERY).trim() || OFFICE_MAP_QUERY);
+  return `https://www.google.com/maps?q=${encoded}&output=embed`;
 }
 
 /** Admin / strict mode — only non-empty saved values. */

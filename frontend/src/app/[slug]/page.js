@@ -4,7 +4,12 @@ import RannSeasonLandingView from '@/components/rann/RannSeasonLandingView';
 
 import LandingPageView from '@/components/landing/LandingPageView';
 
+import JsonLd from '@/components/seo/JsonLd';
+
 import { isReservedSlug } from '@/lib/reservedSlugs';
+
+import { buildFaqSchema } from '@/lib/schema/faq';
+import { buildReviewSchema } from '@/lib/schema/reviews';
 
 import {
 
@@ -94,19 +99,28 @@ export default async function DynamicLandingPage({ params }) {
 
     const related = await fetchRannRelatedContent(slug);
 
+    const structuredData = [
+      buildFaqSchema(page.faqs),
+      buildReviewSchema({ apiTestimonials: page.testimonials }),
+    ].filter(Boolean);
+
     return (
 
-      <RannSeasonLandingView
+      <>
 
-        page={page}
+        <JsonLd data={structuredData} />
 
-        settings={settings}
+        <RannSeasonLandingView
 
-        relatedTours={related.tours}
+          page={page}
 
-        relatedBlogs={related.blogs}
+          settings={settings}
 
-      />
+          relatedBlogs={related.blogs}
+
+        />
+
+      </>
 
     );
 
@@ -114,7 +128,22 @@ export default async function DynamicLandingPage({ params }) {
 
 
 
-  return <LandingPageView page={page} settings={settings} />;
+  const structuredData = [
+    buildFaqSchema(page.faqs),
+    buildReviewSchema({ apiTestimonials: page.testimonials }),
+  ].filter(Boolean);
+
+  return (
+
+    <>
+
+      <JsonLd data={structuredData} />
+
+      <LandingPageView page={page} settings={settings} />
+
+    </>
+
+  );
 
 }
 

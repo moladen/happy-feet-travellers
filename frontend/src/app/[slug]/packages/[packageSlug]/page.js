@@ -4,7 +4,11 @@ import { notFound } from 'next/navigation';
 import RannPriorityForm from '@/components/forms/RannPriorityForm';
 import RannWhatsAppPriorityCta from '@/components/rann/RannWhatsAppPriorityCta';
 import { isReservedSlug } from '@/lib/reservedSlugs';
-import { fetchLandingPageBySlug } from '@/services/landingPageService';
+import RelatedBlogsSection from '@/components/content/RelatedBlogsSection';
+import JsonLd from '@/components/seo/JsonLd';
+import { getSiteUrl } from '@/lib/schema/siteUrl';
+import { buildLandingPackageSchema } from '@/lib/schema/travelPackage';
+import { fetchLandingPackageRelated, fetchLandingPageBySlug } from '@/services/landingPageService';
 import { RANN_WA_GROUP_MESSAGE, RANN_WA_PRIORITY_MESSAGE } from '@/lib/rannSeasonContent';
 import { getPublicSettings } from '@/services/settingsService';
 import { whatsappHref } from '@/lib/siteContact';
@@ -26,7 +30,11 @@ export default async function LandingPackagePage({ params }) {
   const { slug, packageSlug } = await params;
   if (isReservedSlug(slug)) notFound();
 
-  const [page, settings] = await Promise.all([fetchLandingPageBySlug(slug), getPublicSettings()]);
+  const [page, settings, related] = await Promise.all([
+    fetchLandingPageBySlug(slug),
+    getPublicSettings(),
+    fetchLandingPackageRelated(slug, packageSlug),
+  ]);
 
   if (!page || page.status !== 'published') notFound();
 
@@ -43,8 +51,12 @@ export default async function LandingPackagePage({ params }) {
   const waGroup =
     page.whatsappGroupLink || whatsappHref(settings?.whatsappNumber, RANN_WA_GROUP_MESSAGE);
 
+  const packageUrl = `${getSiteUrl()}/${slug}/packages/${packageSlug}`;
+  const structuredData = [buildLandingPackageSchema(pkg, page, packageUrl)].filter(Boolean);
+
   return (
     <div className="rann-package-detail min-h-screen bg-background">
+      <JsonLd data={structuredData} />
       <section className="relative overflow-hidden bg-[#0f2844] py-12 text-white md:py-16">
         <div className="container relative z-10 mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:items-center">
           <div>
@@ -113,6 +125,12 @@ export default async function LandingPackagePage({ params }) {
           </div>
         </section>
       ) : null}
+
+      <RelatedBlogsSection
+        blogs={related.blogs}
+        landingPage={related.landingPage || { title: page.title, href: `/${slug}` }}
+        title={`Travel guides for ${pkg.name}`}
+      />
 
       <RannWhatsAppPriorityCta priorityHref={waChat} groupHref={waGroup} variant="dark" />
     </div>

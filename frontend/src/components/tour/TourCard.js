@@ -88,7 +88,7 @@ function CardBody({ tour, detailHref, rating }) {
 
 export default function TourCard({ tour, whatsappNumber, variant = 'card' }) {
   const isList = variant === 'list';
-  const imageSrc = tour?.image || tour?.coverImage || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=80';
+  const imageSrc = tour?.coverImage || tour?.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=80';
   const rating = tour?.rating != null ? tour.rating : '—';
   const detailHref = getTourDetailHref(tour);
   const showReserve = isGroupDepartureTour(tour);

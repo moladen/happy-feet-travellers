@@ -1,6 +1,10 @@
 import { mockTours } from '@/data/mockData';
 import { publicFetch } from '@/lib/publicApi';
 import { isNotFoundError, withPublicDataFetch } from '@/lib/publicApiError';
+import {
+  tourMatchesSearchQuery,
+  tourMatchesSubCategory,
+} from '@/lib/tourSearchKeywords';
 
 async function normaliseDepartures(list) {
   const { normaliseTour } = await import('@/services/toursService');
@@ -27,27 +31,18 @@ async function pickDepartures(data) {
 
 const filterMockUpcoming = (params = {}) => {
   let list = mockTours.filter((t) => t.category === 'upcoming');
-  const q = String(params.q || params.search || '')
-    .trim()
-    .toLowerCase();
+  const q = params.q || params.search || '';
   if (q) {
-    list = list.filter((t) =>
-      [t.title, t.description, t.subCategory, t.destination]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-        .includes(q)
-    );
+    list = list.filter((t) => tourMatchesSearchQuery(t, q));
   }
   if (params.featured === 'true' || params.featured === true) {
     list = list.filter((t) => t.featured);
   }
   if (params.subCategory) {
-    list = list.filter((t) => t.subCategory === params.subCategory);
+    list = list.filter((t) => tourMatchesSubCategory(t, params.subCategory));
   }
   if (params.destination) {
-    const d = String(params.destination).toLowerCase();
-    list = list.filter((t) => String(t.destination || t.title).toLowerCase().includes(d));
+    list = list.filter((t) => tourMatchesSearchQuery(t, params.destination));
   }
   return normaliseDepartures(list);
 };
@@ -72,26 +67,48 @@ export async function getUpcomingDepartures(params = {}) {
   });
 }
 
+function slugCandidates(slug) {
+  const raw = String(slug || '').trim();
+  if (!raw) return [];
+  const candidates = [raw];
+  const withoutDate = raw.replace(/-\d{4}-\d{2}-\d{2}$/, '');
+  if (withoutDate !== raw) candidates.push(withoutDate);
+  return [...new Set(candidates)];
+}
+
 export async function getUpcomingDepartureBySlug(slug) {
-  try {
-    const id = encodeURIComponent(String(slug));
-    const data = await publicFetch(`/upcoming-departures/${id}`);
-    const [one] = await normaliseDepartures([data]);
-    return one ?? null;
-  } catch (err) {
-    if (isNotFoundError(err)) return null;
-    return withPublicDataFetch({
-      context: 'departures',
-      mock: async () => {
-        const match = mockTours.find(
-          (t) => t.category === 'upcoming' && (t.slug === slug || String(t.id) === String(slug))
-        );
-        const [one] = match ? await normaliseDepartures([match]) : [];
-        return one ?? null;
-      },
-      run: async () => {
-        throw err;
-      },
-    });
+  for (const candidate of slugCandidates(slug)) {
+    try {
+      const id = encodeURIComponent(candidate);
+      const data = await publicFetch(`/upcoming-departures/${id}`);
+      const [one] = await normaliseDepartures([data]);
+      if (one) return one;
+    } catch (err) {
+      if (!isNotFoundError(err)) {
+        return withPublicDataFetch({
+          context: 'departures',
+          mock: async () => null,
+          run: async () => {
+            throw err;
+          },
+        });
+      }
+    }
   }
+
+  return withPublicDataFetch({
+    context: 'departures',
+    mock: async () => {
+      const match = mockTours.find(
+        (t) =>
+          t.category === 'upcoming' &&
+          slugCandidates(slug).some(
+            (candidate) => t.slug === candidate || String(t.id) === String(candidate)
+          )
+      );
+      const [one] = match ? await normaliseDepartures([match]) : [];
+      return one ?? null;
+    },
+    run: async () => null,
+  });
 }

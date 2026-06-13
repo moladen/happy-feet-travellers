@@ -1,12 +1,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import RannHeroMiniForm from '@/components/rann/RannHeroMiniForm';
 import RannPriorityForm from '@/components/forms/RannPriorityForm';
 import RelatedBlogsSection from '@/components/content/RelatedBlogsSection';
-import RelatedToursSection from '@/components/content/RelatedToursSection';
 import ExperienceGallery from '@/components/gallery/ExperienceGallery';
 import LandingTestimonials from '@/components/landing/LandingTestimonials';
-import Testimonials from '@/components/home/Testimonials';
+import TravellerTrustSection from '@/components/home/TravellerTrustSection';
 import RannAddOnsSection from '@/components/rann/RannAddOnsSection';
+import RannGuideLeadMagnet from '@/components/rann/RannGuideLeadMagnet';
 import RannBatchCalendar from '@/components/rann/RannBatchCalendar';
 import RannBestTimeSection from '@/components/rann/RannBestTimeSection';
 import RannDholaviraSection from '@/components/rann/RannDholaviraSection';
@@ -20,19 +21,23 @@ import RannWhatsAppPriorityCta from '@/components/rann/RannWhatsAppPriorityCta';
 import { buildLandingGallerySlides, withGalleryFallback } from '@/lib/gallerySlides';
 import {
   BEST_TIME_TO_VISIT,
-  FULL_MOON_CALENDAR,
   RANN_ADDONS,
   RANN_DHOLAVIRA,
   RANN_GROUP_BATCHES,
   RANN_TRAIN_INFO,
   RANN_UTSAV_INTRO,
   RANN_VIDEOS,
+  RANN_HERO_SOCIAL_PROOF,
+  RANN_WHY_VISIT_HEADING,
   RANN_WA_GROUP_MESSAGE,
   RANN_WA_PRIORITY_MESSAGE,
+  resolvePlanningGuide,
 } from '@/lib/rannSeasonContent';
 import { groupFaqsByCategory } from '@/services/landingPageService';
 import { SITE_WHATSAPP_GROUP_URL, whatsappHref } from '@/lib/siteContact';
 import { sanitiseStockImageUrl } from '@/lib/stockImages';
+import LandingHeroPricingBadge from '@/components/landing/LandingHeroPricingBadge';
+import { resolveLandingHeroPricing } from '@/lib/landingHeroPricing';
 
 function FaqGroup({ title, items }) {
   if (!items?.length) return null;
@@ -58,9 +63,9 @@ function FaqGroup({ title, items }) {
 
 /**
  * Master Rann season landing — section order matches client campaign brief.
- * @param {{ page: object; settings: object; relatedTours?: object[]; relatedBlogs?: object[] }} props
+ * @param {{ page: object; settings: object; relatedBlogs?: object[] }} props
  */
-export default function RannSeasonLandingView({ page, settings, relatedTours = [], relatedBlogs = [] }) {
+export default function RannSeasonLandingView({ page, settings, relatedBlogs = [] }) {
   const whyVisit = Array.isArray(page.whyVisit) ? page.whyVisit : [];
   const packages = Array.isArray(page.packages) ? page.packages : [];
   const faqGroups = groupFaqsByCategory(page.faqs || []);
@@ -68,13 +73,21 @@ export default function RannSeasonLandingView({ page, settings, relatedTours = [
   const gallerySlides = withGalleryFallback(buildLandingGallerySlides(page));
   const formEnabled = page.formConfig?.enabled !== false;
   const intro = page.introContent || RANN_UTSAV_INTRO;
+  const customBlocks =
+    page.customBlocks && typeof page.customBlocks === 'object' ? page.customBlocks : {};
+  const whyVisitHeading = customBlocks.whyVisitHeading || RANN_WHY_VISIT_HEADING;
   const bestTime = page.bestTimeToVisit || BEST_TIME_TO_VISIT;
-  const fullMoonCalendar = page.fullMoonCalendar?.length ? page.fullMoonCalendar : FULL_MOON_CALENDAR;
   const batches = page.groupBatches || RANN_GROUP_BATCHES;
   const addons = page.addOns || RANN_ADDONS;
   const trainInfo = page.trainInfo || RANN_TRAIN_INFO;
   const dholavira = page.dholaviraSection || RANN_DHOLAVIRA;
   const videos = page.videos || RANN_VIDEOS;
+  const heroSocialProof =
+    page.heroSocialProof ||
+    page.customBlocks?.heroSocialProof ||
+    RANN_HERO_SOCIAL_PROOF;
+  const planningGuide = page.planningGuide || resolvePlanningGuide(page);
+  const heroPricing = resolveLandingHeroPricing(page, packages);
 
   const waChat =
     page.whatsappCtaLink || whatsappHref(settings?.whatsappNumber, RANN_WA_PRIORITY_MESSAGE);
@@ -91,85 +104,140 @@ export default function RannSeasonLandingView({ page, settings, relatedTours = [
   const landingHub = {
     title: page.title,
     href: `/${page.slug}`,
-    packages: packages.map((pkg) => ({
-      ...pkg,
-      href: `/${page.slug}/packages/${pkg.slug}`,
-    })),
   };
 
   return (
     <div className="rann-landing bg-background">
       {/* Hero */}
       <section className="rann-landing-hero relative overflow-hidden">
-        <div className="absolute inset-0">
+        <div className="rann-landing-hero__media absolute inset-0">
           <Image
             src={heroImage}
             alt={page.heroHeading || page.title}
             fill
             priority
-            className="object-cover object-center"
+            className="object-cover object-center scale-105 rann-landing-hero__img"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#061525]/90 via-[#081a2d]/60 to-[#061525]/75" />
+          <div className="rann-landing-hero__overlay absolute inset-0" aria-hidden />
+          <div className="rann-landing-hero__glow rann-landing-hero__glow--coral" aria-hidden />
+          <div className="rann-landing-hero__glow rann-landing-hero__glow--navy" aria-hidden />
         </div>
-        <div className="container relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20 lg:py-24">
-          <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/80">
-              Happy Feet Travellers · Seasonal campaign
-            </p>
-            <h1 className="mt-3 font-display text-4xl font-bold leading-tight text-white md:text-5xl lg:text-[3.25rem]">
-              {page.heroHeading || page.title}
-            </h1>
-            {page.heroSubheading ? (
-              <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/90 md:text-lg">
-                {page.heroSubheading}
+        <div className="container relative z-10 mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20 lg:min-h-[inherit] lg:py-24">
+          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:items-center lg:gap-12">
+            <div className="max-w-3xl">
+              <p className="landing-hero-eyebrow">
+                <span className="landing-hero-eyebrow__dot" aria-hidden />
+                Happy Feet Travellers · Seasonal campaign
               </p>
-            ) : null}
-            {page.seasonDates ? (
-              <p className="mt-4 inline-flex rounded-full border border-white/35 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
-                Season {page.seasonDates}
-              </p>
-            ) : null}
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="#priority-interest"
-                className="inline-flex rounded-xl bg-cta px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_28px_-12px_rgba(231,111,81,0.55)] transition hover:bg-cta-hover"
-              >
-                {page.ctaButtonText || 'Get Priority Access'}
-              </Link>
-              <Link
-                href="#packages"
-                className="inline-flex rounded-xl border border-white/45 bg-white/10 px-6 py-3.5 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
-              >
-                Explore Packages
-              </Link>
+              <h1 className="rann-landing-hero__title mt-4 font-display text-4xl font-bold leading-[1.08] text-white md:text-5xl lg:text-[3.35rem]">
+                {page.heroHeading || page.title}
+              </h1>
+              <LandingHeroPricingBadge pricing={heroPricing} />
+              {page.heroSubheading ? (
+                <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/90 md:text-lg">
+                  {page.heroSubheading}
+                </p>
+              ) : null}
+
+              {formEnabled ? (
+                <div className="mt-6 lg:hidden">
+                  <RannHeroMiniForm
+                    landingPageId={page.id?.startsWith('static') ? undefined : page.id}
+                    landingPageTitle={page.title}
+                    whatsappChatHref={waChat}
+                    successMessage={page.formConfig?.successMessage}
+                  />
+                </div>
+              ) : null}
+
+              {heroSocialProof?.length ? (
+                <ul className="landing-hero-proof mt-5">
+                  {heroSocialProof.map((item) => (
+                    <li key={item} className="landing-hero-proof__item">
+                      <span className="landing-hero-proof__icon" aria-hidden>
+                        ✓
+                      </span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {page.seasonDates ? (
+                <p className="landing-hero-season-pill mt-4">
+                  Season {page.seasonDates}
+                </p>
+              ) : null}
+              <div className="landing-hero-actions mt-8">
+                <Link href="#rann-planning-guide" className="landing-hero-cta landing-hero-cta--primary">
+                  Download Free Guide
+                </Link>
+                <Link href="#priority-interest" className="landing-hero-cta landing-hero-cta--glass">
+                  Get Priority Access
+                </Link>
+                {page.whatsappGroupEnabled !== false ? (
+                  <a
+                    href={waGroup}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="landing-hero-cta landing-hero-cta--whatsapp"
+                  >
+                    Join WhatsApp Updates
+                  </a>
+                ) : null}
+                <Link href="#packages" className="landing-hero-cta landing-hero-cta--ghost">
+                  Explore Packages
+                </Link>
+              </div>
             </div>
+
+            {formEnabled ? (
+              <div className="hidden lg:block">
+                <RannHeroMiniForm
+                  landingPageId={page.id?.startsWith('static') ? undefined : page.id}
+                  landingPageTitle={page.title}
+                  whatsappChatHref={waChat}
+                  successMessage={page.formConfig?.successMessage}
+                />
+              </div>
+            ) : null}
           </div>
+        </div>
+        <div className="rann-landing-hero__scroll-cue hidden lg:flex" aria-hidden>
+          <span className="rann-landing-hero__scroll-line" />
+          Scroll to explore
         </div>
       </section>
 
       {/* Introduction to Rann Utsav */}
       <RannIntroSection intro={intro} />
 
+      {planningGuide.enabled !== false ? (
+        <RannGuideLeadMagnet
+          guide={planningGuide}
+          landingPageId={page.id}
+          landingPageTitle={page.title}
+          priorityHref="#priority-interest"
+          whatsappGroupHref={page.whatsappGroupEnabled !== false ? waGroup : undefined}
+        />
+      ) : null}
+
       {/* Why Visit */}
       {whyVisit.length > 0 ? (
-        <section className="section-tone-sand-soft py-12 md:py-16">
+        <section className="rann-landing-section rann-landing-section--elevated py-12 md:py-16">
           <div className="container mx-auto max-w-6xl px-4 sm:px-6">
-            <RannSectionHeading eyebrow="Experience" title="Why Visit Rann of Kutch" />
+            <RannSectionHeading eyebrow="Experience" title={whyVisitHeading} />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {whyVisit.map((item) => (
-                <article
-                  key={item.title}
-                  className="rann-why-card overflow-hidden rounded-2xl border border-[#e5d4bc] bg-white shadow-sm"
-                >
+                <article key={item.title} className="rann-why-card">
                   {item.image ? (
-                    <div className="relative h-40">
+                    <div className="rann-why-card__media relative h-44">
                       <Image src={item.image} alt={item.title} fill className="object-cover" sizes="33vw" />
                     </div>
                   ) : null}
-                  <div className="p-4">
-                    <h3 className="font-display text-lg font-bold text-primary">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-foreground/75">{item.description}</p>
+                  <div className="rann-why-card__body p-5">
+                    <h3 className="rann-why-card__title font-display text-lg font-bold text-primary">{item.title}</h3>
+                    <p className="rann-why-card__text mt-2 text-sm leading-relaxed text-foreground/75">{item.description}</p>
                   </div>
                 </article>
               ))}
@@ -182,28 +250,36 @@ export default function RannSeasonLandingView({ page, settings, relatedTours = [
       <RannBestTimeSection bestTime={bestTime} />
 
       {/* Full Moon Calendar */}
-      <RannFullMoonSection calendar={fullMoonCalendar} />
+      <RannFullMoonSection page={page} />
 
       {/* WhatsApp Priority Group CTA (first) */}
       {page.whatsappGroupEnabled !== false ? (
         <RannWhatsAppPriorityCta priorityHref={waChat} groupHref={waGroup} variant="sand" />
       ) : null}
 
+      <RannBatchCalendar batches={batches} />
+
       {/* Package cards — tour-card style, linking to individual package pages */}
       {packages.length > 0 ? (
-        <section id="packages" className="container mx-auto max-w-6xl scroll-mt-24 px-4 py-12 sm:px-6 md:py-16">
+        <section id="packages" className="rann-landing-section rann-landing-section--packages scroll-mt-24 py-12 md:py-16 lg:py-20">
+          <div className="container mx-auto max-w-6xl px-4 sm:px-6">
           <RannSectionHeading
-            eyebrow="Packages"
+            eyebrow="Kutch tour packages"
             title="Choose Your Rann Journey"
-            lede="Five ways to experience the season — from fixed group departures to fully private family tours. Each package has its own detail page."
+            lede="Compare Rann Utsav Packages from Mumbai and Pune, land-only Bhuj options, and private family itineraries — each Kutch tour package has its own detail page."
           />
           <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {packages.map((pkg) => (
               <RannPackageTourCard key={pkg.id || pkg.slug} pkg={pkg} landingSlug={page.slug} />
             ))}
           </div>
+          </div>
         </section>
       ) : null}
+
+      <RannAddOnsSection addons={addons} />
+
+      <TravellerTrustSection />
 
       {/* Priority Access Form */}
       {formEnabled ? (
@@ -245,25 +321,15 @@ export default function RannSeasonLandingView({ page, settings, relatedTours = [
         <div className="container mx-auto max-w-6xl px-4 pb-4 pt-12 sm:px-6 md:pt-16">
           <RannSectionHeading eyebrow="Social proof" title="Traveller Reviews" />
         </div>
-        {pageTestimonials.length > 0 ? <LandingTestimonials items={pageTestimonials} /> : <Testimonials />}
+        {pageTestimonials.length > 0 ? (
+          <LandingTestimonials items={pageTestimonials} />
+        ) : (
+          <p className="container mx-auto max-w-6xl px-4 pb-14 text-center text-sm text-foreground/65 sm:px-6">
+            Landing reviews will appear here once added in Admin → Landing Pages → Testimonials.
+          </p>
+        )}
       </section>
 
-      {/* Supplementary planning resources */}
-      <section className="section-tone-sand-soft border-t border-[#e5d4bc]/60 py-4">
-        <div className="container mx-auto max-w-6xl px-4 py-8 sm:px-6">
-          <RannSectionHeading
-            align="left"
-            eyebrow="Plan deeper"
-            title="Batch calendar, add-ons & travel logistics"
-            lede="Everything you need after choosing a package path."
-          />
-        </div>
-      </section>
-
-      <div id="batch-calendar" className="scroll-mt-24">
-        <RannBatchCalendar batches={batches} />
-      </div>
-      <RannAddOnsSection addons={addons} />
       <RannTrainSection trainInfo={trainInfo} />
       <RannDholaviraSection dholavira={dholavira} />
 
@@ -284,8 +350,11 @@ export default function RannSeasonLandingView({ page, settings, relatedTours = [
 
       {/* Internal SEO linking */}
       <div className="container mx-auto max-w-6xl px-4 pb-16 sm:px-6">
-        <RelatedToursSection tours={relatedTours} landingPage={landingHub} title="Related tours & departures" />
-        <RelatedBlogsSection blogs={relatedBlogs} landingPage={landingHub} title="Rann of Kutch travel guides" />
+        <RelatedBlogsSection
+          blogs={relatedBlogs}
+          landingPage={landingHub}
+          title="Rann Utsav travel guides & White Desert tour tips"
+        />
       </div>
     </div>
   );

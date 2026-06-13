@@ -7,7 +7,14 @@ import PageTransition from "@/components/admin/PageTransition";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { CardSection, Field, SelectInput, TextInput } from "@/components/admin/AdminFields";
 import { enquiryStatusOptions, formatDateTime } from "@/lib/admin-data";
+import { formatTravelInsuranceLabel } from "@/lib/travelInsurance";
 import { deleteEnquiry, listEnquiries, updateEnquiryStatus } from "@/services/adminService";
+
+function formatTravellerType(value) {
+  if (value === "domestic") return "Domestic";
+  if (value === "international") return "International";
+  return "—";
+}
 
 export default function EnquiriesPage() {
   const [items, setItems] = useState([]);
@@ -122,8 +129,20 @@ export default function EnquiriesPage() {
               ),
             },
             {
+              key: "insurance",
+              title: "Insurance",
+              render: (row) =>
+                row.travelInsuranceRequested ? (
+                  <span className="inline-flex rounded-full bg-[#e8f5e9] px-2.5 py-1 text-xs font-semibold text-[#1b5e20]">
+                    +₹200
+                  </span>
+                ) : (
+                  <span className="text-xs text-[#9aa8b6]">—</span>
+                ),
+            },
+            {
               key: "message",
-              title: "Message",
+              title: "Travel details",
               render: (row) => (
                 <div className="flex items-center gap-2">
                   <p className="max-w-[18rem] truncate text-sm text-[#425264]">{row.message}</p>
@@ -187,9 +206,19 @@ export default function EnquiriesPage() {
                 {selected?.destination || selected?.subject || "General enquiry"}
               </div>
             </div>
+            <div className="rounded-[24px] bg-[#f7fbfe] p-4">
+              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[#5b84a5]">Traveller type</div>
+              <div className="mt-2 text-sm text-[#17324d]">{formatTravellerType(selected?.travellerType)}</div>
+            </div>
+            <div className="rounded-[24px] bg-[#f7fbfe] p-4">
+              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[#5b84a5]">Travel insurance</div>
+              <div className="mt-2 text-sm text-[#17324d]">
+                {formatTravelInsuranceLabel(Boolean(selected?.travelInsuranceRequested))}
+              </div>
+            </div>
           </div>
           <div className="rounded-[24px] bg-[#f7fbfe] p-4">
-            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[#5b84a5]">Message</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[#5b84a5]">Travel details</div>
             <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-[#425264]">{selected?.message}</p>
           </div>
         </div>

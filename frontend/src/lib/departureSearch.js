@@ -1,4 +1,10 @@
 import { resolveTourPriceAmount } from '@/lib/tourPrice';
+import {
+  expandSearchTerms,
+  normaliseSearchTerm,
+  tourMatchesSearchQuery,
+  tourMatchesSubCategory,
+} from '@/lib/tourSearchKeywords';
 
 const MONTH_NAMES = [
   'january', 'february', 'march', 'april', 'may', 'june',
@@ -32,7 +38,7 @@ export function monthLabelToInput(label) {
 }
 
 export function normaliseSearch(value) {
-  return String(value || '').trim().toLowerCase();
+  return normaliseSearchTerm(value);
 }
 
 function monthLabel(value) {
@@ -53,7 +59,7 @@ export function parseDepartureSearchParams(params = {}) {
   };
 }
 
-/** Build query for GET /api/tours */
+/** Build query for GET /api/upcoming-departures */
 export function buildApiTourQuery(search) {
   const api = { limit: 100 };
   const q = normaliseSearch(search.q);
@@ -91,11 +97,12 @@ export function buildApiTourQuery(search) {
 }
 
 export function tourMatchesDepartureSearch(tour, search) {
-  const q = normaliseSearch(search.q);
   const monthRaw = normaliseSearch(search.month);
-  const sub = normaliseSearch(search.sub);
   const price = search.price;
   const duration = search.duration;
+
+  const queryMatch = tourMatchesSearchQuery(tour, search.q);
+  const subMatch = tourMatchesSubCategory(tour, search.sub);
 
   const haystack = [
     tour.title,
@@ -104,35 +111,24 @@ export function tourMatchesDepartureSearch(tour, search) {
     tour.category,
     tour.subCategory,
     tour.departureCity,
+    tour.destination,
+    tour.state,
     tour.date,
     tour.dateLabel,
     tour.duration,
     tour.durationLabel,
-    tour.urgency,
-    tour.offers,
-    tour.meals,
-    tour.stayType,
-    tour.transport,
-    tour.suitableFor,
     monthLabel(tour.startDate),
     ...(Array.isArray(tour.highlights) ? tour.highlights : []),
+    ...(Array.isArray(tour.tags) ? tour.tags : []),
   ]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
 
-  const words = q ? q.split(/\s+/).filter(Boolean) : [];
-  const queryMatch = words.length === 0 || words.every((w) => haystack.includes(w));
-
   let monthMatch = true;
   if (monthRaw) {
     const tokens = monthRaw.split(/\s+/).filter(Boolean);
     monthMatch = tokens.every((t) => haystack.includes(t));
-  }
-
-  let subMatch = true;
-  if (sub && sub !== 'all') {
-    subMatch = normaliseSearch(tour.subCategory) === sub || haystack.includes(sub);
   }
 
   const amount = resolveTourPriceAmount(tour.startingPrice, tour.price);
@@ -161,3 +157,6 @@ export function buildDeparturesUrl(search, { preserveGuests = true } = {}) {
   const qs = params.toString();
   return qs ? `/upcoming-departures?${qs}` : '/upcoming-departures';
 }
+
+/** Expand a footer/search token for API `search` param (first term — backend expands aliases). */
+export { expandSearchTerms };
