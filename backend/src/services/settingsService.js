@@ -45,9 +45,29 @@ function parseAboutPageContent(raw) {
   }
 }
 
+function parsePaymentPageContent(raw) {
+  if (!raw) return null;
+  if (typeof raw === 'object' && !Array.isArray(raw)) return raw;
+  try {
+    const parsed = JSON.parse(String(raw));
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 function serializeAboutPageContent(value) {
   const parsed = parseAboutPageContent(value);
   return parsed ? JSON.stringify(parsed) : null;
+}
+
+function serializePaymentPageContent(value) {
+  const parsed = parsePaymentPageContent(value);
+  if (!parsed) return null;
+  if (parsed.qrImageUrl) {
+    parsed.qrImageUrl = sanitiseImageUrl(parsed.qrImageUrl) || null;
+  }
+  return parsed;
 }
 
 function formatSettings(row) {
@@ -58,6 +78,7 @@ function formatSettings(row) {
     seasonPromoTags: parseStringList(row.seasonPromoTags),
     seasonPromoActive: parseActive(row.seasonPromoActive, true),
     aboutPageContent: parseAboutPageContent(row.aboutPageContent),
+    paymentPageContent: parsePaymentPageContent(row.paymentPageContent),
   };
 }
 
@@ -96,6 +117,7 @@ async function getSettings() {
     seasonPromoSecondaryCtaLabel: null,
     seasonPromoSecondaryCtaHref: null,
     aboutPageContent: null,
+    paymentPageContent: null,
       }
     );
   });
@@ -146,6 +168,10 @@ async function upsertSettings(payload) {
 
   if (payload.aboutPageContent !== undefined) {
     data.aboutPageContent = serializeAboutPageContent(payload.aboutPageContent);
+  }
+
+  if (payload.paymentPageContent !== undefined) {
+    data.paymentPageContent = serializePaymentPageContent(payload.paymentPageContent);
   }
 
   return withDatabaseErrors(async () => {

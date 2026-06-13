@@ -3,7 +3,7 @@ import TripsCarousel from '@/components/home/TripsCarousel';
 import CustomizedTours from '@/components/home/CustomizedTours';
 import Testimonials from '@/components/home/Testimonials';
 import BlogSection from '@/components/home/BlogSection';
-import TravellerTrustSection from '@/components/home/TravellerTrustSection';
+import WhyChooseUs from '@/components/home/WhyChooseUs';
 import CTA from '@/components/home/CTA';
 import Gallery from '@/components/home/Gallery';
 import JsonLd from '@/components/seo/JsonLd';
@@ -21,7 +21,7 @@ export default async function Home() {
       <div id="main-content-start" className="homepage-main scroll-mt-0">
         <TripsCarousel />
         <CustomizedTours />
-        <TravellerTrustSection />
+        <WhyChooseUs />
         <Testimonials />
         <BlogSection />
         <CTA />

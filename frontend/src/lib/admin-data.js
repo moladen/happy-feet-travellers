@@ -76,6 +76,12 @@ export const navigationItems = [
     icon: "enquiries",
   },
   {
+    href: "/admin/payment",
+    label: "Payment",
+    caption: "UPI QR & bank details",
+    icon: "settings",
+  },
+  {
     href: "/admin/subscribers",
     label: "Subscribers",
     caption: "Newsletter sign-ups",
@@ -714,6 +720,9 @@ export function buildSettingsPayload(form) {
     seasonPromoSecondaryCtaHref: normalised.seasonPromoSecondaryCtaHref.trim(),
     ...(form.aboutPageContent !== undefined && form.aboutPageContent !== null
       ? { aboutPageContent: form.aboutPageContent }
+      : {}),
+    ...(form.paymentPageContent !== undefined && form.paymentPageContent !== null
+      ? { paymentPageContent: form.paymentPageContent }
       : {}),
   };
 }

@@ -309,6 +309,7 @@ model SiteSettings {
   seasonPromoSecondaryCtaLabel String?
   seasonPromoSecondaryCtaHref  String?
   aboutPageContent             String?  @db.Text
+  paymentPageContent           Json?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

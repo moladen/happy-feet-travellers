@@ -1,10 +1,10 @@
 import ContactReachSection from '@/components/contact/ContactReachSection';
+import PaymentDetailsView from '@/components/payment/PaymentDetailsView';
 import { getPublicSettings } from '@/services/settingsService';
 import {
   buildGoogleMapsEmbedUrl,
   formatIndianPhone,
   mergeSiteSettings,
-  resolveGatewayPaymentUrl,
   telHref,
   whatsappHref,
 } from '@/lib/siteContact';
@@ -80,7 +80,6 @@ export default async function ContactPage() {
   const phoneDisplay = formatIndianPhone(settings.whatsappNumber);
   const phoneHref = telHref(settings.whatsappNumber);
   const email = settings.email || 'info@happyfeet.com';
-  const payHref = resolveGatewayPaymentUrl(settings);
   const office = settings.officeAddress || 'Baner Road, Pune – 411045, Maharashtra, India';
   const mapEmbedUrl = buildGoogleMapsEmbedUrl();
 
@@ -163,22 +162,10 @@ export default async function ContactPage() {
               <section id="pay" className={`scroll-mt-28 ${cardShell} p-6 md:p-8`}>
                 <h2 className="section-title mb-2 text-xl md:text-2xl">Pay online</h2>
                 <p className="mb-6 max-w-2xl text-sm leading-relaxed text-foreground/80 md:text-base">
-                  Complete your payment on our secure partner page. For booking references or payment help, call or
-                  WhatsApp us.
+                  Pay instantly via UPI or transfer to our ICICI bank account. Share your payment receipt on WhatsApp
+                  for faster booking confirmation.
                 </p>
-                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                  <a href={payHref} target="_blank" rel="noopener noreferrer" className="btn-travel-primary px-6 py-3">
-                    Pay online
-                  </a>
-                  <a
-                    href={whatsappHref(settings.whatsappNumber, 'Hi, I need help with online payment.')}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex justify-center rounded-full border-2 border-[#2E7D32] bg-white px-6 py-3 text-center text-sm font-semibold text-[#2E7D32] transition hover:bg-[#1B5E20] hover:text-white"
-                  >
-                    Payment help on WhatsApp
-                  </a>
-                </div>
+                <PaymentDetailsView settings={settings} />
               </section>
 
               <section className={`overflow-hidden ${cardShell}`}>

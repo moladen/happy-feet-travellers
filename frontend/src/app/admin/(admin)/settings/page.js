@@ -103,14 +103,12 @@ export default function SettingsPage() {
       instagramUrl: normalizeHttpUrl(form.instagramUrl),
       facebookUrl: normalizeHttpUrl(form.facebookUrl),
       youtubeUrl: normalizeHttpUrl(form.youtubeUrl),
-      paymentLink: normalizeHttpUrl(form.paymentLink),
     };
 
     for (const [label, value] of [
       ["Instagram URL", payloadForm.instagramUrl],
       ["Facebook URL", payloadForm.facebookUrl],
       ["YouTube URL", payloadForm.youtubeUrl],
-      ["Payment link", payloadForm.paymentLink],
     ]) {
       if (!isValidUrl(value)) {
         showMessage(`${label} must start with http:// or https://`, true);
@@ -154,7 +152,7 @@ export default function SettingsPage() {
         <form onSubmit={handleSave} className="space-y-6">
           <CardSection
             title="Website settings"
-            description="Footer contact details, social links, and payment URL — shown on the public site."
+            description="Footer contact details and social links — shown on the public site."
           >
             <div className="space-y-6">
               <div className="grid gap-5 md:grid-cols-2">
@@ -209,26 +207,23 @@ export default function SettingsPage() {
                 </Field>
               </div>
 
-              <div className="grid gap-5 lg:grid-cols-2">
-                <Field label="Office address">
-                  <TextArea
-                    rows={4}
-                    value={form.officeAddress}
-                    onChange={(event) =>
-                      setForm((current) => ({ ...current, officeAddress: event.target.value }))
-                    }
-                  />
-                </Field>
-                <Field label="Payment link">
-                  <TextInput
-                    value={form.paymentLink}
-                    onChange={(event) =>
-                      setForm((current) => ({ ...current, paymentLink: event.target.value }))
-                    }
-                    placeholder="https://..."
-                  />
-                </Field>
-              </div>
+              <Field label="Office address">
+                <TextArea
+                  rows={4}
+                  value={form.officeAddress}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, officeAddress: event.target.value }))
+                  }
+                />
+              </Field>
+
+              <p className="text-sm text-[#6c8094]">
+                UPI QR and bank account details are managed in{" "}
+                <a href="/admin/payment" className="font-semibold text-[#1f4e79] underline-offset-2 hover:underline">
+                  Admin → Payment
+                </a>
+                .
+              </p>
 
               <div className="grid gap-5 lg:grid-cols-2">
                 <Field label="Footer tagline">
