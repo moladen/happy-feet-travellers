@@ -5,7 +5,6 @@ import ImageUploader from "@/components/admin/ImageUploader";
 import { CardSection, Field, SelectInput, TextArea, TextInput } from "@/components/admin/AdminFields";
 import {
   emptyLandingFaq,
-  emptyLandingFullMoon,
   emptyLandingGallerySlide,
   emptyLandingPackage,
   emptyLandingTestimonial,
@@ -333,99 +332,6 @@ export function LandingBestTimeSection({ form, updateField }) {
             onChange={(e) => updateField("bestTimePointsText", e.target.value)}
           />
         </Field>
-      </div>
-    </CardSection>
-  );
-}
-
-export function LandingFullMoonSection({ form, updateField, fullMoonCalendar, setForm }) {
-  return (
-    <CardSection
-      title="Full moon calendar"
-      description="Premium full-moon departures — separate from the main batch calendar on the Rann landing page."
-    >
-      <label className="mb-5 flex items-center gap-3 text-sm text-[#314559]">
-        <input
-          type="checkbox"
-          checked={form.fullMoonEnabled !== false}
-          onChange={(e) => updateField("fullMoonEnabled", e.target.checked)}
-          className="h-4 w-4 rounded border-[#c9dbe8]"
-        />
-        Show full moon calendar section
-      </label>
-
-      <div className="mb-6 space-y-5 rounded-[24px] border border-[#e7eef4] bg-[#f8fbff] p-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Eyebrow">
-            <TextInput value={form.fullMoonEyebrow} onChange={(e) => updateField("fullMoonEyebrow", e.target.value)} />
-          </Field>
-          <Field label="Badge label">
-            <TextInput
-              value={form.fullMoonBadgeLabel}
-              onChange={(e) => updateField("fullMoonBadgeLabel", e.target.value)}
-              placeholder="Full Moon Special"
-            />
-          </Field>
-        </div>
-        <Field label="Section title">
-          <TextInput value={form.fullMoonTitle} onChange={(e) => updateField("fullMoonTitle", e.target.value)} />
-        </Field>
-        <Field label="Subtitle / description">
-          <TextArea rows={3} value={form.fullMoonLede} onChange={(e) => updateField("fullMoonLede", e.target.value)} />
-        </Field>
-        <ImageUploader
-          label="Background image"
-          images={form.fullMoonBackgroundImage}
-          onChange={(value) => updateField("fullMoonBackgroundImage", value)}
-        />
-      </div>
-
-      <p className="mb-4 text-sm text-[#526477]">
-        Fixed to 3 full moon departures — Batch #4, #7, and #9 only.
-      </p>
-      <div className="space-y-4">
-        {(fullMoonCalendar || []).map((row, index) => (
-          <div key={`full-moon-${row.batch || index}`} className="rounded-[24px] border border-[#e7eef4] bg-white p-4">
-            <p className="mb-3 text-sm font-semibold text-[#1f4e79]">Batch #{row.batch || index + 1}</p>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Dates">
-                <TextInput
-                  value={row.date}
-                  onChange={(e) =>
-                    setForm((c) => ({
-                      ...c,
-                      _fullMoonCalendar: updateList(c._fullMoonCalendar, index, { date: e.target.value }),
-                    }))
-                  }
-                  placeholder="17 – 21 December 2026"
-                />
-              </Field>
-              <Field label="Price">
-                <TextInput
-                  value={row.price}
-                  onChange={(e) =>
-                    setForm((c) => ({
-                      ...c,
-                      _fullMoonCalendar: updateList(c._fullMoonCalendar, index, { price: e.target.value }),
-                    }))
-                  }
-                  placeholder="₹26,499"
-                />
-              </Field>
-              <Field label="Highlight" className="md:col-span-2">
-                <TextInput
-                  value={row.highlight}
-                  onChange={(e) =>
-                    setForm((c) => ({
-                      ...c,
-                      _fullMoonCalendar: updateList(c._fullMoonCalendar, index, { highlight: e.target.value }),
-                    }))
-                  }
-                />
-              </Field>
-            </div>
-          </div>
-        ))}
       </div>
     </CardSection>
   );

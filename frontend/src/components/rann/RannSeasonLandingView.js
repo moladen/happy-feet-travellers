@@ -11,7 +11,6 @@ import RannGuideLeadMagnet from '@/components/rann/RannGuideLeadMagnet';
 import RannBatchCalendar from '@/components/rann/RannBatchCalendar';
 import RannBestTimeSection from '@/components/rann/RannBestTimeSection';
 import RannDholaviraSection from '@/components/rann/RannDholaviraSection';
-import RannFullMoonSection from '@/components/rann/RannFullMoonSection';
 import RannIntroSection from '@/components/rann/RannIntroSection';
 import RannPackageTourCard from '@/components/rann/RannPackageTourCard';
 import RannSectionHeading from '@/components/rann/RannSectionHeading';
@@ -77,7 +76,10 @@ export default function RannSeasonLandingView({ page, settings, relatedBlogs = [
     page.customBlocks && typeof page.customBlocks === 'object' ? page.customBlocks : {};
   const whyVisitHeading = customBlocks.whyVisitHeading || RANN_WHY_VISIT_HEADING;
   const bestTime = page.bestTimeToVisit || BEST_TIME_TO_VISIT;
-  const batches = page.groupBatches || RANN_GROUP_BATCHES;
+  const batches =
+    Array.isArray(page.groupBatches) && page.groupBatches.length > 0
+      ? page.groupBatches
+      : RANN_GROUP_BATCHES;
   const addons = page.addOns || RANN_ADDONS;
   const trainInfo = page.trainInfo || RANN_TRAIN_INFO;
   const dholavira = page.dholaviraSection || RANN_DHOLAVIRA;
@@ -248,9 +250,6 @@ export default function RannSeasonLandingView({ page, settings, relatedBlogs = [
 
       {/* Best Time to Visit */}
       <RannBestTimeSection bestTime={bestTime} />
-
-      {/* Full Moon Calendar */}
-      <RannFullMoonSection page={page} />
 
       {/* WhatsApp Priority Group CTA (first) */}
       {page.whatsappGroupEnabled !== false ? (

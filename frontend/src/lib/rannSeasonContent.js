@@ -187,77 +187,99 @@ export const WHY_EARLY_PLANNING = {
 export const RANN_GROUP_BATCHES = [
   {
     batch: 1,
-    dates: '5 – 9 November 2026',
-    price: '₹24,999',
-    highlight: 'Season opener — White Rann first light',
-    tags: ['Mumbai/Pune train', 'Small group'],
+    dates: '21 – 25 Nov 2026',
+    departureName: 'Season Opener Full Moon Special Desert Escape',
+    price: '₹21,499',
+    highlight: 'Season opener full moon — White Rann under moonlit skies',
+    category: 'special',
+    tags: ['Full moon', 'Season opener'],
+    specialTypes: ['full-moon'],
   },
   {
     batch: 2,
-    dates: '19 – 23 November 2026',
-    price: '₹24,999',
-    highlight: 'Long weekend batch — craft villages & desert nights',
-    tags: ['Popular', 'Train included'],
-  },
-  {
-    batch: 3,
-    dates: '3 – 7 December 2026',
-    price: '₹25,499',
-    highlight: 'Pre-Christmas departure — festive Kutch atmosphere',
-    tags: ['High demand'],
-  },
-  {
-    batch: 4,
-    dates: '17 – 21 December 2026',
-    price: '₹26,499',
-    highlight: 'Christmas special + full moon window',
-    tags: ['Full moon', 'Premium demand'],
+    dates: '23 – 27 Dec 2026',
+    departureName: 'Christmas & Full Moon Special',
+    price: '₹21,499',
+    highlight: 'Christmas week + full moon window — festive tent city energy',
+    category: 'special',
+    tags: ['Christmas', 'Full moon'],
     specialTypes: ['christmas', 'full-moon'],
   },
   {
-    batch: 5,
-    dates: '26 – 30 December 2026',
-    price: '₹27,999',
-    highlight: 'New Year batch — tent city & celebration energy',
-    tags: ['New Year', 'Sell-out risk'],
+    batch: 3,
+    dates: '1 – 5 Jan 2027',
+    departureName: 'New Year Desert Getaway',
+    price: '₹21,499',
+    highlight: 'Ring in the New Year on the White Rann',
+    category: 'special',
+    badge: 'NEW YEAR',
+    tags: ['New Year', 'High demand'],
   },
   {
-    batch: 6,
-    dates: '9 – 13 January 2027',
-    price: '₹25,999',
-    highlight: 'Pongal week — balanced pacing for families',
-    tags: ['Family friendly'],
-    specialTypes: ['kite-festival'],
-  },
-  {
-    batch: 7,
-    dates: '22 – 26 January 2027',
-    price: '₹26,999',
-    highlight: 'Full Moon Supernight — signature White Rann experience',
+    batch: 4,
+    dates: '20 – 24 Jan 2027',
+    departureName: 'Full Moon Super Night Edition',
+    price: '₹21,499',
+    highlight: 'Signature full moon supernight — flagship White Rann experience',
+    category: 'special',
     tags: ['Full moon', 'Flagship'],
     specialTypes: ['full-moon'],
   },
   {
+    batch: 5,
+    dates: '20 – 24 Feb 2027',
+    departureName: 'Last Full Moon Special',
+    price: '₹21,499',
+    highlight: 'Final full moon window of the season',
+    category: 'special',
+    tags: ['Full moon', 'Last chance'],
+    specialTypes: ['full-moon'],
+  },
+  {
+    batch: 6,
+    dates: '5 – 9 Dec 2026',
+    departureName: 'Early Winter Escape',
+    price: '₹20,499',
+    highlight: 'Pre-peak winter departure — craft villages & desert nights',
+    category: 'regular',
+    tags: ['Early season'],
+  },
+  {
+    batch: 7,
+    dates: '13 – 17 Jan 2027',
+    departureName: 'Kite Festival Special',
+    price: '₹20,499',
+    highlight: 'Uttarayan week — kite festival atmosphere in Kutch',
+    category: 'regular',
+    tags: ['Kite festival'],
+    specialTypes: ['kite-festival'],
+  },
+  {
     batch: 8,
-    dates: '6 – 10 February 2027',
-    price: '₹25,499',
-    highlight: 'Valentine week — couples & small groups',
+    dates: '23 – 27 Jan 2027',
+    departureName: 'Republic Day Special',
+    price: '₹20,499',
+    highlight: 'Republic Day long weekend batch — balanced pacing for families',
+    category: 'regular',
+    tags: ['Family friendly'],
+  },
+  {
+    batch: 9,
+    dates: '12 – 16 Feb 2027',
+    departureName: "Valentine's on the Desert",
+    price: '₹20,499',
+    highlight: 'Valentine week — couples & small groups on the White Rann',
+    category: 'regular',
     tags: ['Couples'],
     specialTypes: ['valentine'],
   },
   {
-    batch: 9,
-    dates: '20 – 24 February 2027',
-    price: '₹26,499',
-    highlight: 'Full Moon Special — second supernight window',
-    tags: ['Full moon'],
-    specialTypes: ['full-moon'],
-  },
-  {
     batch: 10,
-    dates: '27 February – 3 March 2027',
-    price: '₹24,999',
-    highlight: 'Season finale — last official Rann Utsav window',
+    dates: '27 Feb – 3 Mar 2027',
+    departureName: 'Season Finale Special',
+    price: '₹20,499',
+    highlight: 'Last official Rann Utsav window of the season',
+    category: 'regular',
     tags: ['Final batch'],
   },
 ];
@@ -504,8 +526,8 @@ export const FULL_MOON_SECTION = {
   badgeLabel: 'Full Moon Special',
 };
 
-/** Fixed full-moon departure batches — always exactly these three. */
-export const FULL_MOON_BATCH_NUMBERS = [4, 7, 9];
+/** Fixed full-moon departure batches — shown in the Full Moon section. */
+export const FULL_MOON_BATCH_NUMBERS = [1, 4, 5];
 
 export function buildFullMoonCalendarEntries(entries, { useDefaults = true } = {}) {
   const hasEntries = Array.isArray(entries) && entries.length > 0;
@@ -528,41 +550,14 @@ export function buildFullMoonCalendarEntries(entries, { useDefaults = true } = {
       dates,
       date: dates,
       price: String(entry?.price || defaults.price || '').trim() || null,
-      highlight: String(entry?.highlight || entry?.label || defaults.highlight || '').trim() || null,
-      label: String(entry?.highlight || entry?.label || defaults.highlight || '').trim() || null,
+      highlight: String(entry?.highlight || entry?.label || defaults.departureName || defaults.highlight || '').trim() || null,
+      label: String(entry?.highlight || entry?.label || defaults.departureName || defaults.highlight || '').trim() || null,
       tags: Array.isArray(entry?.tags) && entry.tags.length ? entry.tags : defaults.tags || [],
     };
   }).filter(Boolean);
 }
 
 export const FULL_MOON_CALENDAR = buildFullMoonCalendarEntries();
-
-export function resolveFullMoonSection(page) {
-  const block =
-    page?.customBlocks?.fullMoonSection && typeof page.customBlocks.fullMoonSection === 'object'
-      ? page.customBlocks.fullMoonSection
-      : page?.fullMoonSection && typeof page.fullMoonSection === 'object'
-        ? page.fullMoonSection
-        : null;
-  const defaults = FULL_MOON_SECTION;
-
-  if (!block) return { ...defaults };
-  if (block.enabled === false) return { ...defaults, enabled: false };
-
-  return {
-    enabled: true,
-    eyebrow: String(block.eyebrow || '').trim() || defaults.eyebrow,
-    title: String(block.title || '').trim() || defaults.title,
-    lede: String(block.lede || '').trim() || defaults.lede,
-    backgroundImage: String(block.backgroundImage || '').trim() || defaults.backgroundImage,
-    badgeLabel: String(block.badgeLabel || '').trim() || defaults.badgeLabel,
-  };
-}
-
-export function resolveFullMoonCalendar(page) {
-  const fromApi = Array.isArray(page?.fullMoonCalendar) ? page.fullMoonCalendar : [];
-  return buildFullMoonCalendarEntries(fromApi.length ? fromApi : undefined);
-}
 
 export function getRannPackageBySlug(slug) {
   return RANN_PACKAGES.find((p) => p.slug === slug) ?? null;

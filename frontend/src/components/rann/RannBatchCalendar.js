@@ -1,106 +1,169 @@
 import RannSectionHeading from '@/components/rann/RannSectionHeading';
-import {
-  BATCH_THEME_LEGEND,
-  getBatchThemeLegendItem,
-  resolveBatchPresentation,
-} from '@/lib/rannBatchThemes';
+import { getBatchDepartureName, resolveBatchPrice, splitBatchCalendar } from '@/lib/rannBatchThemes';
+import { RANN_SEASON_PATH } from '@/lib/rannSeasonContent';
 
-function BatchLegend() {
+/** Scroll target on the Rann landing page when a departure name is clicked. */
+export const RANN_BATCH_LINK_HASH = '#packages';
+
+function resolveBatchHref(batch, landingHref) {
+  const custom = String(batch?.href || batch?.url || '').trim();
+  if (custom) {
+    if (/^https?:\/\//i.test(custom)) return custom;
+    return custom.startsWith('/') ? custom : `/${custom}`;
+  }
+  const base = String(landingHref || RANN_SEASON_PATH).replace(/#.*$/, '');
+  return `${base}${RANN_BATCH_LINK_HASH}`;
+}
+
+function CalendarIcon({ className = '' }) {
   return (
-    <div className="rann-batch-legend mb-6 flex flex-wrap items-center gap-2 sm:gap-3">
-      <span className="mr-1 text-[11px] font-semibold uppercase tracking-wider text-foreground/55">
-        Special departures
-      </span>
-      {BATCH_THEME_LEGEND.map((key) => {
-        const theme = getBatchThemeLegendItem(key);
-        if (!theme) return null;
-        return (
-          <span key={key} className={`rann-batch-badge rann-batch-badge--legend ${theme.badgeClass}`}>
-            <span aria-hidden>{theme.emoji}</span>
-            {theme.label}
-          </span>
-        );
-      })}
-      <span className="rann-batch-badge rann-batch-badge--legend rann-batch-badge--standard">
-        Standard batch
-      </span>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+    </svg>
+  );
+}
+
+function BatchTableRow({ batch, variant, landingHref }) {
+  const name = getBatchDepartureName(batch);
+  const badge = String(batch?.badge || '').trim();
+  const href = resolveBatchHref(batch, landingHref);
+  const price = resolveBatchPrice(batch, variant);
+
+  return (
+    <tr className={`rann-cal-row rann-cal-row--${variant}`}>
+      <td className="rann-cal-row__dates">
+        <span className="rann-cal-row__date-inner">
+          <CalendarIcon className="rann-cal-row__cal-icon" />
+          <span>{batch.dates || batch.date}</span>
+          {badge ? <span className="rann-cal-row__badge">{badge}</span> : null}
+        </span>
+      </td>
+      <td className="rann-cal-row__name">
+        <a href={href} className="rann-cal-row__link">
+          {name}
+        </a>
+      </td>
+      <td className="rann-cal-row__price">
+        <span className={`rann-cal-price rann-cal-price--${variant}`}>{price}</span>
+      </td>
+    </tr>
+  );
+}
+
+function SpecialDeparturesTable({ rows, landingHref }) {
+  if (!rows.length) return null;
+
+  return (
+    <div className="rann-cal-table rann-cal-table--special">
+      <div className="rann-cal-table__banner">
+        <span className="rann-cal-table__banner-moon" aria-hidden>
+          🌕
+        </span>
+        <h3 className="rann-cal-table__banner-title">Full Moon &amp; New Year Special Departures</h3>
+        <span className="rann-cal-table__banner-stars" aria-hidden>
+          ✦ ✦
+        </span>
+      </div>
+      <div className="rann-cal-table__scroll">
+        <table className="rann-cal-table__grid">
+          <thead>
+            <tr>
+              <th scope="col">Batch dates</th>
+              <th scope="col">Departure name</th>
+              <th scope="col">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((batch) => (
+              <BatchTableRow key={batch.batch} batch={batch} variant="special" landingHref={landingHref} />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-function BatchCard({ batch }) {
-  const { primary, badges, isSpecial, cardClass } = resolveBatchPresentation(batch);
+function RegularDeparturesTable({ rows, landingHref }) {
+  if (!rows.length) return null;
 
   return (
-    <article className={`rann-batch-card ${cardClass}`}>
-      {isSpecial && primary.decor ? (
-        <span className="rann-batch-card__decor" aria-hidden>
-          {primary.decor}
+    <div className="rann-cal-table rann-cal-table--regular">
+      <div className="rann-cal-table__regular-head">
+        <span className="rann-cal-table__regular-art" aria-hidden>
+          🏜️ 🐪 🌴
         </span>
-      ) : null}
-      {isSpecial && primary.emoji ? (
-        <span className="rann-batch-card__watermark" aria-hidden>
-          {primary.emoji}
-        </span>
-      ) : null}
-
-      <div className="rann-batch-card__head">
-        <span className="rann-batch-card__number">Batch #{batch.batch}</span>
-        {isSpecial ? (
-          <div className="flex flex-wrap justify-end gap-1.5">
-            {badges.map((theme) => (
-              <span key={theme.key} className={`rann-batch-badge ${theme.badgeClass}`}>
-                {theme.emoji ? <span aria-hidden>{theme.emoji}</span> : null}
-                {theme.label}
-              </span>
-            ))}
+        <div className="rann-cal-table__regular-titles">
+          <div className="rann-cal-table__regular-rule">
+            <span aria-hidden>◆</span>
+            <span>Regular departures</span>
+            <span aria-hidden>◆</span>
           </div>
-        ) : (
-          <span className="rann-batch-badge rann-batch-badge--standard">Standard</span>
-        )}
-      </div>
-
-      <p className="rann-batch-card__dates">{batch.dates}</p>
-      <p className="rann-batch-card__price">{batch.price}</p>
-      <p className="rann-batch-card__highlight">{batch.highlight}</p>
-
-      {batch.tags?.length ? (
-        <div className="rann-batch-card__tags">
-          {batch.tags.map((tag) => (
-            <span key={tag} className="rann-batch-card__tag">
-              {tag}
-            </span>
-          ))}
+          <p className="rann-cal-table__regular-tagline">Amazing experiences, every single time!</p>
         </div>
-      ) : null}
-    </article>
+      </div>
+      <div className="rann-cal-table__scroll">
+        <table className="rann-cal-table__grid">
+          <thead>
+            <tr>
+              <th scope="col">Batch dates</th>
+              <th scope="col">Departure name</th>
+              <th scope="col">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((batch) => (
+              <BatchTableRow key={batch.batch} batch={batch} variant="regular" landingHref={landingHref} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
 /**
- * @param {{ batches?: Array<{ batch: number; dates: string; price: string; highlight: string; tags?: string[]; specialTypes?: string[] }> }} props
+ * @param {{
+ *   batches?: Array<{ batch: number; dates: string; price: string; departureName?: string; highlight?: string; category?: string; badge?: string; href?: string }>;
+ *   landingHref?: string;
+ * }} props
  */
-export default function RannBatchCalendar({ batches = [] }) {
+export default function RannBatchCalendar({ batches = [], landingHref = RANN_SEASON_PATH }) {
   if (!batches.length) return null;
 
+  const { special, regular } = splitBatchCalendar(batches);
+  const resolvedLandingHref = String(landingHref || RANN_SEASON_PATH).trim() || RANN_SEASON_PATH;
+
   return (
-    <section id="batch-calendar" className="section-tone-cream scroll-mt-24 py-12 md:py-16">
-      <div className="container mx-auto max-w-6xl px-4 sm:px-6">
+    <section id="batch-calendar" className="rann-cal-section section-tone-cream scroll-mt-24 py-12 pb-24 md:py-16 md:pb-28">
+      <div className="container mx-auto max-w-5xl px-4 sm:px-6">
         <RannSectionHeading
           eyebrow="Group departures"
           title="2026–27 Batch Calendar"
-          lede="Ten planned group batches across the official Rann Utsav season — spot Full Moon, festive, and signature departures at a glance."
+          lede="Full Moon & festive specials alongside regular group batches — fixed dates, transparent pricing, Mumbai/Pune train coordination."
         />
 
-        <BatchLegend />
-
-        <div className="rann-batch-grid">
-          {batches.map((row) => (
-            <BatchCard key={row.batch} batch={row} />
-          ))}
+        <div className="rann-cal-stack">
+          <SpecialDeparturesTable rows={special} landingHref={resolvedLandingHref} />
+          <RegularDeparturesTable rows={regular} landingHref={resolvedLandingHref} />
         </div>
 
-        <p className="mt-6 text-center text-xs text-foreground/65">
+        <p className="rann-cal-promo">
+          Book Early to Pay Less.
+          <br />
+          DM for Discount Offers.
+        </p>
+
+        <p className="rann-cal-footnote">
           Prices indicative for Group Departure from Mumbai/Pune · 3AC upgrades &amp; add-ons quoted at
           confirmation
         </p>

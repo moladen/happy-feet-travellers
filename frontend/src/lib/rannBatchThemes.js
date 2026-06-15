@@ -102,3 +102,72 @@ export function resolveBatchPresentation(batch) {
 export function getBatchThemeLegendItem(key) {
   return THEMES[key] || null;
 }
+
+export function getBatchDepartureName(batch) {
+  return String(batch?.departureName || batch?.highlight || '').trim();
+}
+
+/** Resolve display price from batch payload (API may use alternate field names). */
+export function resolveBatchPrice(batch, variant = 'regular') {
+  const raw = String(
+    batch?.price || batch?.startingPrice || batch?.amount || batch?.packagePrice || ''
+  ).trim();
+  if (raw) return raw;
+  return variant === 'special' ? '₹21,499' : '₹20,499';
+}
+
+function parseBatchStartTime(batch) {
+  const text = String(batch?.dates || batch?.date || '').trim();
+  const match = text.match(/(\d{1,2})\s*[–-]\s*\d{1,2}\s+([A-Za-z]+)\s+(\d{4})/);
+  if (!match) return Number(batch?.batch) || 0;
+
+  const months = {
+    jan: 0,
+    feb: 1,
+    mar: 2,
+    apr: 3,
+    may: 4,
+    jun: 5,
+    jul: 6,
+    aug: 7,
+    sep: 8,
+    oct: 9,
+    nov: 10,
+    dec: 11,
+  };
+  const month = months[match[2].slice(0, 3).toLowerCase()];
+  if (month === undefined) return Number(batch?.batch) || 0;
+  return new Date(Number(match[3]), month, Number(match[1])).getTime();
+}
+
+export function sortBatchesChronologically(batches = []) {
+  return [...batches].sort((a, b) => {
+    const byDate = parseBatchStartTime(a) - parseBatchStartTime(b);
+    if (byDate !== 0) return byDate;
+    return (Number(a?.batch) || 0) - (Number(b?.batch) || 0);
+  });
+}
+
+/** Split batches into special (full moon / festive) and regular tables. */
+export function splitBatchCalendar(batches = []) {
+  const specialRaw = [];
+  const regularRaw = [];
+
+  for (const batch of batches) {
+    const category = String(batch?.category || '').toLowerCase();
+    if (category === 'special') {
+      specialRaw.push(batch);
+    } else if (category === 'regular') {
+      regularRaw.push(batch);
+    } else if (inferSpecialTypes(batch).length > 0) {
+      specialRaw.push(batch);
+    } else {
+      regularRaw.push(batch);
+    }
+  }
+
+  return {
+    special: sortBatchesChronologically(specialRaw),
+    regular: sortBatchesChronologically(regularRaw),
+  };
+}
