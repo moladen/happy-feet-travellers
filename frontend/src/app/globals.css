@@ -1422,8 +1422,51 @@ body > [id^='ti-']:not(#trustindex-testimonials-widget) {
   }
 }
 
+.home-gallery-marquee__track {
+  display: flex;
+  width: max-content;
+  gap: 1rem;
+  padding: 0.25rem 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .home-gallery-marquee__track {
+    gap: 1.25rem;
+  }
+}
+
+.home-gallery-marquee__sequence {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .home-gallery-marquee__sequence {
+    gap: 1.25rem;
+  }
+}
+
+.home-gallery-marquee__card {
+  width: min(78vw, 260px);
+}
+
+@media (min-width: 640px) {
+  .home-gallery-marquee__card {
+    width: 300px;
+  }
+}
+
+@media (min-width: 768px) {
+  .home-gallery-marquee__card {
+    width: 320px;
+  }
+}
+
 .home-gallery-marquee-track {
-  animation: home-gallery-marquee 42s linear infinite;
+  animation: home-gallery-marquee var(--gallery-marquee-duration, 42s) linear infinite;
+  backface-visibility: hidden;
+  transform: translateZ(0);
   will-change: transform;
 }
 
@@ -1439,10 +1482,10 @@ body > [id^='ti-']:not(#trustindex-testimonials-widget) {
 
 @keyframes home-gallery-marquee {
   from {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translateX(-50%);
+    transform: translate3d(calc(-1 * var(--gallery-marquee-shift, 0px)), 0, 0);
   }
 }
 
@@ -9211,156 +9254,283 @@ a.site-footer__contact-row:hover .site-footer__contact-value {
   color: #fff;
 }
 
-/* Rann full moon calendar — premium hero section */
-.rann-full-moon-section {
+/* Rann batch calendar — reference table layout (special + regular) */
+.rann-cal-section {
   position: relative;
-  overflow: hidden;
 }
 
-.rann-full-moon-section__backdrop {
-  position: absolute;
-  inset: 0;
-}
-
-.rann-full-moon-section__overlay {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(8, 14, 36, 0.72) 0%, rgba(12, 20, 48, 0.82) 45%, rgba(6, 10, 28, 0.9) 100%),
-    radial-gradient(ellipse 80% 55% at 50% 15%, rgba(255, 236, 179, 0.22) 0%, transparent 65%);
-}
-
-.rann-full-moon-section__inner {
-  position: relative;
-  z-index: 1;
-}
-
-.rann-full-moon-grid {
-  display: grid;
-  gap: 1.125rem;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 768px) {
-  .rann-full-moon-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.25rem;
-  }
-}
-
-.rann-full-moon-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 1.35rem;
-  border: 1.5px solid rgba(199, 210, 255, 0.55);
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.97) 0%, rgba(243, 246, 255, 0.94) 52%, rgba(255, 252, 245, 0.96) 100%);
-  padding: 1.35rem 1.35rem 1.4rem;
-  box-shadow:
-    0 22px 48px -28px rgba(8, 12, 32, 0.55),
-    0 0 0 1px rgba(255, 255, 255, 0.35) inset;
-  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
-}
-
-.rann-full-moon-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255, 220, 130, 0.75);
-  box-shadow:
-    0 28px 56px -24px rgba(8, 12, 32, 0.62),
-    0 0 32px -8px rgba(255, 214, 120, 0.35);
-}
-
-.rann-full-moon-card__glow {
-  position: absolute;
-  right: -2rem;
-  top: -2rem;
-  width: 7rem;
-  height: 7rem;
-  border-radius: 9999px;
-  background: radial-gradient(circle, rgba(255, 214, 120, 0.35) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.rann-full-moon-card__watermark {
-  position: absolute;
-  right: 0.35rem;
-  bottom: 0.15rem;
-  font-size: 3.75rem;
-  line-height: 1;
-  opacity: 0.1;
-  pointer-events: none;
-  user-select: none;
-}
-
-.rann-full-moon-card__head {
+.rann-cal-stack {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 2rem;
 }
 
-.rann-full-moon-card__batch {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #4b5a8a;
+.rann-cal-table {
+  overflow: hidden;
+  border-radius: 1.25rem;
+  box-shadow: 0 18px 48px -28px rgba(15, 28, 46, 0.35);
 }
 
-.rann-full-moon-card__badge {
-  display: inline-flex;
+.rann-cal-table--special {
+  border: 3px solid #1a2f4a;
+}
+
+.rann-cal-table--regular {
+  border: 1px solid #d8e8dc;
+  background: #fff;
+}
+
+.rann-cal-table__banner {
+  display: flex;
   align-items: center;
-  gap: 0.3rem;
-  border-radius: 9999px;
-  border: 1px solid #9aa8ff;
-  background: linear-gradient(135deg, #4f5fd6 0%, #7b8cff 55%, #f0c86b 100%);
-  padding: 0.28rem 0.65rem;
-  font-size: 0.65rem;
-  font-weight: 800;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(135deg, #1a2f4a 0%, #243b5c 100%);
+  color: #fff;
+  text-align: center;
+}
+
+.rann-cal-table__banner-moon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.rann-cal-table__banner-title {
+  margin: 0;
+  font-family: var(--font-display), Oswald, sans-serif;
+  font-size: clamp(0.8rem, 2.6vw, 1.05rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.25;
+  color: #fff;
+}
+
+.rann-cal-table__banner-stars {
+  font-size: 0.85rem;
+  color: #f5c842;
+  letter-spacing: 0.15em;
+}
+
+.rann-cal-table__regular-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 0.75rem;
+  background: linear-gradient(180deg, #f8fbf8 0%, #fff 100%);
+}
+
+.rann-cal-table__regular-art {
+  font-size: 1.75rem;
+  line-height: 1.2;
+  letter-spacing: 0.15em;
+}
+
+.rann-cal-table__regular-titles {
+  text-align: center;
+}
+
+.rann-cal-table__regular-rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-family: var(--font-display), Oswald, serif;
+  font-size: clamp(1.1rem, 3vw, 1.55rem);
+  font-weight: 700;
+  color: #1f5c3a;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #fff;
-  white-space: nowrap;
-  box-shadow: 0 8px 20px -10px rgba(79, 95, 214, 0.8);
 }
 
-.rann-full-moon-card__dates {
-  margin-top: 0.85rem;
-  font-family: var(--font-display, inherit);
-  font-size: 1.2rem;
-  font-weight: 700;
-  line-height: 1.3;
-  color: #14213d;
+.rann-cal-table__regular-rule span:first-child,
+.rann-cal-table__regular-rule span:last-child {
+  color: #c9a227;
+  font-size: 0.65em;
 }
 
-.rann-full-moon-card__price {
-  margin-top: 0.45rem;
+.rann-cal-table__regular-tagline {
+  margin: 0.35rem 0 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
   font-size: 1rem;
+  color: #2d6b45;
+}
+
+.rann-cal-table__scroll {
+  position: relative;
+  z-index: 1;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rann-cal-table__grid {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+}
+
+.rann-cal-table--special .rann-cal-table__grid thead th {
+  background: #f5c842;
+  color: #1a2f4a;
+  font-size: 0.72rem;
   font-weight: 800;
-  color: #d97706;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.65rem 1rem;
+  text-align: left;
+  border-bottom: 2px solid #1a2f4a;
 }
 
-.rann-full-moon-card__highlight {
-  margin-top: 0.65rem;
-  font-size: 0.875rem;
-  line-height: 1.55;
-  color: rgba(20, 33, 61, 0.78);
+.rann-cal-table--special .rann-cal-table__grid thead th:last-child,
+.rann-cal-table--regular .rann-cal-table__grid thead th:last-child {
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
 }
 
-.rann-full-moon-card__tags {
-  display: flex;
+.rann-cal-table--regular .rann-cal-table__grid thead th {
+  background: #1f5c3a;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.65rem 1rem;
+  text-align: left;
+}
+
+.rann-cal-row td {
+  padding: 0.85rem 1rem;
+  vertical-align: middle;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  border-bottom: 1px solid #e8efe9;
+}
+
+.rann-cal-table--special .rann-cal-row td {
+  background: #fff;
+  color: #1a2f4a;
+}
+
+.rann-cal-table--regular .rann-cal-row td {
+  background: #fff;
+  color: #1f3d2d;
+}
+
+.rann-cal-row:last-child td {
+  border-bottom: none;
+}
+
+.rann-cal-row__date-inner {
+  display: inline-flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.9rem;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.rann-full-moon-card__tag {
-  border-radius: 9999px;
-  border: 1px solid rgba(123, 140, 255, 0.35);
-  background: rgba(123, 140, 255, 0.1);
-  padding: 0.2rem 0.55rem;
-  font-size: 0.68rem;
+.rann-cal-row__cal-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: currentColor;
+  opacity: 0.85;
+}
+
+.rann-cal-row__badge {
+  display: inline-block;
+  padding: 0.12rem 0.45rem;
+  border-radius: 0.35rem;
+  background: #c0392b;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.rann-cal-row__name {
   font-weight: 600;
-  color: #3d4f8c;
+  vertical-align: middle;
+  word-break: break-word;
+}
+
+.rann-cal-row__link {
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgba(26, 43, 60, 0.35);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.rann-cal-row__link:hover {
+  color: #1f4e79;
+  text-decoration-color: currentColor;
+}
+
+.rann-cal-table--regular .rann-cal-row__link:hover {
+  color: #1f5c3a;
+}
+
+.rann-cal-row__price {
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.rann-cal-price--special {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: #1a2f4a;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.88rem;
+  line-height: 1.2;
+}
+
+.rann-cal-price--regular {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #1f5c3a;
+}
+
+.rann-cal-promo {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.55;
+  color: #1a2f4a;
+}
+
+.rann-cal-footnote {
+  margin-top: 0.75rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(26, 43, 60, 0.62);
+}
+
+@media (max-width: 639px) {
+  .rann-cal-table__regular-head {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .rann-cal-table__regular-art {
+    justify-self: center;
+  }
 }
 
 /* Site-wide floating trust bar */

@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import RannBatchCalendar from '@/components/rann/RannBatchCalendar';
 import RannPriorityForm from '@/components/forms/RannPriorityForm';
 import RannPackageGridCard from '@/components/rann/RannPackageGridCard';
 import RannPackageShowcaseCard from '@/components/rann/RannPackageShowcaseCard';
@@ -46,7 +47,7 @@ export default function LandingPageView({ page, settings }) {
   const whyVisit = Array.isArray(page.whyVisit) ? page.whyVisit : [];
   const highlights = Array.isArray(page.destinationHighlights) ? page.destinationHighlights : [];
   const customBlocks = Array.isArray(page.customBlocks) ? page.customBlocks : [];
-  const fullMoon = Array.isArray(page.fullMoonCalendar) ? page.fullMoonCalendar : [];
+  const groupBatches = Array.isArray(page.groupBatches) ? page.groupBatches : [];
   const packages = Array.isArray(page.packages) ? page.packages : [];
   const faqGroups = groupFaqsByCategory(page.faqs || []);
   const pageTestimonials = Array.isArray(page.testimonials) ? page.testimonials : [];
@@ -234,26 +235,7 @@ export default function LandingPageView({ page, settings }) {
         </section>
       ) : null}
 
-      {fullMoon.length > 0 ? (
-        <section className="section-tone-cream py-12 md:py-16">
-          <div className="container mx-auto max-w-6xl px-4 sm:px-6">
-            <RannSectionHeading eyebrow="Calendar" title="Full Moon Calendar" />
-            <div className="overflow-hidden rounded-2xl border border-[#e5d4bc] bg-white shadow-sm">
-              <ul className="divide-y divide-[#efe6d8]">
-                {fullMoon.map((row) => (
-                  <li
-                    key={row.date}
-                    className="grid gap-1 px-4 py-3 sm:grid-cols-[minmax(0,11rem)_minmax(0,1fr)] sm:gap-4 sm:py-4 sm:pl-5"
-                  >
-                    <span className="text-sm font-bold text-primary">{row.date}</span>
-                    <span className="text-sm text-foreground/78">{row.highlight}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
-      ) : null}
+      {groupBatches.length > 0 ? <RannBatchCalendar batches={groupBatches} /> : null}
 
       {customBlocks.map((block) => {
         const paragraphs = Array.isArray(block.paragraphs)
