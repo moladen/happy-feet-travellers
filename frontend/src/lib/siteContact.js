@@ -1,3 +1,5 @@
+import { resolvePaymentPageContent } from '@/lib/paymentPageContent';
+
 const DEFAULT_WHATSAPP = '919876543210';
 const DEFAULT_EMAIL = 'info@happyfeet.com';
 
@@ -91,6 +93,7 @@ export function mergeSiteSettings(settings) {
     seasonPromoPrimaryCtaHref: settings.seasonPromoPrimaryCtaHref ?? null,
     seasonPromoSecondaryCtaLabel: settings.seasonPromoSecondaryCtaLabel ?? null,
     seasonPromoSecondaryCtaHref: settings.seasonPromoSecondaryCtaHref ?? null,
+    paymentPageContent: resolvePaymentPageContent(settings),
   };
 }
 

@@ -221,7 +221,10 @@ export default function DashboardPage() {
               WhatsApp: {snapshot.settings?.whatsappNumber || "Not configured"}
             </p>
             <p className="mt-1 text-sm text-[#33475b]">
-              Payment link: {snapshot.settings?.paymentLink || "Not configured"}
+              Payment page:{" "}
+              <Link href="/admin/payment" className="font-semibold text-[#1f4e79] underline-offset-2 hover:underline">
+                UPI QR &amp; bank details
+              </Link>
             </p>
             <p className="mt-4 text-xs leading-6 text-[#6f8094]">
               Keep footer, social, and contact details updated from one place so the public website stays consistent.

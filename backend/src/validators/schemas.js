@@ -374,6 +374,7 @@ const schemas = {
     seasonPromoSecondaryCtaLabel: Joi.string().allow('', null).max(80),
     seasonPromoSecondaryCtaHref: Joi.string().allow('', null).max(500),
     aboutPageContent: Joi.alternatives().try(Joi.object(), Joi.string().allow('', null).max(200000)),
+    paymentPageContent: Joi.alternatives().try(Joi.object(), Joi.string().allow('', null).max(200000)),
   }),
 
   adminLogin: Joi.object({
