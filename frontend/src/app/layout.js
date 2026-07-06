@@ -23,6 +23,9 @@ export const metadata = {
     "Experience-first group departures and carefully curated travel across India. Honest pricing, smaller groups, and support from enquiry to homecoming.",
   keywords:
     "group tours India, curated travel experiences, small group travel, customized holidays, tour operator India",
+  other: {
+    "facebook-domain-verification": "c1dhxxrbj9tx9urr1yerednkmz3t3h",
+  },
 };
 
 export default async function RootLayout({ children }) {
