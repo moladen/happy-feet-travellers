@@ -331,6 +331,109 @@ const sampleTours = [
     cancellationPolicy: 'On quotation',
     bankDetails: 'Happy Feet Travellers · ICICI 40123456789',
   },
+  {
+    slug: 'rann-of-kutch-group-trip-itinerary-demo',
+    title: 'Rann of Kutch Group Trip (Itinerary Demo)',
+    departureCity: 'Pune / Mumbai',
+    category: 'upcoming',
+    subCategory: 'desert',
+    destination: 'Rann of Kutch',
+    tags: ['White Rann', 'Kutchi culture', 'Demo'],
+    groupSize: '18–24 travellers',
+    status: 'active',
+    featured: true,
+    price: 28500,
+    startingPrice: 28500,
+    coverImage: IMG.rajasthan,
+    images: [IMG.rajasthan, IMG.forest, IMG.goaSunset],
+    duration: 4,
+    durationLabel: '3N4D',
+    urgency: 'Demo tour — emoji itinerary formatting',
+    bookingDeposit: 3000,
+    rating: 4.9,
+    reviewsCount: 86,
+    description:
+      'Sample Rann of Kutch departure showing how emoji-led day plans from admin render as a clean point-by-point itinerary on the website.',
+    highlights: [
+      'White Rann under moonlit skies',
+      'Bhuj heritage & Mandvi beach',
+      'Kutchi culture & craft villages',
+      'Train journey with Happy Feet captain',
+    ],
+    dateLabel: '12 Dec - 15 Dec 2026',
+    startDate: new Date('2026-12-12'),
+    endDate: new Date('2026-12-15'),
+    itinerary: [
+      {
+        day: 'Day 1',
+        title: 'Departure from Pune/Mumbai & Overnight Train Journey',
+        details:
+          '🚂 Board the train from your selected boarding station (Mumbai/Pune route as applicable).\n🤝 Meet your Happy Feet Travellers tour leader and fellow travellers.\n👉 Get a brief introduction to the tour and itinerary.\n🌙 Enjoy an overnight train journey to Bhuj while relaxing and getting to know your travel companions.\n✨ Get ready for an exciting adventure to the White Rann of Kutch.',
+      },
+      {
+        day: 'Day 2',
+        title: 'Explore Heritage of Bhuj and Mandvi',
+        details:
+          '🍛 Arrive in Bhuj and enjoy a delicious breakfast.\n🏨 Check in to the hotel and freshen up.\n🏛️ Visit the historic Aina Mahal and Prag Mahal.\n🍽️ Enjoy a traditional lunch in Bhuj.\n🏰 Explore the magnificent Vijay Vilas Palace.\n🌊 Stop at the scenic Khari Nadi.\n🌅 Relax and witness the sunset at Mandvi Beach.\n🥪 Try the famous Kutchi Dabeli and enjoy dinner.\n🏨 Return to the hotel for an overnight stay in Bhuj.',
+      },
+      {
+        day: 'Day 3',
+        title: 'White Rann of Kutch & Desert Villages',
+        details:
+          '🏜️ Early departure for the Great White Rann of Kutch.\n📸 Capture sunrise and salt-flat vistas on the White Desert.\n🎭 Experience Kutchi folk music and cultural performances.\n🧵 Visit local handicraft villages and meet artisans.\n🍽️ Enjoy a traditional Kutchi lunch on route.\n🌙 Optional full-moon session on the Rann (batch dependent).\n🏨 Return to Bhuj for overnight stay.',
+      },
+      {
+        day: 'Day 4',
+        title: 'Return to Pune/Mumbai',
+        details:
+          '🍳 Relaxed breakfast and hotel checkout.\n🛍️ Optional last-minute shopping for Kutchi handicrafts.\n🚂 Board return train to Pune/Mumbai with your group.\n🌙 Overnight journey — share stories from the White Rann.\n🏠 Arrive home with memories of Kutch.',
+      },
+    ],
+    inclusions: [
+      '🚆 Sleeper Class train tickets (Mumbai–Bhuj–Mumbai)',
+      '⬆️ Optional 3AC train upgrade on request',
+      '🚐 All internal transportation in Kutch',
+      '🍽️ Meals: 3 breakfasts, 3 lunches & 2 dinners',
+      '🏨 Hotel stay on twin-sharing basis',
+      '👨‍✈️ Happy Feet tour leader throughout',
+    ],
+    exclusions: [
+      '🍽️ Meals not mentioned in the inclusions',
+      '🎫 Monument entry tickets',
+      '🛏️ Single room supplement',
+      '✈️ Travel insurance',
+    ],
+    faqs: [
+      {
+        question: 'How should I enter itinerary points in admin?',
+        answer:
+          'Put each emoji point on a new line in the Details field — the website will show them as separate list items, like this demo tour.',
+      },
+      {
+        question: 'Is this a real departure?',
+        answer: 'Yes — this is a sample batch you can use to preview formatting before publishing your own tours.',
+      },
+    ],
+    thingsToCarry: [
+      'Warm layers for desert evenings',
+      'Comfortable walking shoes',
+      'Government photo ID',
+      'Sunglasses & sunscreen',
+    ],
+    terms: ['White Rann entry subject to official timings and weather.'],
+    offers: '₹3,000 advance to block your seat',
+    meals: '3 breakfasts, 3 lunches & 2 dinners',
+    stayType: '3-star hotels · twin sharing',
+    transport: 'Train + private vehicle in Kutch',
+    suitableFor: 'Culture lovers · photographers · first-time Kutch visitors',
+    pickupPoints: [
+      { name: 'Mumbai — boarding station', detail: 'As per train chart' },
+      { name: 'Pune — boarding station', detail: 'As per train chart' },
+    ],
+    supplements: [{ name: '3AC train upgrade', price: '+ ₹2,800', note: 'Subject to availability' }],
+    cancellationPolicy: '45+ days before departure: 90% refund of amount paid (excluding non-refundable advance).',
+    bankDetails: 'Happy Feet Travellers\nA/c: 40123456789 · ICICI Bank\nIFSC: ICIC0001234',
+  },
 ];
 
 async function main() {

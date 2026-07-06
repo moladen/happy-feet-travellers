@@ -7,12 +7,46 @@ export function digitsOnly(value) {
   return String(value || '').replace(/\D/g, '');
 }
 
+const INDIAN_PHONE_RE = /^(?:\+?91[\s-]?)?[6-9]\d{9}$/;
+
+export function isValidIndianPhone(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return true;
+  return INDIAN_PHONE_RE.test(raw.replace(/[\s-]/g, ''));
+}
+
 export function formatIndianPhone(value) {
   const d = digitsOnly(value);
   if (!d) return null;
   if (d.length === 10) return `+91 ${d.slice(0, 5)} ${d.slice(5)}`;
   if (d.length === 12 && d.startsWith('91')) return `+91 ${d.slice(2, 7)} ${d.slice(7)}`;
   return `+${d}`;
+}
+
+/** Normalise Indian numbers so 70079… and 9170079… dedupe to the same key. */
+export function canonicalPhoneKey(value) {
+  const d = digitsOnly(value);
+  if (!d) return '';
+  if (d.length >= 10) return d.slice(-10);
+  return d;
+}
+
+/** Unique saved contact numbers for display (primary WhatsApp + optional second line). */
+export function listContactPhoneNumbers(settings) {
+  const merged = settings && typeof settings === 'object' ? settings : {};
+  const seen = new Set();
+  const numbers = [];
+
+  for (const raw of [merged.whatsappNumber, merged.secondaryPhoneNumber]) {
+    const trimmed = String(raw || '').trim();
+    if (!trimmed) continue;
+    const key = canonicalPhoneKey(trimmed);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    numbers.push(trimmed);
+  }
+
+  return numbers;
 }
 
 export function whatsappHref(number, text) {
@@ -70,6 +104,7 @@ export function mergeSiteSettings(settings) {
     ...DEFAULT_SITE_CONTACT,
     ...settings,
     whatsappNumber: settings.whatsappNumber || DEFAULT_SITE_CONTACT.whatsappNumber,
+    secondaryPhoneNumber: settings.secondaryPhoneNumber ?? '',
     email: settings.email || DEFAULT_SITE_CONTACT.email,
     officeAddress: settings.officeAddress || DEFAULT_SITE_CONTACT.officeAddress,
     facebookUrl: resolveSocialField(settings.facebookUrl, DEFAULT_SITE_CONTACT.facebookUrl),

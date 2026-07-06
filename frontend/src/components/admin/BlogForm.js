@@ -2,9 +2,10 @@
 
 import { buildBlogPayload, generateSlug } from "@/lib/admin-data";
 import { CONTENT_TOPIC_EXAMPLES } from "@/lib/contentTopics";
+import BlogContentEditor from "@/components/admin/BlogContentEditor";
 import ImageUploader from "@/components/admin/ImageUploader";
-import RichTextEditor from "@/components/admin/RichTextEditor";
 import { CardSection, Field, TextArea, TextInput } from "@/components/admin/AdminFields";
+import { blogBlocksHaveMinContent } from "@/lib/blogContent";
 
 export default function BlogForm({ form, setForm, onSubmit, busy, mode = "create" }) {
   const updateField = (key, value) => {
@@ -26,6 +27,10 @@ export default function BlogForm({ form, setForm, onSubmit, busy, mode = "create
         event.preventDefault();
         if (!String(form.coverImage || "").trim()) {
           window.alert("Please add a cover image before saving.");
+          return;
+        }
+        if (!blogBlocksHaveMinContent(form.contentBlocks)) {
+          window.alert("Please add at least one paragraph or photo with enough text before saving.");
           return;
         }
         await onSubmit(buildBlogPayload(form));
@@ -84,7 +89,10 @@ export default function BlogForm({ form, setForm, onSubmit, busy, mode = "create
         </div>
       </CardSection>
 
-      <CardSection title="Content and cover media" description="Rich editorial content with a strong hero visual.">
+      <CardSection
+        title="Content and cover media"
+        description="Build the article with paragraphs and photos in any order — e.g. paragraph, photo, paragraph, photo."
+      >
         <div className="space-y-6">
           <ImageUploader
             label="Cover image"
@@ -92,11 +100,10 @@ export default function BlogForm({ form, setForm, onSubmit, busy, mode = "create
             images={form.coverImage}
             onChange={(value) => updateField("coverImage", value)}
           />
-          <RichTextEditor
-            label="Blog content"
-            helperText="Add structure with headings, quotes, and lists."
-            value={form.content}
-            onChange={(value) => updateField("content", value)}
+          <BlogContentEditor
+            blocks={form.contentBlocks}
+            onChange={(value) => updateField("contentBlocks", value)}
+            helperText="Add paragraphs and photos in the order they should appear in the article."
           />
         </div>
       </CardSection>
@@ -123,11 +130,12 @@ export default function BlogForm({ form, setForm, onSubmit, busy, mode = "create
               placeholder="rann-of-kutch-season-2026-27"
             />
           </Field>
-          <Field label="Related tour slugs (optional)" hint="Exact tour URLs — comma-separated">
-            <TextInput
+          <Field label="Related tour slugs (optional)" hint="Tour slug only (Admin → Tours). One per line or comma-separated — links show on this blog and on the tour page.">
+            <TextArea
+              rows={3}
               value={form.relatedTourSlugsText}
               onChange={(event) => updateField("relatedTourSlugsText", event.target.value)}
-              placeholder="spiti-valley-group-expedition-jun-2026-2026-06-20"
+              placeholder="spiti-valley-group-expedition-jun-2026"
             />
           </Field>
         </div>
@@ -167,7 +175,7 @@ export default function BlogForm({ form, setForm, onSubmit, busy, mode = "create
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-[#17324d]">Review the blog card, cover image, and SEO fields before publishing.</p>
-            <p className="mt-1 text-sm text-[#6c8094]">The editor content is stored as rich HTML for future rendering flexibility.</p>
+            <p className="mt-1 text-sm text-[#6c8094]">Paragraphs and photos are saved in order and shown between sections on the blog page.</p>
           </div>
           <button
             type="submit"

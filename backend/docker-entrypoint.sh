@@ -23,5 +23,10 @@ if [ "${RUN_SEED:-false}" = "true" ]; then
   su-exec node node prisma/seed.js
 fi
 
+if [ -f scripts/seed-rann-landing.js ]; then
+  echo "[entrypoint] Ensuring default Rann landing page exists..."
+  su-exec node scripts/seed-rann-landing.js || echo "[entrypoint] Rann landing page seed skipped (see logs above)."
+fi
+
 echo "[entrypoint] Starting API on port ${PORT:-5000}..."
 run_as_node node src/server.js

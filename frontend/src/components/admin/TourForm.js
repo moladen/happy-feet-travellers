@@ -212,8 +212,18 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
           </div>
 
           <div className="mt-5 grid gap-5 md:grid-cols-3 md:items-end">
-            <Field label="Category">
-              <SelectInput value={form.category} onChange={(event) => updateField("category", event.target.value)}>
+            <Field
+              label="Category"
+              hint={
+                mode === "edit"
+                  ? "Change here to move this trip between Upcoming Departures and Personalized Tours."
+                  : undefined
+              }
+            >
+              <SelectInput
+                value={form.category}
+                onChange={(event) => updateField("category", event.target.value)}
+              >
                 {tourCategoryOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -274,11 +284,12 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
                 placeholder="rann-of-kutch-season-2026-27"
               />
             </Field>
-            <Field label="Related blog slugs" hint="Comma-separated article slugs">
-              <TextInput
+            <Field label="Related blog slugs" hint="Blog slug only (Admin → Blogs list). One per line or comma-separated — not the full URL.">
+              <TextArea
+                rows={3}
                 value={form.relatedBlogSlugsText}
                 onChange={(event) => updateField("relatedBlogSlugsText", event.target.value)}
-                placeholder="rann-utsav-travel-guide-2026"
+                placeholder={"packing-smart-for-the-indian-mountains\nrann-utsav-travel-guide-2026"}
               />
             </Field>
           </div>

@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import Link from 'next/link';
 import FAQAccordion from '@/components/common/FAQAccordion';
 import ExperienceGallery from '@/components/gallery/ExperienceGallery';
+import ItineraryDetailsText from '@/components/tour/ItineraryDetailsText';
 import TourExperienceHero from '@/components/tour/TourExperienceHero';
 import { sanitiseStockImageUrl, TRAVEL_FALLBACK_IMAGE } from '@/lib/stockImages';
 import { buildTourGallerySlides, withGalleryFallback } from '@/lib/gallerySlides';
@@ -198,7 +199,7 @@ export default function TourDetails({ tour, whatsappNumber }) {
                         <span className="absolute -left-[29px] top-1 flex h-4 w-4 rounded-full border-2 border-secondary bg-white ring-4 ring-white" />
                         <div className="text-xs font-bold uppercase tracking-wide text-secondary">{item.day}</div>
                         <h3 className="mt-1 text-lg font-bold text-primary">{item.title}</h3>
-                        <p className="mt-2 text-sm leading-relaxed text-foreground/85">{item.details}</p>
+                        <ItineraryDetailsText details={item.details} />
                       </div>
                     ))}
                   </div>
@@ -276,7 +277,7 @@ export default function TourDetails({ tour, whatsappNumber }) {
               <div className="space-y-2">
                 <button
                   type="button"
-                  onClick={() => openTourItineraryPrint(tour)}
+                  onClick={() => openTourItineraryPrint(tour, whatsappNumber)}
                   className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white transition hover:opacity-90"
                 >
                   Download itinerary (PDF)

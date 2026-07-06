@@ -36,6 +36,7 @@ COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/clie
 
 COPY prisma ./prisma
 COPY src ./src
+COPY scripts ./scripts
 COPY docker-entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh \

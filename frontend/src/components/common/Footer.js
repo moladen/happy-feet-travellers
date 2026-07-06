@@ -4,6 +4,8 @@ import SocialMediaIcons from '@/components/common/SocialMediaIcons';
 import { FOOTER_DESTINATION_LINKS } from '@/lib/footerDestinations';
 import {
   formatIndianPhone,
+  canonicalPhoneKey,
+  listContactPhoneNumbers,
   mergeSiteSettings,
   SITE_PAYMENT_PAGE,
   SITE_WHATSAPP_GROUP_URL,
@@ -114,8 +116,8 @@ function ContactRow({ href, icon, label, children, variant }) {
 
 export default function Footer({ settings: settingsProp }) {
   const settings = mergeSiteSettings(settingsProp);
-  const phoneDisplay = formatIndianPhone(settings.whatsappNumber);
-  const phoneHref = telHref(settings.whatsappNumber);
+  const contactPhones = listContactPhoneNumbers(settings);
+  const phoneDisplay = contactPhones.map((number) => formatIndianPhone(number)).filter(Boolean);
   const waHref = whatsappHref(settings.whatsappNumber, "Hi! I'd like to enquire about Happy Feet Travellers tours.");
   const waGroupHref = SITE_WHATSAPP_GROUP_URL;
   const year = new Date().getFullYear();
@@ -184,13 +186,26 @@ export default function Footer({ settings: settingsProp }) {
                 </ContactRow>
               </li>
               <li>
-                <ContactRow href={phoneHref} icon={<IconPhone />} label="Phone Number">
-                  {phoneDisplay}
+                <ContactRow icon={<IconPhone />} label="Phone Number">
+                  <span className="site-footer__contact-value--phones">
+                    {phoneDisplay.length ? (
+                      phoneDisplay.map((label, index) => (
+                        <span key={`${canonicalPhoneKey(contactPhones[index])}-${index}`} className="site-footer__phone-item">
+                          {index > 0 ? <span className="site-footer__phone-sep" aria-hidden>·</span> : null}
+                          <a href={telHref(contactPhones[index])} className="site-footer__phone-link">
+                            {label}
+                          </a>
+                        </span>
+                      ))
+                    ) : (
+                      <span>—</span>
+                    )}
+                  </span>
                 </ContactRow>
               </li>
               <li>
                 <ContactRow href={waHref} icon={<IconWhatsApp />} label="WhatsApp (Enquiries)" variant="whatsapp">
-                  {phoneDisplay}
+                  Chat with us
                 </ContactRow>
               </li>
               <li>

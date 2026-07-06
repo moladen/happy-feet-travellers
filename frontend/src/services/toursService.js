@@ -215,7 +215,12 @@ async function fetchTourRecord(encodedId) {
   if (String(tour?.category || '').toLowerCase() === 'upcoming') {
     try {
       const departure = await publicFetch(`/upcoming-departures/${encodedId}`);
-      return normaliseTour({ ...tour, ...departure });
+      return normaliseTour({
+        ...tour,
+        ...departure,
+        relatedBlogs: tour.relatedBlogs,
+        relatedLandingPage: tour.relatedLandingPage ?? departure.relatedLandingPage,
+      });
     } catch {
       return tour;
     }
@@ -224,7 +229,11 @@ async function fetchTourRecord(encodedId) {
   if (String(tour?.category || '').toLowerCase() === 'customized') {
     try {
       const pkg = await publicFetch(`/personalized-trips/${encodedId}`);
-      return mergePersonalizedFields(tour, pkg);
+      return {
+        ...mergePersonalizedFields(tour, pkg),
+        relatedBlogs: tour.relatedBlogs,
+        relatedLandingPage: tour.relatedLandingPage,
+      };
     } catch {
       return tour;
     }

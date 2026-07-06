@@ -16,6 +16,8 @@ const ARRAY_FIELDS = [
   'exclusions',
   'thingsToCarry',
   'tags',
+  'topicKeys',
+  'relatedBlogSlugs',
 ];
 const JSON_FIELDS = [
   'itinerary',
@@ -316,7 +318,7 @@ async function createPackage(payload) {
 async function updatePackage(id, payload) {
   return withDatabaseErrors(async () => {
     const existing = await prisma.tour.findFirst({
-      where: { id, category: PERSONALIZED_CATEGORY },
+      where: { id },
     });
     if (!existing) throw AppError.notFound('Personalized trip package not found');
 

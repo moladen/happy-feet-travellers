@@ -5,12 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import PageTransition from "@/components/admin/PageTransition";
 import TourForm from "@/components/admin/TourForm";
 import { createTourForm } from "@/lib/admin-data";
-import {
-  getTour,
-  updateTour,
-  updateUpcomingDeparture,
-  updatePersonalizedTrip,
-} from "@/services/adminService";
+import { getTour, updateTour } from "@/services/adminService";
 
 export default function EditTourPage() {
   const params = useParams();
@@ -18,11 +13,13 @@ export default function EditTourPage() {
   const [form, setForm] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageTone, setMessageTone] = useState("success");
 
   useEffect(() => {
     const load = async () => {
       const result = await getTour(params.id);
       if (!result.success) {
+        setMessageTone("error");
         setMessage(result.message);
         return;
       }
@@ -45,7 +42,13 @@ export default function EditTourPage() {
   return (
     <PageTransition className="space-y-5">
       {message ? (
-        <div className="rounded-[26px] border border-[#d9e9d5] bg-[#f3fbf1] px-5 py-4 text-sm text-[#28623b]">
+        <div
+          className={
+            messageTone === "error"
+              ? "rounded-[26px] border border-[#f2d4bd] bg-[#fff5eb] px-5 py-4 text-sm text-[#a35a23]"
+              : "rounded-[26px] border border-[#d9e9d5] bg-[#f3fbf1] px-5 py-4 text-sm text-[#28623b]"
+          }
+        >
           {message}
         </div>
       ) : null}
@@ -56,13 +59,7 @@ export default function EditTourPage() {
         mode="edit"
         onSubmit={async (payload) => {
           setBusy(true);
-          const cat = String(payload.category || form.category || "").toLowerCase();
-          const result =
-            cat === "upcoming"
-              ? await updateUpcomingDeparture(params.id, payload)
-              : cat === "customized"
-                ? await updatePersonalizedTrip(params.id, payload)
-                : await updateTour(params.id, payload);
+          const result = await updateTour(params.id, payload);
           setBusy(false);
           const details = Array.isArray(result.details)
             ? result.details.join(" ")
@@ -74,7 +71,9 @@ export default function EditTourPage() {
               ? "Saved successfully."
               : [result.message, details].filter(Boolean).join(" — ")
           );
+          setMessageTone(result.success ? "success" : "error");
           if (result.success) {
+            const cat = String(payload.category || form.category || "").toLowerCase();
             router.push(cat === "upcoming" ? "/admin/departures" : "/admin/tours");
           }
         }}

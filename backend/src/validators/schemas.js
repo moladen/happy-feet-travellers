@@ -320,6 +320,7 @@ const schemas = {
 
   updateSettings: Joi.object({
     whatsappNumber: Joi.string().allow('', null).max(30),
+    secondaryPhoneNumber: Joi.string().allow('', null).max(30),
     email: Joi.alternatives().try(
       Joi.string().email({ tlds: { allow: false } }),
       Joi.string().valid(''),

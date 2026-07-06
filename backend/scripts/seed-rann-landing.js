@@ -285,16 +285,13 @@ const payload = {
   testimonials: [],
 };
 
-async function main() {
-  const existing = await prisma.landingPage.findUnique({ where: { slug: SLUG } });
-  if (existing) {
-    console.log(`Landing page "${SLUG}" already exists (${existing.id}). Skipping seed.`);
-    return;
-  }
+async function ensureRannLandingPage(db = prisma) {
+  const existing = await db.landingPage.findUnique({ where: { slug: SLUG } });
+  if (existing) return { page: existing, created: false };
 
   const { packages, faqs, testimonials, ...pageData } = payload;
 
-  const page = await prisma.landingPage.create({
+  const page = await db.landingPage.create({
     data: {
       ...pageData,
       publishedAt: new Date(),
@@ -305,12 +302,26 @@ async function main() {
     include: { packages: true },
   });
 
+  return { page, created: true };
+}
+
+async function main() {
+  const { page, created } = await ensureRannLandingPage();
+  if (!created) {
+    console.log(`Landing page "${SLUG}" already exists (${page.id}). Skipping seed.`);
+    return;
+  }
+
   console.log(`Created landing page: ${page.title} (${page.slug}) with ${page.packages.length} packages.`);
 }
 
-main()
-  .catch((err) => {
-    console.error(err);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+module.exports = { SLUG, payload, ensureRannLandingPage };
+
+if (require.main === module) {
+  main()
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    })
+    .finally(() => prisma.$disconnect());
+}

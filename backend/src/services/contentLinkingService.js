@@ -231,11 +231,18 @@ function resolveRelatedPackages(blog, landingContext, topics) {
 async function getRelatedForBlog(blog) {
   const topics = collectBlogTopics(blog);
   const manualTourSlugs = explicitSlugs(blog.relatedTourSlugs);
+  const blogSlug = String(blog.slug || '').trim();
 
-  const [explicitTours, activeTours, landingContext] = await Promise.all([
+  const [explicitTours, reverseLinkedTours, activeTours, landingContext] = await Promise.all([
     manualTourSlugs.length
       ? prisma.tour.findMany({
           where: { slug: { in: manualTourSlugs }, status: 'active' },
+          take: 12,
+        })
+      : [],
+    blogSlug
+      ? prisma.tour.findMany({
+          where: { relatedBlogSlugs: { has: blogSlug }, status: 'active' },
           take: 12,
         })
       : [],
@@ -250,7 +257,7 @@ async function getRelatedForBlog(blog) {
   const seen = new Set();
   const tours = [];
 
-  for (const tour of explicitTours) {
+  for (const tour of [...explicitTours, ...reverseLinkedTours]) {
     if (seen.has(tour.id)) continue;
     seen.add(tour.id);
     tours.push(mapTourCard(tour));
@@ -349,11 +356,19 @@ async function getRelatedForLandingPackage(landingSlug, packageSlug) {
 async function getRelatedForTour(tour) {
   const topics = collectTourTopics(tour);
   const manualBlogSlugs = explicitSlugs(tour.relatedBlogSlugs);
+  const tourSlug = String(tour.slug || '').trim();
 
-  const [explicitBlogs, recentBlogs, landing] = await Promise.all([
+  const [explicitBlogs, reverseLinkedBlogs, recentBlogs, landing] = await Promise.all([
     manualBlogSlugs.length
       ? prisma.blog.findMany({
           where: { slug: { in: manualBlogSlugs } },
+          orderBy: { publishedAt: 'desc' },
+          take: 12,
+        })
+      : [],
+    tourSlug
+      ? prisma.blog.findMany({
+          where: { relatedTourSlugs: { has: tourSlug } },
           orderBy: { publishedAt: 'desc' },
           take: 12,
         })
@@ -368,7 +383,7 @@ async function getRelatedForTour(tour) {
   const seen = new Set();
   const blogs = [];
 
-  for (const blog of explicitBlogs) {
+  for (const blog of [...explicitBlogs, ...reverseLinkedBlogs]) {
     if (seen.has(blog.id)) continue;
     seen.add(blog.id);
     blogs.push(mapBlogCard(blog));

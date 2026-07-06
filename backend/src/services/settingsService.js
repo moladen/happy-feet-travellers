@@ -89,6 +89,7 @@ async function getSettings() {
       settings || {
         id: SETTINGS_ID,
         whatsappNumber: null,
+        secondaryPhoneNumber: null,
         email: null,
         instagramUrl: null,
         facebookUrl: null,
@@ -137,6 +138,7 @@ function sanitiseImageUrl(value) {
 async function upsertSettings(payload) {
   const data = {
     whatsappNumber: trimOrNull(payload.whatsappNumber),
+    secondaryPhoneNumber: trimOrNull(payload.secondaryPhoneNumber),
     email: trimOrNull(payload.email),
     instagramUrl: trimOrNull(payload.instagramUrl),
     facebookUrl: trimOrNull(payload.facebookUrl),

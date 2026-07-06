@@ -21,12 +21,12 @@ export default function TestimonialsPage() {
   const [form, setForm] = useState({ ...emptyTestimonialForm });
   const [editingId, setEditingId] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
+  const [feedback, setFeedback] = useState({ type: "", text: "" });
 
   const load = async () => {
     const result = await listTestimonials();
     setItems(result.success ? result.data?.testimonials || result.data || [] : []);
-    setMessage(result.success ? "" : result.message);
+    setFeedback(result.success ? { type: "", text: "" } : { type: "error", text: result.message });
   };
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function TestimonialsPage() {
       const result = await listTestimonials();
       if (!active) return;
       setItems(result.success ? result.data?.testimonials || result.data || [] : []);
-      setMessage(result.success ? "" : result.message);
+      setFeedback(result.success ? { type: "", text: "" } : { type: "error", text: result.message });
     })();
 
     return () => {
@@ -46,9 +46,15 @@ export default function TestimonialsPage() {
 
   return (
     <PageTransition className="space-y-6">
-      {message ? (
-        <div className="rounded-[26px] border border-[#f2d4bd] bg-[#fff5eb] px-5 py-4 text-sm text-[#a35a23]">
-          {message}
+      {feedback.text ? (
+        <div
+          className={
+            feedback.type === "error"
+              ? "rounded-[26px] border border-[#f2d4bd] bg-[#fff5eb] px-5 py-4 text-sm text-[#a35a23]"
+              : "rounded-[26px] border border-[#c8e6d4] bg-[#eefbf3] px-5 py-4 text-sm text-[#1f6b42]"
+          }
+        >
+          {feedback.text}
         </div>
       ) : null}
 
@@ -66,8 +72,14 @@ export default function TestimonialsPage() {
                 ? await updateTestimonial(editingId, payload)
                 : await createTestimonial(payload);
               setBusy(false);
-              setMessage(result.message);
-              if (!result.success) return;
+              if (!result.success) {
+                setFeedback({ type: "error", text: result.message });
+                return;
+              }
+              setFeedback({
+                type: "success",
+                text: editingId ? "Testimonial updated." : "Testimonial saved — it will appear on the website.",
+              });
               setEditingId(null);
               setForm({ ...emptyTestimonialForm });
               await load();
@@ -184,7 +196,11 @@ export default function TestimonialsPage() {
                     type="button"
                     onClick={async () => {
                       const result = await deleteTestimonial(item.id);
-                      setMessage(result.message);
+                      setFeedback(
+                        result.success
+                          ? { type: "success", text: "Testimonial deleted." }
+                          : { type: "error", text: result.message }
+                      );
                       if (result.success) await load();
                     }}
                     className="rounded-full border border-[#f0d6d2] px-4 py-2 text-sm font-semibold text-[#b14f3d]"
