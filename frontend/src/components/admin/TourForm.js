@@ -67,8 +67,9 @@ function Repeater({ label, rows, onChange, fields, addLabel }) {
               <Field key={field.key} label={field.label}>
                 {field.multiline ? (
                   <TextArea
-                    rows={4}
+                    rows={6}
                     value={row[field.key] || ""}
+                    placeholder={field.placeholder || ""}
                     onChange={(event) =>
                       onChange(
                         rows.map((item, itemIndex) =>
@@ -611,7 +612,10 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
               </Field>
             </AccordionSection>
 
-            <AccordionSection title="Day-wise itinerary" description="Give every day a title and practical detail.">
+            <AccordionSection
+              title="Day-wise itinerary"
+              description="Put each activity on its own line. Start with - or • for bullet points (or use emojis 🚐 🍽️)."
+            >
               <Repeater
                 label="Itinerary days"
                 rows={form.itinerary}
@@ -620,7 +624,13 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
                 fields={[
                   { key: "day", label: "Day label" },
                   { key: "title", label: "Title" },
-                  { key: "details", label: "Details", multiline: true },
+                  {
+                    key: "details",
+                    label: "Details",
+                    multiline: true,
+                    placeholder:
+                      "- Arrive at station\n- Transfer to hotel\n- Lunch & local sightseeing\n- Evening at leisure",
+                  },
                 ]}
               />
             </AccordionSection>

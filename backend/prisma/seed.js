@@ -48,6 +48,10 @@ const IMG = {
     'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=80',
   rajasthan:
     'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80',
+  hampi:
+    'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=1200&q=80',
+  heritage:
+    'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80',
   meghalaya:
     'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=80',
   blogPacking:
@@ -55,6 +59,8 @@ const IMG = {
   blogNotes:
     'https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?auto=format&fit=crop&w=1200&q=80',
 };
+
+const { HAMPI_ITINERARY_EXAMPLE } = require('../scripts/hampi-itinerary-example');
 
 const tours = [
   {
@@ -465,6 +471,75 @@ const tours = [
     pickupPoints: [{ name: 'Jaipur airport / station', detail: 'Any time' }],
     supplements: [{ name: 'Luxury tented camp', price: 'From ₹5,500 / night', note: 'Peak season' }],
     cancellationPolicy: 'As per customized quotation.',
+    bankDetails: 'Happy Feet Travellers · ICICI 40123456789',
+  },
+  {
+    title: 'Hampi Tour Package from Pune & Mumbai (2N3D)',
+    slug: 'hampi-tour-package-from-pune-mumbai-2-nights-3-days-customized-fit-package-happy-feet-travellers',
+    departureCity: 'Pune / Mumbai',
+    category: 'customized',
+    subCategory: 'heritage',
+    state: 'Karnataka',
+    destination: 'Hampi & Hosapete',
+    packageCategory: 'Heritage',
+    status: 'active',
+    featured: true,
+    tags: ['UNESCO', 'Temples', 'Weekend'],
+    price: 18500,
+    startingPrice: 18500,
+    coverImage: IMG.hampi,
+    images: [IMG.heritage, IMG.rajasthan, IMG.forest],
+    duration: 3,
+    durationLabel: '2N3D',
+    urgency: 'Demo — emoji itinerary formatting',
+    rating: 4.9,
+    reviewsCount: 124,
+    description:
+      'A curated Hampi escape from Pune or Mumbai — UNESCO ruins, Virupaksha Temple, sunset viewpoints and comfortable stays. Example tour showing how emoji bullet points in admin render as a clean day plan.',
+    highlights: [
+      'Virupaksha Temple & Hampi Bazaar',
+      'Vittala Temple & Stone Chariot',
+      'Sunset at Hemakuta Hill',
+      'Train-friendly from Pune / Mumbai',
+    ],
+    dateLabel: 'Custom dates',
+    itinerary: HAMPI_ITINERARY_EXAMPLE,
+    inclusions: [
+      '🏨 2 nights hotel stay on twin sharing',
+      '🍽️ Daily breakfast',
+      '🚗 Private transfers Hosapete ↔ Hampi',
+      '👨‍✈️ Trip coordinator support',
+    ],
+    exclusions: [
+      '🚆 Train / bus tickets to Hosapete',
+      '🍽️ Lunches and dinners unless mentioned',
+      '🎫 Monument entry fees',
+      '🛶 Coracle ride (optional add-on)',
+    ],
+    faqs: [
+      {
+        question: 'How should I enter itinerary bullet points?',
+        answer:
+          'Put each point on a new line in Details — start with a dash (-) or bullet (•). The website shows them as a proper list, like this demo tour.',
+      },
+      {
+        question: 'Can we customise dates?',
+        answer: 'Yes — this is a personalized package. Share your travel month and group size for a quote.',
+      },
+    ],
+    thingsToCarry: ['Comfortable walking shoes', 'Sun hat & sunscreen', 'Light cotton clothes', 'Government photo ID'],
+    terms: ['Itinerary may adjust slightly for weather or monument timings.'],
+    offers: 'Custom dates · quote on request',
+    meals: 'Breakfast included',
+    stayType: '3-star / boutique — twin sharing',
+    transport: 'Train to Hosapete + private car in Hampi',
+    suitableFor: 'Couples · friends · small private groups',
+    pickupPoints: [
+      { name: 'Hosapete railway station', detail: 'Morning pickup on Day 1' },
+      { name: 'Pune / Mumbai departure', detail: 'Train suggestions on booking' },
+    ],
+    supplements: [{ name: 'Single room', price: 'From ₹2,500 / night', note: 'Subject to availability' }],
+    cancellationPolicy: 'Customized trip terms on final quotation.',
     bankDetails: 'Happy Feet Travellers · ICICI 40123456789',
   },
   {

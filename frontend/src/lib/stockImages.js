@@ -11,6 +11,8 @@ export const STOCK_IMAGES = {
   mountains: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=80',
   group: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80',
   desert: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+  hampi: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=1200&q=80',
+  heritage: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80',
 };
 
 /** Removed / typo Unsplash photo IDs → verified replacements. */
@@ -18,6 +20,7 @@ const BROKEN_FRAGMENTS = [
   ['07fb1b4f5bb5', '07fb3b4ae5f1'],
   ['1472148439583-1f1550f021e5', '1563492065599-3520f775eeed'],
   ['1515169069757-1a2f416f6707', '1563492065599-3520f775eeed'],
+  ['1585503418493-5c898ea0ac6e', '1587474260584-136574528ed5'],
 ];
 
 /**

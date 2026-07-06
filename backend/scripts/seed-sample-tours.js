@@ -3,6 +3,7 @@
  * Run: node scripts/seed-sample-tours.js
  */
 const { PrismaClient } = require('@prisma/client');
+const { HAMPI_ITINERARY_EXAMPLE } = require('./hampi-itinerary-example');
 require('dotenv').config();
 
 const prisma = new PrismaClient();
@@ -35,6 +36,10 @@ const IMG = {
     'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=80',
   rajasthan:
     'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80',
+  hampi:
+    'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=1200&q=80',
+  heritage:
+    'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80',
   meghalaya:
     'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=80',
 };
@@ -327,6 +332,52 @@ const sampleTours = [
     transport: 'Private AC car',
     suitableFor: 'Culture lovers',
     pickupPoints: [{ name: 'Jaipur airport', detail: 'Any time' }],
+    supplements: [],
+    cancellationPolicy: 'On quotation',
+    bankDetails: 'Happy Feet Travellers · ICICI 40123456789',
+  },
+  {
+    slug: 'hampi-tour-package-from-pune-mumbai-2-nights-3-days-customized-fit-package-happy-feet-travellers',
+    title: 'Hampi Tour Package from Pune & Mumbai (2N3D)',
+    departureCity: 'Pune / Mumbai',
+    category: 'customized',
+    subCategory: 'heritage',
+    state: 'Karnataka',
+    destination: 'Hampi & Hosapete',
+    packageCategory: 'Heritage',
+    status: 'active',
+    featured: true,
+    tags: ['UNESCO', 'Temples', 'Weekend'],
+    price: 18500,
+    startingPrice: 18500,
+    coverImage: IMG.hampi,
+    images: [IMG.heritage, IMG.rajasthan, IMG.forest],
+    duration: 3,
+    durationLabel: '2N3D',
+    urgency: 'Demo — emoji itinerary formatting',
+    rating: 4.9,
+    reviewsCount: 124,
+    description:
+      'Curated Hampi from Pune or Mumbai — example tour showing emoji bullet points as a clean day plan on the website.',
+    highlights: ['Virupaksha Temple', 'Vittala Temple', 'Hemakuta sunset', 'Train from Pune/Mumbai'],
+    dateLabel: 'Custom dates',
+    itinerary: HAMPI_ITINERARY_EXAMPLE,
+    inclusions: ['🏨 2 nights stay', '🍽️ Breakfast', '🚗 Hosapete ↔ Hampi transfers'],
+    exclusions: ['🚆 Train tickets', '🎫 Entry fees', '🍽️ Lunch & dinner'],
+    faqs: [
+      {
+        question: 'How should I enter itinerary bullet points?',
+        answer: 'One point per line in Details — start with - or •. See this demo tour on the website.',
+      },
+    ],
+    thingsToCarry: ['Walking shoes', 'Sun hat', 'Photo ID'],
+    terms: ['Timings may shift for weather.'],
+    offers: 'Custom dates',
+    meals: 'Breakfast',
+    stayType: '3-star twin sharing',
+    transport: 'Train + private car',
+    suitableFor: 'Couples & small groups',
+    pickupPoints: [{ name: 'Hosapete station', detail: 'Day 1 morning' }],
     supplements: [],
     cancellationPolicy: 'On quotation',
     bankDetails: 'Happy Feet Travellers · ICICI 40123456789',
