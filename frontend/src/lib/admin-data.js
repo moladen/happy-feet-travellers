@@ -202,7 +202,20 @@ export const emptyTourForm = {
   cancellationPolicy: "",
   termsText: "",
   bankDetails: "",
-  itinerary: [{ day: "Day 1", title: "", details: "" }],
+  itinerary: [
+    {
+      day: "Day 1",
+      title: "Explore the Historic Wonders of Hampi",
+      details:
+        "- Arrive at Hosapete railway station\n- Transfer to Hampi with photo stops\n- Check in and freshen up\n- Lunch at a local restaurant\n- Visit Virupaksha Temple and Hampi Bazaar\n- Sunset at Hemakuta Hill",
+    },
+    {
+      day: "Day 2",
+      title: "Temples & Return",
+      details:
+        "- Breakfast at the hotel\n- Vittala Temple and Stone Chariot\n- Lotus Mahal and Elephant Stables\n- Return transfer to Hosapete for onward journey",
+    },
+  ],
   faqs: [{ question: "", answer: "" }],
   pickupPoints: [{ name: "", detail: "" }],
   supplements: [{ name: "", price: "", note: "" }],

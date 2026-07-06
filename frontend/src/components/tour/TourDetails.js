@@ -6,9 +6,9 @@ import FAQAccordion from '@/components/common/FAQAccordion';
 import ExperienceGallery from '@/components/gallery/ExperienceGallery';
 import ItineraryDetailsText from '@/components/tour/ItineraryDetailsText';
 import TourExperienceHero from '@/components/tour/TourExperienceHero';
+import { resolveHeroImageSrc } from '@/lib/heroSlides';
 import { sanitiseStockImageUrl, TRAVEL_FALLBACK_IMAGE } from '@/lib/stockImages';
 import { buildTourGallerySlides, withGalleryFallback } from '@/lib/gallerySlides';
-import { API_BASE_URL } from '@/constants/site';
 import { openTourItineraryPrint } from '@/lib/tourItineraryPrint';
 import { getTourOverviewTeaser } from '@/lib/tourExperienceCopy';
 import {
@@ -21,15 +21,35 @@ import {
 import { whatsappHref } from '@/lib/siteContact';
 
 const FALLBACK_TOUR_IMAGE = TRAVEL_FALLBACK_IMAGE;
-const API_ASSET_BASE = (API_BASE_URL || '').replace(/\/api\/?$/, '').replace(/\/$/, '');
 
 function resolveImageUrl(value) {
   const src = String(value || '').trim();
   if (!src) return '';
-  if (/^(data:|blob:|https?:\/\/)/i.test(src)) return src;
+  if (/^(data:|blob:)/i.test(src)) return src;
+  if (/^https?:\/\//i.test(src)) {
+    try {
+      const pathname = new URL(src).pathname;
+      if (pathname.startsWith('/uploads/')) return pathname;
+    } catch {
+      /* use raw URL below */
+    }
+    return src;
+  }
   if (src.startsWith('/images/') || src.startsWith('/videos/') || src.startsWith('/happy-feet-logo')) return src;
-  if (src.startsWith('/')) return API_ASSET_BASE ? `${API_ASSET_BASE}${src}` : src;
-  return API_ASSET_BASE ? `${API_ASSET_BASE}/${src}` : `/${src}`;
+  return resolveHeroImageSrc(src) || src;
+}
+
+function canonicalImageKey(url) {
+  const resolved = resolveImageUrl(url);
+  if (!resolved) return '';
+  if (resolved.startsWith('http')) {
+    try {
+      return new URL(resolved).pathname;
+    } catch {
+      return resolved;
+    }
+  }
+  return resolved;
 }
 
 function parseImageList(value) {
@@ -59,11 +79,24 @@ function getImageUrl(image) {
 }
 
 function getTourGalleryImages(tour) {
+  const cover = getImageUrl(tour?.coverImage) || getImageUrl(tour?.image);
+  let list = [];
+
   if (Array.isArray(tour?.gallery) && tour.gallery.length) {
-    return [...new Set(tour.gallery.map(getImageUrl).filter(Boolean))];
+    list = tour.gallery.map(getImageUrl).filter(Boolean);
+  } else {
+    list = parseImageList(tour?.images).map(getImageUrl).filter(Boolean);
   }
-  const values = [...parseImageList(tour?.images)];
-  return [...new Set(values.map(getImageUrl).filter(Boolean))];
+
+  const coverKey = canonicalImageKey(cover);
+  const merged = cover ? [cover, ...list.filter((url) => canonicalImageKey(url) !== coverKey)] : list;
+  const seen = new Set();
+  return merged.filter((url) => {
+    const key = canonicalImageKey(url);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function PanelBlock({ title, children, tone = 'default' }) {
@@ -104,6 +137,7 @@ export default function TourDetails({ tour, whatsappNumber }) {
   const displayGallery = gallery.length ? gallery : [FALLBACK_TOUR_IMAGE];
   const heroImage =
     getImageUrl(tour?.coverImage) || getImageUrl(tour?.image) || displayGallery[0] || FALLBACK_TOUR_IMAGE;
+  const heroGalleryImages = displayGallery.filter((url) => canonicalImageKey(url) !== canonicalImageKey(heroImage));
   const experienceSlides = withGalleryFallback(
     buildTourGallerySlides(tour, (url) => getImageUrl(url) || url)
   );
@@ -137,7 +171,7 @@ export default function TourDetails({ tour, whatsappNumber }) {
       <TourExperienceHero
         tour={tour}
         heroImage={heroImage}
-        heroImages={displayGallery.slice(0, 6)}
+        heroImages={heroGalleryImages.length ? heroGalleryImages : displayGallery.slice(0, 6)}
         whatsappNumber={whatsappNumber}
       />
 

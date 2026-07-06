@@ -1,9 +1,9 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { sanitiseStockImageUrl } from '@/lib/stockImages';
+import SafeNextImage from '@/components/common/SafeNextImage';
+import { sanitiseStockImageUrl, TRAVEL_FALLBACK_IMAGE } from '@/lib/stockImages';
 import { getStartingLocation, getWhyTourIsSpecial } from '@/lib/tourExperienceCopy';
 import { resolveTourPriceAmount } from '@/lib/tourPrice';
 import {
@@ -28,7 +28,7 @@ export default function TourExperienceHero({ tour, heroImage, heroImages = [], w
 
   const slides = useMemo(() => {
     const list = [...new Set([heroImage, ...heroImages].map((url) => sanitiseStockImageUrl(url)).filter(Boolean))];
-    return list.length ? list : [sanitiseStockImageUrl(heroImage)];
+    return list.length ? list : [TRAVEL_FALLBACK_IMAGE];
   }, [heroImage, heroImages]);
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -57,7 +57,7 @@ export default function TourExperienceHero({ tour, heroImage, heroImages = [], w
             className={`tour-experience-hero__slide ${index === activeIndex ? 'is-active' : ''}`}
             aria-hidden={index !== activeIndex}
           >
-            <Image
+            <SafeNextImage
               src={src}
               alt=""
               fill
@@ -185,7 +185,7 @@ export default function TourExperienceHero({ tour, heroImage, heroImages = [], w
                         : 'border-white/40 opacity-90 hover:border-white/70 hover:opacity-100'
                     }`}
                   >
-                    <Image src={src} alt="" fill sizes="96px" className="object-cover" />
+                    <SafeNextImage src={src} alt="" fill sizes="96px" className="object-cover" />
                   </button>
                 ))}
               </div>

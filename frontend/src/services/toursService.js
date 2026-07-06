@@ -1,4 +1,5 @@
 import { mockTours } from '@/data/mockData';
+import { resolveHeroImageSrc } from '@/lib/heroSlides';
 import { resolveTourPriceAmount } from '@/lib/tourPrice';
 import { sanitiseStockImageUrl, TRAVEL_FALLBACK_IMAGE } from '@/lib/stockImages';
 import { publicFetch, shouldUseMockFallback } from '@/lib/publicApi';
@@ -16,10 +17,6 @@ function toQuery(params) {
 }
 
 const DEFAULT_TOUR_IMAGE = TRAVEL_FALLBACK_IMAGE.replace('w=1200', 'w=900');
-
-const API_ASSET_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api')
-  .replace(/\/api\/?$/, '')
-  .replace(/\/$/, '');
 
 const pickList = (data) => {
   if (Array.isArray(data)) return data;
@@ -40,12 +37,19 @@ const formatDateRange = (start, end) => {
 const resolveImageUrl = (value) => {
   const src = String(value || '').trim();
   if (!src) return '';
-  if (/^(data:|blob:|https?:\/\/)/i.test(src)) {
-    return /^https?:\/\/images\.unsplash\.com/i.test(src) ? sanitiseStockImageUrl(src) : src;
+  if (/^(data:|blob:)/i.test(src)) return src;
+  if (/^https?:\/\//i.test(src)) {
+    if (/^https?:\/\/images\.unsplash\.com/i.test(src)) return sanitiseStockImageUrl(src);
+    try {
+      const pathname = new URL(src).pathname;
+      if (pathname.startsWith('/uploads/')) return pathname;
+    } catch {
+      /* use raw URL below */
+    }
+    return src;
   }
   if (src.startsWith('/images/') || src.startsWith('/videos/') || src.startsWith('/happy-feet-logo')) return src;
-  if (src.startsWith('/')) return `${API_ASSET_BASE}${src}`;
-  return `${API_ASSET_BASE}/${src}`;
+  return resolveHeroImageSrc(src) || src;
 };
 
 const imageFromValue = (value) => {

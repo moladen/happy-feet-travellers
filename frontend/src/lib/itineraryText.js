@@ -1,8 +1,87 @@
 /** Common bullet prefixes entered in admin: -, *, •, ·, numbered lists */
 const BULLET_PREFIX_RE = /^(\u2022|\u2023|\u25E6|\u25AA|\*|-|–|—|•|·|\d+[\.\)])\s+/;
 
+/** Inline bullet boundary (same line): " - next" or " • next" */
+const INLINE_BULLET_SPLIT_RE = /\s+(?=[-•*–—·]\s+|\d+[\.\)]\s+)/;
+
 /** Lines that start with an emoji (typical admin Kutch / Rann itinerary style) */
 const EMOJI_LED_LINE_RE = /^(?:\p{Extended_Pictographic}\p{Emoji_Modifier}?|\p{Emoji_Presentation})/u;
+
+/** Split before emoji when several activities are pasted on one line. */
+const INLINE_EMOJI_SPLIT_RE =
+  /\s+(?=(?:\p{Extended_Pictographic}\p{Emoji_Modifier}?|\p{Emoji_Presentation}))/u;
+
+function prepareItineraryRaw(value) {
+  return normaliseItineraryDetailsText(value)
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>\s*<p[^>]*>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+}
+
+export function splitEmojiLedLineItems(line) {
+  const text = String(line || '').trim();
+  if (!text) return [];
+
+  try {
+    const spaced = text
+      .split(INLINE_EMOJI_SPLIT_RE)
+      .map((part) => part.trim())
+      .filter(Boolean);
+    if (spaced.length >= 2 && spaced.filter(isEmojiLedLine).length >= 2) {
+      return spaced;
+    }
+
+    const segments = [...text.matchAll(
+      /(\p{Extended_Pictographic}\p{Emoji_Modifier}?|\p{Emoji_Presentation})[^\p{Extended_Pictographic}\p{Emoji_Presentation}]*/gu,
+    )]
+      .map((match) => match[0].trim())
+      .filter(Boolean);
+
+    if (segments.length >= 2 && segments.filter(isEmojiLedLine).length >= 2) {
+      return segments;
+    }
+  } catch {
+    return [];
+  }
+
+  return [];
+}
+
+export function splitInlineBulletItems(line) {
+  const text = String(line || '').trim();
+  if (!text) return [];
+
+  if (isItineraryBulletLine(text)) {
+    const parts = text
+      .split(INLINE_BULLET_SPLIT_RE)
+      .map((part) => stripItineraryBulletPrefix(part.trim()))
+      .filter(Boolean);
+    if (parts.length >= 2) return parts;
+  }
+
+  const dotParts = text
+    .split(/\s*[•·]\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (dotParts.length >= 2) return dotParts;
+
+  return [];
+}
+
+function trySingleLineList(text) {
+  const trimmed = String(text || '').trim();
+  if (!trimmed) return null;
+
+  const emojiItems = splitEmojiLedLineItems(trimmed);
+  if (emojiItems.length >= 2) return { kind: 'emojiList', items: emojiItems };
+
+  const bulletItems = splitInlineBulletItems(trimmed);
+  if (bulletItems.length >= 2) return { kind: 'bullets', items: bulletItems };
+
+  return null;
+}
 
 export function normaliseItineraryDetailsText(value) {
   if (value == null) return '';
@@ -34,11 +113,11 @@ export function isEmojiLedLine(line) {
  * Backward compatible with single-line paragraph strings from older tours.
  */
 export function parseItineraryDetails(text) {
-  const raw = normaliseItineraryDetailsText(text);
+  const raw = prepareItineraryRaw(text);
   const trimmed = raw.trim();
   if (!trimmed) return { kind: 'empty' };
 
-  const lines = raw.split(/\r?\n/);
+  const lines = raw.split('\n');
   const hasLineBreaks = lines.length > 1;
   const nonEmptyLines = lines.map((line) => line.trim()).filter(Boolean);
 
@@ -47,6 +126,8 @@ export function parseItineraryDetails(text) {
   const hasBullets = nonEmptyLines.some(isItineraryBulletLine);
 
   if (!hasLineBreaks && !hasBullets) {
+    const singleLineList = trySingleLineList(trimmed);
+    if (singleLineList) return singleLineList;
     return { kind: 'paragraph', text: trimmed };
   }
 
