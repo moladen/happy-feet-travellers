@@ -22,7 +22,7 @@ export default async function Home() {
         <TripsCarousel />
         <CustomizedTours />
         <WhyChooseUs />
-        <Testimonials />
+        <Testimonials apiTestimonials={testimonials} />
         <BlogSection />
         <CTA />
         <Gallery />

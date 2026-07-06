@@ -5,6 +5,7 @@ const { withDatabaseErrors } = require('@/utils/databaseErrors');
 const { generateSlug } = require('@/utils/slugGenerator');
 const { activeDepartureWhere } = require('@/utils/departureExpiry');
 const upcomingDepartureService = require('@/services/upcomingDepartureService');
+const personalizedTripService = require('@/services/personalizedTripService');
 const { persistTourMediaInPayload } = require('@/utils/tourMedia');
 
 const MONTHS = [
@@ -210,11 +211,19 @@ async function createTour(payload) {
 async function updateTour(id, updateData) {
   return withDatabaseErrors(async () => {
     const existing = await prisma.tour.findFirst({ where: { id } });
+    if (!existing) throw AppError.notFound('Tour not found');
+
     const nextCategory = String(updateData?.category || existing?.category || '').toLowerCase();
     if (nextCategory === 'upcoming') {
       return upcomingDepartureService.updateDeparture(id, {
         ...updateData,
         category: 'upcoming',
+      });
+    }
+    if (nextCategory === 'customized') {
+      return personalizedTripService.updatePackage(id, {
+        ...updateData,
+        category: 'customized',
       });
     }
 

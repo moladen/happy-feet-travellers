@@ -66,8 +66,8 @@ export default function LandingPagesPage() {
       >
         <DataTable
           rows={state.rows}
-          emptyTitle="No landing pages yet"
-          emptyDescription='Run "node scripts/seed-rann-landing.js" on the backend or create a new page.'
+          emptyTitle="No landing pages in database yet"
+          emptyDescription="The Rann page may still appear on the live site from built-in fallback content. Restart the backend (or run npm run seed:landing-rann in backend) to register it in Admin → Landing Pages for editing."
           columns={[
             {
               key: "title",

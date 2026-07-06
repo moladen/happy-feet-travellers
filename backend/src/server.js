@@ -2,11 +2,22 @@ const app = require('./app');
 const env = require('@/config/env');
 const logger = require('@/utils/logger');
 const prisma = require('@/config/database');
+const { ensureRannLandingPage } = require('../scripts/seed-rann-landing');
 
 const server = app.listen(env.port, () => {
   logger.success(`Server running on http://localhost:${env.port}`);
   logger.info(`Health check: http://localhost:${env.port}/api/health`);
   logger.info(`Environment: ${env.nodeEnv}`);
+
+  ensureRannLandingPage()
+    .then(({ page, created }) => {
+      if (created) {
+        logger.success(`Created default Rann landing page in admin (${page.slug})`);
+      }
+    })
+    .catch((err) => {
+      logger.warn('Could not ensure Rann landing page exists:', err?.message || err);
+    });
 });
 
 server.on('error', (err) => {

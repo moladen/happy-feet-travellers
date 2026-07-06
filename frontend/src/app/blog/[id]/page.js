@@ -1,6 +1,8 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import BlogArticleBody from '@/components/blog/BlogArticleBody';
 import RelatedPackagesSection from '@/components/content/RelatedPackagesSection';
+import RelatedToursSection from '@/components/content/RelatedToursSection';
 import { blogHref } from '@/lib/contentTopics';
 import { getBlogById, getBlogs } from '@/services/api';
 
@@ -16,27 +18,27 @@ export async function generateMetadata({ params }) {
   };
 }
 
-function paragraphs(content) {
-  if (Array.isArray(content)) return content;
-  if (typeof content === 'string' && content.trim() && content !== '...') {
-    return content.split('\n\n').filter(Boolean);
-  }
-  return [];
-}
-
 export default async function BlogArticlePage({ params }) {
   const { id } = await params;
   const blog = await getBlogById(id);
   if (!blog) notFound();
 
+  const segment = decodeURIComponent(String(id || '').trim());
+  if (blog.slug && segment !== blog.slug && segment === String(blog.id)) {
+    redirect(blogHref(blog));
+  }
+
   const all = await getBlogs();
   const others = all.filter((b) => String(b.id) !== String(blog.id) && b.slug !== blog.slug).slice(0, 8);
-  const body = paragraphs(blog.content);
   const relatedPackages = blog.relatedPackages || blog.relatedLandingPage?.packages || [];
+  const relatedTours = blog.relatedTours || [];
   const relatedLandingPage = blog.relatedLandingPage || null;
   const packagesTitle = relatedLandingPage?.title
     ? `Rann Utsav packages — ${relatedLandingPage.title.replace(/\s*Season.*/i, '').trim() || relatedLandingPage.title}`
     : 'Related packages';
+  const toursTitle = blog.category
+    ? `Tours & departures — ${blog.category}`
+    : 'Related tours & departures';
 
   return (
     <div className="page-shell">
@@ -89,16 +91,8 @@ export default async function BlogArticlePage({ params }) {
               <div className="aspect-[21/9] max-h-80 w-full bg-section-alt">
                 <img src={blog.image} alt="" className="h-full w-full object-cover" />
               </div>
-              <div className="prose prose-neutral max-w-none p-8 prose-p:text-foreground prose-p:leading-relaxed">
-                {body.length === 0 ? (
-                  <p className="text-foreground/80">Full article body will appear here when connected to your CMS.</p>
-                ) : (
-                  body.map((para, i) => (
-                    <p key={i} className="mb-4 last:mb-0">
-                      {para}
-                    </p>
-                  ))
-                )}
+              <div className="p-8">
+                <BlogArticleBody content={blog.content} />
               </div>
             </div>
 
@@ -106,6 +100,12 @@ export default async function BlogArticlePage({ params }) {
               packages={relatedPackages}
               landingPage={relatedLandingPage}
               title={packagesTitle}
+            />
+
+            <RelatedToursSection
+              tours={relatedTours}
+              landingPage={relatedLandingPage}
+              title={toursTitle}
             />
 
             <div className="mt-8 flex flex-wrap gap-3">

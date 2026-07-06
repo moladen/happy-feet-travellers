@@ -5,6 +5,7 @@ import PageTransition from "@/components/admin/PageTransition";
 import { CardSection, Field, TextArea, TextInput } from "@/components/admin/AdminFields";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import { buildSettingsPayload, emptySettings, normaliseSettings } from "@/lib/admin-data";
+import { isValidIndianPhone } from "@/lib/siteContact";
 import {
   DEFAULT_CANCELLATION_HTML,
   DEFAULT_POLICIES_LAST_UPDATED,
@@ -98,6 +99,16 @@ export default function SettingsPage() {
       return;
     }
 
+    for (const [label, value] of [
+      ["WhatsApp number", form.whatsappNumber],
+      ["Second phone number", form.secondaryPhoneNumber],
+    ]) {
+      if (!isValidIndianPhone(value)) {
+        showMessage(`${label} must be a valid 10-digit Indian mobile number, or leave empty.`, true);
+        return;
+      }
+    }
+
     const payloadForm = {
       ...form,
       instagramUrl: normalizeHttpUrl(form.instagramUrl),
@@ -156,7 +167,7 @@ export default function SettingsPage() {
           >
             <div className="space-y-6">
               <div className="grid gap-5 md:grid-cols-2">
-                <Field label="WhatsApp number" hint="10-digit or +91 format">
+                <Field label="WhatsApp number" hint="Primary — used for WhatsApp chat buttons site-wide">
                   <TextInput
                     value={form.whatsappNumber}
                     onChange={(event) =>
@@ -165,6 +176,18 @@ export default function SettingsPage() {
                     placeholder="9876543210 or +91 9876543210"
                   />
                 </Field>
+                <Field label="Second phone number" hint="Optional — shown alongside the first on Contact & footer">
+                  <TextInput
+                    value={form.secondaryPhoneNumber}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, secondaryPhoneNumber: event.target.value }))
+                    }
+                    placeholder="9123456789 or +91 9123456789"
+                  />
+                </Field>
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-2">
                 <Field label="Email">
                   <TextInput
                     type="email"

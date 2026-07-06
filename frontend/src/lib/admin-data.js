@@ -5,6 +5,11 @@ import {
   RANN_PLANNING_GUIDE,
   RANN_SLUG,
 } from '@/lib/rannSeasonContent';
+import {
+  blogBlocksHaveMinContent,
+  deserializeBlogContent,
+  serializeBlogBlocks,
+} from '@/lib/blogContent';
 
 export { parsePriceInput, resolveTourPriceAmount };
 
@@ -211,7 +216,21 @@ export const emptyBlogForm = {
   coverImage: "",
   authorName: "Happy Feet Team",
   publishDate: "",
-  content: "<p>Start writing your travel story here...</p>",
+  contentBlocks: [
+    {
+      type: "paragraph",
+      text: "Start with an opening paragraph that hooks the reader — where you went, why it matters, and what they will learn.",
+    },
+    {
+      type: "image",
+      url: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80",
+      caption: "Optional caption under the photo",
+    },
+    {
+      type: "paragraph",
+      text: "Add the next section of your story here. Use a blank line to split into multiple paragraphs.",
+    },
+  ],
   topicKeysText: "",
   relatedTourSlugsText: "",
   relatedPackageSlugsText: "",
@@ -237,6 +256,7 @@ export const emptyGalleryForm = {
 
 export const emptySettings = {
   whatsappNumber: "",
+  secondaryPhoneNumber: "",
   email: "",
   instagramUrl: "",
   facebookUrl: "",
@@ -316,6 +336,30 @@ export function splitLines(value) {
     .split("\n")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+/** Splits comma, semicolon, or newline separated admin list fields. */
+export function splitListInput(value) {
+  return String(value || "")
+    .split(/[\n,;]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function stripSlugPath(raw) {
+  let slug = String(raw || "").trim();
+  slug = slug.replace(/^https?:\/\/[^/]+/i, "");
+  slug = slug.replace(/^\/blog\//i, "").replace(/^\/tour\//i, "").replace(/^\//, "");
+  return slug.split("?")[0].split("#")[0].trim();
+}
+
+export function normalizeSlugList(value) {
+  return [...new Set(splitListInput(value).map(stripSlugPath).filter(Boolean))];
+}
+
+export function normalizeSingleSlug(value) {
+  const [slug] = normalizeSlugList(value);
+  return slug || null;
 }
 
 function joinLines(list) {
@@ -483,9 +527,9 @@ export function buildTourPayload(form) {
       };
     })(),
     tags: splitLines(form.tagsText),
-    topicKeys: splitLines(form.topicKeysText),
-    relatedBlogSlugs: splitLines(form.relatedBlogSlugsText),
-    landingPageSlug: (form.landingPageSlug || "").trim() || null,
+    topicKeys: splitListInput(form.topicKeysText),
+    relatedBlogSlugs: normalizeSlugList(form.relatedBlogSlugsText),
+    landingPageSlug: normalizeSingleSlug(form.landingPageSlug),
     groupSize: (form.groupSize || "").trim() || null,
     status: (form.status || "active").trim().toLowerCase(),
     featured: Boolean(form.featured),
@@ -524,6 +568,7 @@ export function createTourForm(record) {
   return {
     ...emptyTourForm,
     ...record,
+    category: String(record.category || emptyTourForm.category).toLowerCase(),
     slug: record.slug || generateSlug(record.title),
     duration: String(record.duration || emptyTourForm.duration),
     ...(() => {
@@ -579,32 +624,13 @@ export function createTourForm(record) {
   };
 }
 
-const BLOG_CONTENT_FALLBACK = "<p>Start writing your travel story here...</p>";
-
-/** API requires non-empty cover URL and content (min ~20 chars after HTML). */
-export function normalizeBlogContentForForm(content) {
-  if (typeof content === "string" && content.trim()) return content;
-  if (Array.isArray(content) && content.length) {
-    return content
-      .filter(Boolean)
-      .map((item) => `<p>${String(item).replace(/</g, "&lt;")}</p>`)
-      .join("");
+/** API requires non-empty cover URL and content (min ~20 chars). */
+export function normalizeBlogContentForApi(contentBlocks) {
+  const blocks = Array.isArray(contentBlocks) ? contentBlocks : deserializeBlogContent(contentBlocks);
+  if (!blogBlocksHaveMinContent(blocks)) {
+    return serializeBlogBlocks([{ type: "paragraph", text: "Travel story coming soon." }]);
   }
-  if (content && typeof content === "object") {
-    try {
-      return `<pre>${JSON.stringify(content, null, 2)}</pre>`;
-    } catch {
-      return BLOG_CONTENT_FALLBACK;
-    }
-  }
-  return BLOG_CONTENT_FALLBACK;
-}
-
-export function normalizeBlogContentForApi(content) {
-  const html = normalizeBlogContentForForm(content);
-  const plain = html.replace(/<[^>]+>/g, "").trim();
-  if (plain.length >= 3) return html;
-  return BLOG_CONTENT_FALLBACK;
+  return serializeBlogBlocks(blocks);
 }
 
 export function buildBlogPayload(form) {
@@ -616,13 +642,13 @@ export function buildBlogPayload(form) {
     category: (form.category || "").trim(),
     coverImage,
     authorName: form.authorName.trim(),
-    content: normalizeBlogContentForApi(form.content),
+    content: normalizeBlogContentForApi(form.contentBlocks),
     seoTitle: (form.seoTitle || "").trim(),
     seoDescription: (form.seoDescription || "").trim(),
-    topicKeys: splitLines(form.topicKeysText),
-    relatedTourSlugs: splitLines(form.relatedTourSlugsText),
-    relatedPackageSlugs: splitLines(form.relatedPackageSlugsText),
-    landingPageSlug: (form.landingPageSlug || "").trim() || null,
+    topicKeys: splitListInput(form.topicKeysText),
+    relatedTourSlugs: normalizeSlugList(form.relatedTourSlugsText),
+    relatedPackageSlugs: normalizeSlugList(form.relatedPackageSlugsText),
+    landingPageSlug: normalizeSingleSlug(form.landingPageSlug),
   };
   if (form.publishDate) {
     payload.publishedAt = form.publishDate;
@@ -638,7 +664,7 @@ export function createBlogForm(record) {
     slug: record.slug || generateSlug(record.title),
     publishDate: record.publishedAt ? String(record.publishedAt).slice(0, 10) : "",
     coverImage: record.coverImage || record.image || "",
-    content: normalizeBlogContentForForm(record.content),
+    contentBlocks: deserializeBlogContent(record.content),
     topicKeysText: joinLines(record.topicKeys),
     relatedTourSlugsText: joinLines(record.relatedTourSlugs),
     relatedPackageSlugsText: joinLines(record.relatedPackageSlugs),
@@ -647,10 +673,11 @@ export function createBlogForm(record) {
 }
 
 export function buildTestimonialPayload(form) {
+  const image = String(form.image || '').trim();
   return {
     name: form.name.trim(),
     city: form.city.trim(),
-    image: form.image || null,
+    image: image && !image.startsWith('blob:') ? image : null,
     review: form.review.trim(),
     rating: Number(form.rating || 5),
   };
@@ -691,6 +718,7 @@ export function buildSettingsPayload(form) {
   const normalised = normaliseSettings(form);
   return {
     whatsappNumber: normalised.whatsappNumber.trim(),
+    secondaryPhoneNumber: normalised.secondaryPhoneNumber.trim(),
     email: normalised.email.trim(),
     instagramUrl: normalised.instagramUrl.trim(),
     facebookUrl: normalised.facebookUrl.trim(),
@@ -1053,7 +1081,7 @@ export function buildLandingPayload(form) {
       .map((pkg, index) => {
         const audienceBadge = String(pkg.audienceBadge || "").trim();
         const topicKeys = splitLines(pkg.topicKeysText);
-        const relatedBlogSlugs = splitLines(pkg.relatedBlogSlugsText);
+        const relatedBlogSlugs = normalizeSlugList(pkg.relatedBlogSlugsText);
         const detailContent = {};
         if (audienceBadge) detailContent.audienceBadge = audienceBadge;
         if (topicKeys.length) detailContent.topicKeys = topicKeys;

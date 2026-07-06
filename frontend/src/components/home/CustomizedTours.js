@@ -9,7 +9,6 @@ import PersonalizedCategoryChips from '@/components/personalized/PersonalizedCat
 import PersonalizedToursScroll from '@/components/tour/PersonalizedToursScroll';
 import RannSeasonPromo from '@/components/campaign/RannSeasonPromo';
 import SectionState from '@/components/common/SectionState';
-import { USER_MESSAGES } from '@/lib/userMessages';
 
 const EASE = [0.22, 1, 0.36, 1];
 
@@ -99,7 +98,6 @@ export default function CustomizedTours() {
   const reduceMotion = useReducedMotion();
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -108,14 +106,12 @@ export default function CustomizedTours() {
         const data = await getPersonalizedTrips({ limit: 12, sort: 'featured' });
         if (cancelled) return;
         setTours(Array.isArray(data) ? data : []);
-        setFetchError(false);
       } catch (error) {
         if (process.env.NODE_ENV !== 'production') {
           console.error('Error fetching personalized tours:', error);
         }
         if (!cancelled) {
           setTours([]);
-          setFetchError(true);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -146,36 +142,20 @@ export default function CustomizedTours() {
         <RannSeasonPromo className="mt-8" />
       </div>
 
-      <div className="personalized-tours-section__cards relative z-10">
-        <div className="personalized-tours-section__carousel-wrap customized-tours-section__carousel-wrap">
-          {loading ? (
-            <div className="container mx-auto max-w-6xl px-4 sm:px-6">
-              <SectionState type="loading" loadingKey="experiences" className="mb-4" />
-              <LoadingSkeleton />
-            </div>
-          ) : list.length === 0 ? (
-            <div className="container mx-auto max-w-6xl px-4 sm:px-6">
-              <SectionState
-                type={fetchError ? 'error' : 'empty'}
-                className="personalized-tours-section__empty max-w-lg"
-                title={fetchError ? 'Journeys unavailable' : 'Your journey awaits'}
-                message={
-                  fetchError
-                    ? USER_MESSAGES.serviceUnavailable
-                    : 'Share your dream trip and we will shape a personalized route for you.'
-                }
-                actionHref="/contact"
-                actionLabel="Tell us your dream trip"
-              />
-            </div>
-          ) : (
-            <PersonalizedToursScroll
-              tours={list}
-              cardVariant="experience"
-            />
-          )}
+      {(loading || list.length > 0) && (
+        <div className="personalized-tours-section__cards relative z-10">
+          <div className="personalized-tours-section__carousel-wrap customized-tours-section__carousel-wrap">
+            {loading ? (
+              <div className="container mx-auto max-w-6xl px-4 sm:px-6">
+                <SectionState type="loading" loadingKey="experiences" className="mb-4" />
+                <LoadingSkeleton />
+              </div>
+            ) : (
+              <PersonalizedToursScroll tours={list} cardVariant="experience" />
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="container relative z-10 mx-auto max-w-6xl px-4 sm:px-6">
         <DreamTripEnquiry />

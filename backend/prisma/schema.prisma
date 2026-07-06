@@ -280,7 +280,8 @@ model TeamMember {
 
 model SiteSettings {
   id             String   @id @default("site-settings")
-  whatsappNumber String?
+  whatsappNumber        String?
+  secondaryPhoneNumber  String?
   email          String?
   instagramUrl   String?
   facebookUrl    String?

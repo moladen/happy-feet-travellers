@@ -15,7 +15,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function buildTravelMessage(form) {
   const lines = [
-    `Traveller type: ${form.travellerType === 'domestic' ? 'Domestic' : 'International'}`,
     `Tentative travel dates: ${form.travelDates.trim()}`,
     `No. of Adults: ${form.adults}`,
   ];
@@ -27,7 +26,7 @@ function buildTravelMessage(form) {
     lines.push('No. of Kids: 0');
   }
   lines.push(`Tentative budget: ${form.budget.trim()}`);
-  if (form.travellerType === 'domestic' && form.travelInsurance) {
+  if (form.travelInsurance) {
     lines.push(
       `Travel insurance: Yes (+₹${TRAVEL_INSURANCE_PRICE_INR} per person — to be added in final quotation, not charged online)`
     );
@@ -55,10 +54,6 @@ const validateForm = (data) => {
     errors.destination = 'Please tell us where you are thinking of travelling.';
   }
 
-  if (!data.travellerType) {
-    errors.travellerType = 'Please select domestic or international travel.';
-  }
-
   if (!data.travelDates?.trim() || data.travelDates.trim().length < 2) {
     errors.travelDates = 'Please share your tentative travel dates.';
   }
@@ -79,7 +74,8 @@ const validateForm = (data) => {
     errors.budget = 'Please share your tentative budget.';
   }
 
-  if (data.travellerType === 'domestic' && data.travelInsurance) {
+  if (data.travelInsurance) {
+    const kids = Number(data.kids) || 0;
     const kidAges = parseTravellerAges(data.kidAges);
     if (kids > 0 && kidAges.length && !agesWithinInsuranceRange(kidAges)) {
       errors.travelInsurance = `Travel insurance is available for ages 0–${TRAVEL_INSURANCE_MAX_AGE} years only.`;
@@ -94,7 +90,6 @@ const initialForm = {
   whatsappNumber: '',
   email: '',
   destination: '',
-  travellerType: '',
   travelDates: '',
   adults: '2',
   kids: '0',
@@ -133,13 +128,7 @@ export default function BookingForm({ variant = 'default', headingId }) {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => {
-      const next = { ...prev, [name]: type === 'checkbox' ? checked : value };
-      if (name === 'travellerType' && value !== 'domestic') {
-        next.travelInsurance = false;
-      }
-      return next;
-    });
+    setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
     if (serverError) setServerError(null);
   };
@@ -157,8 +146,7 @@ export default function BookingForm({ variant = 'default', headingId }) {
     setServerError(null);
     setLoading(true);
 
-    const insuranceRequested =
-      formData.travellerType === 'domestic' && Boolean(formData.travelInsurance);
+    const insuranceRequested = Boolean(formData.travelInsurance);
 
     try {
       const result = await submitContactForm({
@@ -166,7 +154,6 @@ export default function BookingForm({ variant = 'default', headingId }) {
         whatsappNumber: formData.whatsappNumber,
         email: formData.email || undefined,
         destination: formData.destination.trim(),
-        travellerType: formData.travellerType,
         travelInsuranceRequested: insuranceRequested,
         message: buildTravelMessage(formData),
         source: isReach ? 'booking-form' : 'booking-form',
@@ -188,7 +175,6 @@ export default function BookingForm({ variant = 'default', headingId }) {
   };
 
   const labelClass = 'mb-2 block text-sm font-semibold tracking-tight text-foreground';
-  const showInsuranceOption = formData.travellerType === 'domestic';
 
   const shellClass = isReach
     ? 'flex h-full flex-col justify-center bg-[#faf6ef] p-6 sm:p-8 md:p-10 lg:p-12'
@@ -344,30 +330,6 @@ export default function BookingForm({ variant = 'default', headingId }) {
             {fieldErrors.destination && <p className="mt-1.5 text-xs text-red-600">{fieldErrors.destination}</p>}
           </div>
 
-          <div className="min-w-0">
-            {showLabel && (
-              <label htmlFor="travellerType" className={labelClass}>
-                Traveller type *
-              </label>
-            )}
-            <select
-              id="travellerType"
-              name="travellerType"
-              value={formData.travellerType}
-              onChange={handleChange}
-              required
-              aria-invalid={Boolean(fieldErrors.travellerType)}
-              className={fieldClass(Boolean(fieldErrors.travellerType), variant)}
-            >
-              <option value="">{isReach ? 'Domestic or international? *' : 'Select traveller type'}</option>
-              <option value="domestic">Domestic (within India)</option>
-              <option value="international">International</option>
-            </select>
-            {fieldErrors.travellerType && (
-              <p className="mt-1.5 text-xs text-red-600">{fieldErrors.travellerType}</p>
-            )}
-          </div>
-
           <div className="min-w-0 rounded-2xl border border-[#e5ddd0]/80 bg-white/60 p-4 md:p-5">
             <p className="text-sm font-semibold text-foreground">
               Please specify the below details of your travel: *
@@ -467,32 +429,30 @@ export default function BookingForm({ variant = 'default', headingId }) {
                 {fieldErrors.budget && <p className="mt-1.5 text-xs text-red-600">{fieldErrors.budget}</p>}
               </div>
 
-              {showInsuranceOption ? (
-                <div className="rounded-xl border border-[#dceaf5] bg-[#f8fbff] px-4 py-3.5">
-                  <label htmlFor="travelInsurance" className="flex cursor-pointer items-start gap-3">
-                    <input
-                      type="checkbox"
-                      id="travelInsurance"
-                      name="travelInsurance"
-                      checked={formData.travelInsurance}
-                      onChange={handleChange}
-                      className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#d0e2f0] text-primary focus:ring-2 focus:ring-secondary/40"
-                    />
-                    <span className="min-w-0">
-                      <span className="text-sm font-semibold text-foreground">
-                        Travel Insurance (+₹{TRAVEL_INSURANCE_PRICE_INR})
-                      </span>
-                      <span className="mt-1 block text-xs leading-relaxed text-foreground/65">
-                        Optional. Applicable for domestic travellers aged 0–{TRAVEL_INSURANCE_MAX_AGE} years. The
-                        amount will be added to your final quotation — not charged online.
-                      </span>
+              <div className="rounded-xl border border-[#dceaf5] bg-[#f8fbff] px-4 py-3.5">
+                <label htmlFor="travelInsurance" className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="travelInsurance"
+                    name="travelInsurance"
+                    checked={formData.travelInsurance}
+                    onChange={handleChange}
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#d0e2f0] text-primary focus:ring-2 focus:ring-secondary/40"
+                  />
+                  <span className="min-w-0">
+                    <span className="text-sm font-semibold text-foreground">
+                      Travel Insurance (+₹{TRAVEL_INSURANCE_PRICE_INR})
                     </span>
-                  </label>
-                  {fieldErrors.travelInsurance ? (
-                    <p className="mt-2 text-xs text-red-600">{fieldErrors.travelInsurance}</p>
-                  ) : null}
-                </div>
-              ) : null}
+                    <span className="mt-1 block text-xs leading-relaxed text-foreground/65">
+                      Optional. Available for travellers aged 0–{TRAVEL_INSURANCE_MAX_AGE} years. The amount will be
+                      added to your final quotation — not charged online.
+                    </span>
+                  </span>
+                </label>
+                {fieldErrors.travelInsurance ? (
+                  <p className="mt-2 text-xs text-red-600">{fieldErrors.travelInsurance}</p>
+                ) : null}
+              </div>
 
               <div>
                 <label htmlFor="additionalNotes" className="mb-1.5 block text-xs font-semibold text-foreground/80">

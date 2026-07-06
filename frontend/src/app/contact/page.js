@@ -4,6 +4,8 @@ import { getPublicSettings } from '@/services/settingsService';
 import {
   buildGoogleMapsEmbedUrl,
   formatIndianPhone,
+  canonicalPhoneKey,
+  listContactPhoneNumbers,
   mergeSiteSettings,
   telHref,
   whatsappHref,
@@ -77,8 +79,7 @@ const cardShell =
 
 export default async function ContactPage() {
   const settings = mergeSiteSettings(await getPublicSettings());
-  const phoneDisplay = formatIndianPhone(settings.whatsappNumber);
-  const phoneHref = telHref(settings.whatsappNumber);
+  const contactPhones = listContactPhoneNumbers(settings);
   const email = settings.email || 'info@happyfeet.com';
   const office = settings.officeAddress || 'Baner Road, Pune – 411045, Maharashtra, India';
   const mapEmbedUrl = buildGoogleMapsEmbedUrl();
@@ -89,9 +90,23 @@ export default async function ContactPage() {
       label: 'Phone',
       hint: 'Mon–Sun · 9 AM – 10 PM IST',
       value: (
-        <a href={phoneHref} className="font-semibold text-secondary underline-offset-2 hover:text-primary hover:underline">
-          {phoneDisplay || '+91 98765 43210'}
-        </a>
+        <span className="block space-y-1">
+          {contactPhones.length ? (
+            contactPhones.map((number) => (
+              <a
+                key={canonicalPhoneKey(number)}
+                href={telHref(number)}
+                className="block font-semibold text-secondary underline-offset-2 hover:text-primary hover:underline"
+              >
+                {formatIndianPhone(number)}
+              </a>
+            ))
+          ) : (
+            <a href={telHref(settings.whatsappNumber)} className="font-semibold text-secondary underline-offset-2 hover:text-primary hover:underline">
+              +91 98765 43210
+            </a>
+          )}
+        </span>
       ),
     },
     {

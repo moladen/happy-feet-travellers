@@ -3,8 +3,12 @@
 import { motion } from 'framer-motion';
 import GoogleReviewsBadge from '@/components/home/GoogleReviewsBadge';
 import GoogleReviewsCarousel from '@/components/home/GoogleReviewsCarousel';
+import { getHomeTestimonials } from '@/lib/testimonialsDisplay';
 
-export default function Testimonials() {
+export default function Testimonials({ apiTestimonials = [] }) {
+  const reviews = getHomeTestimonials(apiTestimonials);
+  const hasReviews = reviews.length > 0;
+
   return (
     <motion.section
       id="testimonials"
@@ -34,11 +38,19 @@ export default function Testimonials() {
 
         <div className="testimonials-section__google-wrap">
           <GoogleReviewsBadge className="testimonials-section__google-badge" />
-          <GoogleReviewsCarousel />
+          {hasReviews ? (
+            <GoogleReviewsCarousel reviews={reviews} />
+          ) : (
+            <p className="mx-auto mt-8 max-w-xl text-center text-sm leading-relaxed text-foreground/70">
+              Traveller stories will appear here once you add them in Admin → Testimonials.
+            </p>
+          )}
         </div>
 
         <p className="testimonials-section__footnote">
-          Verified Google reviews from Happy Feet Travellers guests
+          {hasReviews
+            ? 'Reviews curated from Admin → Testimonials'
+            : 'Google rating above — add guest stories from Admin → Testimonials'}
         </p>
       </div>
     </motion.section>

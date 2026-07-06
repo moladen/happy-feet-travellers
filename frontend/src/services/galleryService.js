@@ -1,9 +1,6 @@
 import { mockGalleryImages } from '@/data/mockData';
+import { resolveHeroImageSrc, isTemporaryImageUrl } from '@/lib/heroSlides';
 import { publicFetch, shouldUseMockFallback } from '@/lib/publicApi';
-
-const API_ASSET_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api')
-  .replace(/\/api\/?$/, '')
-  .replace(/\/$/, '');
 
 const pickItems = (data) => {
   if (Array.isArray(data)) return data;
@@ -11,21 +8,33 @@ const pickItems = (data) => {
   return [];
 };
 
-function resolveImageUrl(value) {
-  const src = String(value || '').trim();
-  if (!src) return '';
-  if (/^(data:|blob:|https?:\/\/)/i.test(src)) return src;
-  if (src.startsWith('/images/') || src.startsWith('/videos/') || src.startsWith('/happy-feet-logo')) {
-    return src;
+function resolveGalleryImageUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw || isTemporaryImageUrl(raw)) return '';
+
+  try {
+    if (/^https?:\/\//i.test(raw)) {
+      const pathname = new URL(raw).pathname;
+      if (pathname.startsWith('/uploads/')) {
+        return resolveHeroImageSrc(pathname);
+      }
+      return raw;
+    }
+  } catch {
+    /* fall through */
   }
-  if (src.startsWith('/')) return API_ASSET_BASE ? `${API_ASSET_BASE}${src}` : src;
-  return API_ASSET_BASE ? `${API_ASSET_BASE}/${src}` : `/${src}`;
+
+  if (raw.startsWith('/images/') || raw.startsWith('/videos/') || raw.startsWith('/happy-feet-logo')) {
+    return raw;
+  }
+
+  return resolveHeroImageSrc(raw) || raw;
 }
 
 const normalise = (item) => {
   if (!item || typeof item !== 'object') return null;
   const raw = item.image || item.src || item.url;
-  const src = resolveImageUrl(raw);
+  const src = resolveGalleryImageUrl(raw);
   if (!src) return null;
   return {
     id: item.id,
@@ -39,16 +48,14 @@ const normalise = (item) => {
 export async function getGalleryImages() {
   try {
     const data = await publicFetch('/gallery');
-    const rows = pickItems(data).map(normalise).filter(Boolean);
-    if (rows.length) return rows;
-    if (shouldUseMockFallback()) {
-      return mockGalleryImages.map(normalise).filter(Boolean);
-    }
-    return [];
+    return pickItems(data).map(normalise).filter(Boolean);
   } catch (err) {
     if (process.env.NODE_ENV !== 'production') {
       console.warn('[getGalleryImages]', err?.message || err);
     }
-    return shouldUseMockFallback() ? mockGalleryImages.map(normalise).filter(Boolean) : [];
+    if (shouldUseMockFallback()) {
+      return mockGalleryImages.map(normalise).filter(Boolean);
+    }
+    return [];
   }
 }

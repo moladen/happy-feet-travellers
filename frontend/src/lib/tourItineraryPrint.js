@@ -1,5 +1,7 @@
+import { formatItineraryDetailsHtml } from '@/lib/itineraryText';
 import { resolveTourPriceAmount } from '@/lib/tourPrice';
 import { buildReserveSeatHref, isGroupDepartureTour } from '@/lib/tourReserve';
+import { whatsappHref } from '@/lib/siteContact';
 
 function esc(s) {
   return String(s ?? '')
@@ -16,18 +18,21 @@ function nl2br(s) {
 /**
  * Opens a print-friendly window (user can Save as PDF) with itinerary, policies summary, bank details & booking QR.
  */
-export function openTourItineraryPrint(tour) {
+export function openTourItineraryPrint(tour, whatsappNumber) {
   if (typeof window === 'undefined') return;
 
   const bookingUrl = isGroupDepartureTour(tour)
-    ? buildReserveSeatHref(tour)
-    : `https://wa.me/919876543210?text=${encodeURIComponent(`Booking / enquiry: ${tour.title} (${tour.date || ''})`)}`;
+    ? buildReserveSeatHref(tour, whatsappNumber)
+    : whatsappHref(
+        whatsappNumber,
+        `Booking / enquiry: ${tour.title} (${tour.date || ''})`
+      );
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(bookingUrl)}`;
 
   const itineraryRows = (tour.itinerary || [])
     .map(
       (row) =>
-        `<tr><td style="padding:8px;border:1px solid #ccc;vertical-align:top;width:22%"><strong>${esc(row.day)}</strong></td><td style="padding:8px;border:1px solid #ccc"><strong>${esc(row.title)}</strong><br/><span style="color:#333">${nl2br(row.details)}</span></td></tr>`
+        `<tr><td style="padding:8px;border:1px solid #ccc;vertical-align:top;width:22%"><strong>${esc(row.day)}</strong></td><td style="padding:8px;border:1px solid #ccc"><strong>${esc(row.title)}</strong><br/><span style="color:#333">${formatItineraryDetailsHtml(row.details, esc)}</span></td></tr>`
     )
     .join('');
 

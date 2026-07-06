@@ -1,6 +1,7 @@
 import { getBlogs } from '@/services/api';
 import Link from 'next/link';
 import SectionState from '@/components/common/SectionState';
+import { blogHref } from '@/lib/contentTopics';
 import { isFetchFailure } from '@/lib/publicApiError';
 import { USER_MESSAGES } from '@/lib/userMessages';
 
@@ -85,7 +86,7 @@ export default async function BlogPage() {
                   </div>
                 </div>
                 <Link
-                  href={`/blog/${featured.id}`}
+                  href={blogHref(featured)}
                   className="mt-8 inline-flex w-fit rounded-full bg-cta px-6 py-3 text-sm font-semibold text-primary transition hover:bg-[#E76F51] hover:text-white"
                 >
                   Read full article
@@ -124,7 +125,7 @@ export default async function BlogPage() {
                     <span>{blog.author}</span>
                     <span>{blog.date}</span>
                   </div>
-                  <Link href={`/blog/${blog.id}`} className="mt-4 text-sm font-semibold text-primary hover:text-secondary">
+                  <Link href={blogHref(blog)} className="mt-4 text-sm font-semibold text-primary hover:text-secondary">
                     Read more →
                   </Link>
                 </div>
@@ -141,7 +142,7 @@ export default async function BlogPage() {
               <ul className="mt-6 space-y-3 text-sm text-foreground">
                 {blogs.slice(0, 5).map((b) => (
                   <li key={b.id} className="border-b border-[#eaf4fb] pb-3 last:border-0 last:pb-0">
-                    <Link href={`/blog/${b.id}`} className="font-medium text-primary hover:text-secondary">
+                    <Link href={blogHref(b)} className="font-medium text-primary hover:text-secondary">
                       {b.title}
                     </Link>
                     <p className="mt-1 text-xs text-foreground/70">{b.date}</p>

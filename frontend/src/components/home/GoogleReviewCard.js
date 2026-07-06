@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import Image from 'next/image';
 import GoogleLogo from '@/components/home/GoogleLogo';
 import GoogleStarRating from '@/components/home/GoogleStarRating';
@@ -6,12 +9,22 @@ import GoogleStarRating from '@/components/home/GoogleStarRating';
  * @param {{ review: { name: string; date?: string; rating: number; text: string; image?: string; verified?: boolean } }} props
  */
 export default function GoogleReviewCard({ review }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const showImage = Boolean(review.image) && !imageFailed;
+
   return (
     <article className="google-review-card">
       <header className="google-review-card__header">
         <div className="google-review-card__avatar">
-          {review.image ? (
-            <Image src={review.image} alt="" fill className="object-cover" sizes="96px" />
+          {showImage ? (
+            <Image
+              src={review.image}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="96px"
+              onError={() => setImageFailed(true)}
+            />
           ) : (
             <span className="google-review-card__initial" aria-hidden>
               {review.name.slice(0, 1)}

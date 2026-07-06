@@ -18,7 +18,8 @@
     "seed:tours": "node scripts/seed-sample-tours.js",
     "smoke": "node scripts/smoke-api.js",
     "seed:team": "node scripts/seed-team-members.js",
-    "seed:landing-rann": "node scripts/seed-rann-landing.js"
+    "seed:landing-rann": "node scripts/seed-rann-landing.js",
+    "seed:blog-blocks": "node scripts/update-packing-blog-blocks.js"
   },
   "keywords": [
     "travel",

@@ -5,34 +5,6 @@ import { motion } from 'framer-motion';
 import GalleryLightbox from '@/components/gallery/GalleryLightbox';
 import { getGalleryImages } from '@/services/galleryService';
 
-const PLACEHOLDER = [
-  {
-    id: 'ph-1',
-    src: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=900&q=80',
-    alt: 'Houseboat in the Kerala backwaters',
-  },
-  {
-    id: 'ph-2',
-    src: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=900&q=80',
-    alt: 'Mountain road in Sikkim',
-  },
-  {
-    id: 'ph-3',
-    src: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=900&q=80',
-    alt: 'Goa coastline',
-  },
-  {
-    id: 'ph-4',
-    src: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=900&q=80',
-    alt: 'Rajasthan fort at golden hour',
-  },
-  {
-    id: 'ph-5',
-    src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80',
-    alt: 'Snow-covered mountain trail',
-  },
-];
-
 const FALLBACK_IMG =
   'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=80';
 
@@ -79,7 +51,8 @@ function GalleryCard({ image, onOpen }) {
 export default function Gallery() {
   const containerRef = useRef(null);
   const sequenceRef = useRef(null);
-  const [images, setImages] = useState(PLACEHOLDER);
+  const [images, setImages] = useState([]);
+  const [loaded, setLoaded] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [shiftPx, setShiftPx] = useState(0);
   const [copyCount, setCopyCount] = useState(2);
@@ -89,7 +62,8 @@ export default function Gallery() {
     (async () => {
       const rows = await getGalleryImages();
       if (cancelled) return;
-      setImages(rows.length > 0 ? rows : PLACEHOLDER);
+      setImages(rows);
+      setLoaded(true);
     })();
     return () => {
       cancelled = true;
@@ -178,6 +152,14 @@ export default function Gallery() {
             lightboxOpen ? 'is-paused' : ''
           }`}
         >
+          {!loaded ? (
+            <p className="px-6 py-16 text-center text-sm text-foreground/65">Loading gallery…</p>
+          ) : images.length === 0 ? (
+            <p className="px-6 py-16 text-center text-sm text-foreground/65">
+              Trip photos will appear here once you upload them in Admin → Gallery.
+            </p>
+          ) : (
+            <>
           <div
             className="pointer-events-none absolute inset-y-0 left-0 z-10 w-4 bg-gradient-to-r from-white from-55% to-transparent sm:w-6 md:w-8"
             aria-hidden
@@ -205,11 +187,15 @@ export default function Gallery() {
               </div>
             ))}
           </div>
+            </>
+          )}
         </div>
 
+        {images.length > 0 ? (
         <p className="mt-4 text-center text-xs text-foreground/60 md:text-sm">
           Click any photo for full screen · hover to pause scroll
         </p>
+        ) : null}
       </motion.div>
 
       <GalleryLightbox
