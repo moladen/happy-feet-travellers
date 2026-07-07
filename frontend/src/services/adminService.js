@@ -195,6 +195,8 @@ export const createHeroSlide = (formData) =>
   run(
     () =>
       apiClient.post("/hero-slides", formData, {
+        baseURL: resolveUploadApiBase(),
+        timeout: UPLOAD_TIMEOUT_MS,
         headers: { "Content-Type": "multipart/form-data" },
       }),
     "Could not upload hero slide."
@@ -204,6 +206,8 @@ export const updateHeroSlide = (id, formData) =>
   run(
     () =>
       apiClient.put(`/hero-slides/${id}`, formData, {
+        baseURL: resolveUploadApiBase(),
+        timeout: UPLOAD_TIMEOUT_MS,
         headers: { "Content-Type": "multipart/form-data" },
       }),
     "Could not update hero slide."

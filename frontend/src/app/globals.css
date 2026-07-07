@@ -9784,3 +9784,35 @@ a.site-footer__contact-row:hover .site-footer__contact-value {
 .rann-package-grid-card:hover {
   transform: translateY(-2px);
 }
+
+/* Admin blog rich text editor */
+.rich-text-editor:empty::before {
+  content: attr(data-placeholder);
+  color: #9aabb9;
+  pointer-events: none;
+}
+
+.rich-text-editor h2 {
+  font-family: var(--font-display, inherit);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f4e79;
+  margin: 1rem 0 0.5rem;
+}
+
+.rich-text-editor h3 {
+  font-family: var(--font-display, inherit);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f4e79;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.rich-text-editor p {
+  margin: 0.5rem 0;
+}
+
+.blog-rich-block h2,
+.blog-rich-block h3 {
+  font-family: var(--font-display, inherit);
+}

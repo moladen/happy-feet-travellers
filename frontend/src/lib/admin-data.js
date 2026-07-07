@@ -232,24 +232,29 @@ export const emptyBlogForm = {
   contentBlocks: [
     {
       type: "paragraph",
-      text: "Start with an opening paragraph that hooks the reader — where you went, why it matters, and what they will learn.",
+      text:
+        "<h2>Start with a clear heading</h2>" +
+        "<p>Hook the reader — <strong>where you went</strong>, why it matters, and what they will learn. Use <em>italic</em> for emphasis.</p>" +
+        "<p><span style=\"color: #1f4e79\">Brand-colored highlights</span> and <span style=\"color: #E76F51\">accent text</span> draw the eye.</p>",
     },
     {
       type: "image",
       url: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80",
-      caption: "Optional caption under the photo",
+      caption: "Caption under the photo — optional but recommended",
     },
     {
       type: "paragraph",
-      text: "Add the next section of your story here. Use a blank line to split into multiple paragraphs.",
+      text:
+        "<h3>Sub-heading for the next section</h3>" +
+        "<p>Continue your story here. Add another <strong>photo block</strong> below if you want a paragraph → photo → paragraph rhythm.</p>",
     },
   ],
-  topicKeysText: "",
-  relatedTourSlugsText: "",
+  topicKeysText: "spiti-valley, sikkim",
+  relatedTourSlugsText: "spiti-valley-group-expedition-jun-2026",
   relatedPackageSlugsText: "",
   landingPageSlug: "",
-  seoTitle: "",
-  seoDescription: "",
+  seoTitle: "Example SEO title for search results",
+  seoDescription: "Short meta description shown in Google — 150–160 characters works well.",
 };
 
 export const emptyTestimonialForm = {

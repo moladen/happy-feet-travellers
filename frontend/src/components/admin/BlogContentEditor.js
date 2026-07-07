@@ -1,6 +1,7 @@
 "use client";
 
 import ImageUploader from "@/components/admin/ImageUploader";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 import { Field, TextArea } from "@/components/admin/AdminFields";
 import { EMPTY_IMAGE_BLOCK, EMPTY_PARAGRAPH_BLOCK } from "@/lib/blogContent";
 
@@ -112,11 +113,11 @@ export default function BlogContentEditor({ blocks, onChange, label = "Article b
                 </div>
               ) : (
                 <Field label="Paragraph text">
-                  <TextArea
-                    rows={6}
+                  <RichTextEditor
                     value={block.text || ""}
-                    onChange={(event) => onChange(updateBlock(rows, index, { text: event.target.value }))}
-                    placeholder="Write a paragraph. Use a blank line to split into multiple paragraphs."
+                    onChange={(html) => onChange(updateBlock(rows, index, { text: html }))}
+                    placeholder="Write your paragraph. Use the toolbar for bold, italic, headings, and text color."
+                    minHeight={180}
                   />
                 </Field>
               )}
