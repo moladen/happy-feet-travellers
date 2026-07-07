@@ -62,6 +62,53 @@ const IMG = {
 
 const { HAMPI_ITINERARY_EXAMPLE } = require('../scripts/hampi-itinerary-example');
 
+const PACKING_BLOG_SEO = {
+  seoTitle: 'Packing for Indian Mountains — Sikkim, Spiti & Himachal Guide',
+  seoDescription:
+    'Layering tips, footwear advice and permit-ready packing for Sikkim, Spiti and Himachal group trips from Pune and Mumbai.',
+};
+
+function buildPackingBlogContent(img) {
+  return {
+    version: 1,
+    blocks: [
+      {
+        type: 'paragraph',
+        text:
+          '<h2>What to pack for <strong>Sikkim, Spiti &amp; Himachal</strong></h2>' +
+          '<p>Layers beat one thick jacket. You will peel off by noon and need warmth again after sunset — especially above 3,000m. Think <em>base layer + fleece + windproof shell</em> rather than one heavy coat that never leaves your bag.</p>' +
+          '<p><span style="color: #1f4e79">Happy Feet group departures</span> use shared vehicles and homestays — pack light enough to handle your own bag on the last mile.</p>',
+      },
+      {
+        type: 'image',
+        url: img.blogPacking,
+        caption:
+          'A compact duffel with layered clothing works better than one bulky suitcase on mountain roads.',
+      },
+      {
+        type: 'paragraph',
+        text:
+          '<h3>Documents &amp; electronics</h3>' +
+          '<p>Carry a <span style="color: #1f4e79">dry bag for phones and power banks</span> during monsoon drives. Keep photocopies of government ID separate from originals — permit checkpoints in Spiti and Ladakh ask for both.</p>' +
+          '<p><strong>Must-haves:</strong> original ID, 2 photocopies, emergency contact on paper, and a <span style="color: #E76F51">fully charged power bank</span> (cold drains batteries fast).</p>',
+      },
+      {
+        type: 'image',
+        url: img.snowMtn,
+        caption:
+          'Broken-in trekking shoes with grip — wet stone steps are common at monasteries and village homestays.',
+      },
+      {
+        type: 'paragraph',
+        text:
+          '<h3>Footwear &amp; the last mile</h3>' +
+          '<p><strong>Broken-in shoes with ankle support</strong> matter more than a new pair bought a week before departure. Trails to monasteries and homestays are often <em>uneven, wet or dusty</em> — grip beats fashion every time.</p>' +
+          '<p>Pack light: porters are not part of our fixed departures. If you are unsure about layers or shoes, message us on <span style="color: #15803d">WhatsApp before departure week</span> — we will reply with a batch-specific checklist.</p>',
+      },
+    ],
+  };
+}
+
 const tours = [
   {
     title: 'Sikkim & Darjeeling Group Trip',
@@ -677,38 +724,9 @@ const blogs = [
     authorInstagram: null,
     excerpt:
       'What to actually pack for Sikkim, Spiti and Himachal — without overstuffing your duffel or freezing at 3,500m.',
-    content: {
-      version: 1,
-      blocks: [
-        {
-          type: 'paragraph',
-          text:
-            'Layers beat one thick jacket. You will peel off by noon and need warmth again after sunset — especially in Sikkim, Spiti and Himachal. Think base layer + fleece + windproof shell rather than one heavy coat.',
-        },
-        {
-          type: 'image',
-          url: IMG.blogPacking,
-          caption:
-            'A compact duffel with layered clothing works better than one bulky suitcase on mountain roads.',
-        },
-        {
-          type: 'paragraph',
-          text:
-            'Carry a dry bag for electronics during monsoon drives, and keep photocopies of ID separate from originals for permit checkpoints. Spiti and Ladakh batches need extra warm layers even in summer — nights drop quickly above 3,500m.',
-        },
-        {
-          type: 'image',
-          url: IMG.snowMtn,
-          caption:
-            'Broken-in trekking shoes with grip — wet stone steps are common at monasteries and village homestays.',
-        },
-        {
-          type: 'paragraph',
-          text:
-            'Footwear matters most on the last mile. Pack light — porters are not part of our group departures and you will handle your own bag at some homestays. If you are unsure, message us on WhatsApp before departure week.',
-        },
-      ],
-    },
+    seoTitle: PACKING_BLOG_SEO.seoTitle,
+    seoDescription: PACKING_BLOG_SEO.seoDescription,
+    content: buildPackingBlogContent(IMG),
   },
   {
     title: 'When Should You Visit the Northeast?',

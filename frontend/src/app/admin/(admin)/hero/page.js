@@ -8,6 +8,7 @@ import PageTransition from "@/components/admin/PageTransition";
 import { CardSection, Field, TextInput, AccordionSection } from "@/components/admin/AdminFields";
 import { Icon } from "@/components/admin/AdminIcons";
 import { emptyHeroSlideForm } from "@/lib/admin-data";
+import { compressImageFile } from "@/lib/compressImage";
 import {
   HERO_IMAGE_ACCEPT,
   HERO_IMAGE_MAX_MB,
@@ -186,7 +187,7 @@ export default function HeroManagementPage() {
           ) : (
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {slides.map((slide, index) => {
-                const src = resolveHeroImageSrc(slide.src);
+                const src = resolveHeroImageSrcForAdmin(slide.src) || resolveHeroImageSrc(slide.src);
                 return (
                   <li
                     key={slide.id}
@@ -284,6 +285,10 @@ export default function HeroManagementPage() {
               if (!fd) {
                 setError("Choose an image file to upload.");
                 return;
+              }
+              if (form.imageFile) {
+                const compressed = await compressImageFile(form.imageFile);
+                fd.set("image", compressed);
               }
               setBusy(true);
               const result = editing

@@ -1,7 +1,7 @@
-import { normalizeBlogBody } from '@/lib/blogContent';
+import { looksLikeHtmlContent, normalizeBlogBody, prepareBlogHtml } from '@/lib/blogContent';
 
 const PROSE_CLASS =
-  'blog-content prose prose-neutral max-w-none prose-headings:font-display prose-headings:text-primary prose-headings:font-bold prose-p:text-foreground prose-p:leading-relaxed prose-li:text-foreground prose-a:text-secondary prose-a:no-underline hover:prose-a:text-primary prose-strong:text-primary [&_*]:!font-[inherit] [&_p]:my-4';
+  'blog-content prose prose-neutral max-w-none prose-headings:font-display prose-headings:text-primary prose-headings:font-bold prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-3 prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-2 prose-p:text-foreground prose-p:leading-relaxed prose-li:text-foreground prose-a:text-secondary prose-a:no-underline hover:prose-a:text-primary prose-strong:text-primary prose-strong:font-bold prose-em:italic [&_p]:my-4';
 
 function renderParagraphText(text, keyPrefix) {
   const paragraphs = String(text || '')
@@ -40,6 +40,17 @@ function renderBlocks(blocks) {
     }
 
     if (block.type === 'paragraph') {
+      const text = String(block.text || '').trim();
+      if (!text) return null;
+      if (looksLikeHtmlContent(text)) {
+        return (
+          <div
+            key={`block-paragraph-${index}`}
+            className={`${PROSE_CLASS} blog-rich-block`}
+            dangerouslySetInnerHTML={{ __html: prepareBlogHtml(text) }}
+          />
+        );
+      }
       return (
         <div key={`block-paragraph-${index}`}>{renderParagraphText(block.text, `p-${index}`)}</div>
       );

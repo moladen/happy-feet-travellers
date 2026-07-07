@@ -1,5 +1,30 @@
 const HTML_TAG_RE = /<\/?(?:p|div|h[1-6]|ul|ol|li|br|blockquote|strong|b|em|i|a|img|span|table|thead|tbody|tr|td|th)\b/i;
 
+const SAFE_COLOR_RE = /^(#[0-9a-f]{3,8}|rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)|[a-z]{3,20})$/i;
+
+export function stripHtmlToText(html) {
+  return String(html || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/h[1-6]>/gi, '\n\n')
+    .replace(/<li[^>]*>/gi, '\n- ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function sanitizeInlineColorStyle(style) {
+  const match = /(?:^|;)\s*color:\s*([^;]+)/i.exec(String(style || ''));
+  if (!match) return '';
+  const color = match[1].trim().replace(/['"]/g, '');
+  if (!SAFE_COLOR_RE.test(color)) return '';
+  return `color: ${color}`;
+}
+
 export const EMPTY_PARAGRAPH_BLOCK = { type: 'paragraph', text: '' };
 export const EMPTY_IMAGE_BLOCK = { type: 'image', url: '', caption: '' };
 
@@ -14,7 +39,10 @@ export function prepareBlogHtml(html) {
 
   out = out.replace(/<span[^>]*font-weight:\s*bold[^>]*>([\s\S]*?)<\/span>/gi, '<strong>$1</strong>');
   out = out.replace(/\s(lang|class)="[^"]*"/gi, '');
-  out = out.replace(/\sstyle="[^"]*"/gi, '');
+  out = out.replace(/\sstyle="([^"]*)"/gi, (_, styles) => {
+    const safe = sanitizeInlineColorStyle(styles);
+    return safe ? ` style="${safe}"` : '';
+  });
 
   return out;
 }
@@ -45,18 +73,7 @@ export function isBlogBlocksContent(content) {
 }
 
 function htmlToPlainText(html) {
-  return String(html || '')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n\n')
-    .replace(/<\/h[1-6]>/gi, '\n\n')
-    .replace(/<li[^>]*>/gi, '\n- ')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  return stripHtmlToText(html);
 }
 
 export function normalizeBlock(block) {
@@ -70,14 +87,20 @@ export function normalizeBlock(block) {
   }
   return {
     type: 'paragraph',
-    text: String(block.text ?? block.body ?? '').trim(),
+    text: String(block.text ?? block.body ?? ''),
   };
+}
+
+function paragraphCharCount(text) {
+  const raw = String(text || '').trim();
+  if (!raw) return 0;
+  return looksLikeHtmlContent(raw) ? stripHtmlToText(raw).length : raw.length;
 }
 
 export function blockHasContent(block) {
   const normalized = normalizeBlock(block);
   if (normalized.type === 'image') return Boolean(normalized.url);
-  return Boolean(normalized.text);
+  return paragraphCharCount(normalized.text) > 0;
 }
 
 export function blogBlocksHaveMinContent(blocks, minChars = 20) {
@@ -86,12 +109,14 @@ export function blogBlocksHaveMinContent(blocks, minChars = 20) {
 
   for (const block of blocks || []) {
     const normalized = normalizeBlock(block);
-    if (normalized.type === 'image' && normalized.url) {
-      hasImage = true;
-      chars += 12;
+    if (normalized.type === 'image') {
+      if (normalized.url) {
+        hasImage = true;
+        chars += 12;
+      }
       continue;
     }
-    chars += normalized.text.length;
+    chars += paragraphCharCount(normalized.text);
   }
 
   return chars >= minChars || (hasImage && chars >= 3);
@@ -108,7 +133,7 @@ export function deserializeBlogContent(content) {
     const trimmed = parsed.trim();
     if (!trimmed) return [{ ...EMPTY_PARAGRAPH_BLOCK }];
     if (looksLikeHtmlContent(trimmed)) {
-      return [{ type: 'paragraph', text: htmlToPlainText(trimmed) }];
+      return [{ type: 'paragraph', text: prepareBlogHtml(trimmed) }];
     }
     const paragraphs = trimmed.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
     return paragraphs.length
