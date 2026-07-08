@@ -2,8 +2,13 @@
 
 import ImageUploader from "@/components/admin/ImageUploader";
 import RichTextEditor from "@/components/admin/RichTextEditor";
-import { Field, TextArea } from "@/components/admin/AdminFields";
-import { EMPTY_IMAGE_BLOCK, EMPTY_PARAGRAPH_BLOCK } from "@/lib/blogContent";
+import { Field, TextArea, TextInput } from "@/components/admin/AdminFields";
+import {
+  EMPTY_IMAGE_BLOCK,
+  EMPTY_LINK_BLOCK,
+  EMPTY_PARAGRAPH_BLOCK,
+  sanitizeExternalUrl,
+} from "@/lib/blogContent";
 
 function updateBlock(blocks, index, patch) {
   return blocks.map((block, itemIndex) => (itemIndex === index ? { ...block, ...patch } : block));
@@ -17,9 +22,16 @@ function moveBlock(blocks, index, direction) {
   return next;
 }
 
+function resolveBlockType(block) {
+  if (block?.type === "image") return "image";
+  if (block?.type === "link") return "link";
+  return "paragraph";
+}
+
 const BLOCK_LABELS = {
   paragraph: "Paragraph",
   image: "Photo",
+  link: "External link",
 };
 
 export default function BlogContentEditor({ blocks, onChange, label = "Article body", helperText }) {
@@ -47,12 +59,19 @@ export default function BlogContentEditor({ blocks, onChange, label = "Article b
           >
             + Photo
           </button>
+          <button
+            type="button"
+            onClick={() => onChange([...rows, { ...EMPTY_LINK_BLOCK }])}
+            className="rounded-full border border-[#d5e1eb] px-3 py-1.5 text-sm font-semibold text-[#1f4e79] transition hover:border-[#4fa3d1]"
+          >
+            + External link
+          </button>
         </div>
       </div>
 
       <div className="space-y-4">
         {rows.map((block, index) => {
-          const type = block.type === "image" ? "image" : "paragraph";
+          const type = resolveBlockType(block);
           return (
             <div
               key={`blog-block-${index}`}
@@ -110,6 +129,62 @@ export default function BlogContentEditor({ blocks, onChange, label = "Article b
                       placeholder="Short caption under the photo..."
                     />
                   </Field>
+                </div>
+              ) : type === "link" ? (
+                <div className="space-y-4">
+                  <Field label="Link URL" hint="https://example.com or example.com">
+                    <TextInput
+                      value={block.url || ""}
+                      onChange={(event) =>
+                        onChange(updateBlock(rows, index, { url: event.target.value }))
+                      }
+                      onBlur={() => {
+                        const next = sanitizeExternalUrl(block.url);
+                        if (next && next !== block.url) {
+                          onChange(updateBlock(rows, index, { url: next }));
+                        }
+                      }}
+                      placeholder="https://www.google.com/maps/..."
+                    />
+                  </Field>
+                  <Field label="Link title">
+                    <TextInput
+                      value={block.title || ""}
+                      onChange={(event) =>
+                        onChange(updateBlock(rows, index, { title: event.target.value }))
+                      }
+                      placeholder="Official Spiti Valley permit guide"
+                    />
+                  </Field>
+                  <Field label="Short description (optional)">
+                    <TextArea
+                      rows={2}
+                      value={block.description || ""}
+                      onChange={(event) =>
+                        onChange(updateBlock(rows, index, { description: event.target.value }))
+                      }
+                      placeholder="One line about why readers should open this link..."
+                    />
+                  </Field>
+                  <Field label="Button label">
+                    <TextInput
+                      value={block.label || "Visit link"}
+                      onChange={(event) =>
+                        onChange(updateBlock(rows, index, { label: event.target.value }))
+                      }
+                      placeholder="Visit link"
+                    />
+                  </Field>
+                  {sanitizeExternalUrl(block.url) ? (
+                    <div className="rounded-2xl border border-[#dceaf7] bg-[#f8fbff] p-4">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#6f8295]">Preview</p>
+                      <p className="mt-2 font-semibold text-[#17324d]">{block.title || "External link"}</p>
+                      {block.description ? (
+                        <p className="mt-1 text-sm text-[#6f8295]">{block.description}</p>
+                      ) : null}
+                      <p className="mt-2 truncate text-xs text-[#4fa3d1]">{sanitizeExternalUrl(block.url)}</p>
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <Field label="Paragraph text">

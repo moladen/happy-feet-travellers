@@ -246,7 +246,14 @@ export const emptyBlogForm = {
       type: "paragraph",
       text:
         "<h3>Sub-heading for the next section</h3>" +
-        "<p>Continue your story here. Add another <strong>photo block</strong> below if you want a paragraph → photo → paragraph rhythm.</p>",
+        "<p>Continue your story here. Add another <strong>photo block</strong> or an <strong>external link</strong> below.</p>",
+    },
+    {
+      type: "link",
+      url: "https://www.incredibleindia.org/",
+      title: "Incredible India — official travel resources",
+      description: "Useful reference for permits, state tourism boards, and seasonal travel advisories.",
+      label: "Open official site",
     },
   ],
   topicKeysText: "spiti-valley, sikkim",

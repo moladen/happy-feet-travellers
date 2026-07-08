@@ -27,6 +27,27 @@ function sanitizeInlineColorStyle(style) {
 
 export const EMPTY_PARAGRAPH_BLOCK = { type: 'paragraph', text: '' };
 export const EMPTY_IMAGE_BLOCK = { type: 'image', url: '', caption: '' };
+export const EMPTY_LINK_BLOCK = {
+  type: 'link',
+  url: '',
+  title: '',
+  description: '',
+  label: 'Visit link',
+};
+
+/** Normalise user-entered URLs to safe http(s) links. */
+export function sanitizeExternalUrl(url) {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
+  try {
+    const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    const parsed = new URL(withProto);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return '';
+    return parsed.href;
+  } catch {
+    return '';
+  }
+}
 
 export function looksLikeHtmlContent(value) {
   return typeof value === 'string' && HTML_TAG_RE.test(value.trim());
@@ -85,6 +106,15 @@ export function normalizeBlock(block) {
       caption: String(block.caption || '').trim(),
     };
   }
+  if (block.type === 'link') {
+    return {
+      type: 'link',
+      url: sanitizeExternalUrl(block.url),
+      title: String(block.title || '').trim(),
+      description: String(block.description || block.caption || '').trim(),
+      label: String(block.label || block.buttonLabel || 'Visit link').trim() || 'Visit link',
+    };
+  }
   return {
     type: 'paragraph',
     text: String(block.text ?? block.body ?? ''),
@@ -100,6 +130,7 @@ function paragraphCharCount(text) {
 export function blockHasContent(block) {
   const normalized = normalizeBlock(block);
   if (normalized.type === 'image') return Boolean(normalized.url);
+  if (normalized.type === 'link') return Boolean(normalized.url);
   return paragraphCharCount(normalized.text) > 0;
 }
 
@@ -114,6 +145,10 @@ export function blogBlocksHaveMinContent(blocks, minChars = 20) {
         hasImage = true;
         chars += 12;
       }
+      continue;
+    }
+    if (normalized.type === 'link') {
+      if (normalized.url) chars += 8;
       continue;
     }
     chars += paragraphCharCount(normalized.text);

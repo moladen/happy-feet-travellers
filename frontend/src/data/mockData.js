@@ -432,6 +432,13 @@ export const mockBlogs = [
             "<p><strong>Broken-in shoes with ankle support</strong> matter more than a new pair bought a week before departure. Trails to monasteries and homestays are often <em>uneven, wet or dusty</em> — grip beats fashion every time.</p>" +
             "<p>Pack light: porters are not part of our fixed departures. If you are unsure about layers or shoes, message us on <span style=\"color: #15803d\">WhatsApp before departure week</span> — we will reply with a batch-specific checklist.</p>",
         },
+        {
+          type: "link",
+          url: "https://www.incredibleindia.org/",
+          title: "Incredible India — official travel resources",
+          description: "Permits, state tourism boards, and seasonal advisories for mountain routes.",
+          label: "Open official site",
+        },
       ],
     },
   },

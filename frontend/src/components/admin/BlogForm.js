@@ -91,7 +91,7 @@ export default function BlogForm({ form, setForm, onSubmit, busy, mode = "create
 
       <CardSection
         title="Content and cover media"
-        description="Build the article with paragraphs and photos in any order. Use the toolbar in each paragraph for bold, italic, headings, and text color."
+        description="Build the article with paragraphs, photos, and external links in any order. Use the toolbar in each paragraph for bold, italic, headings, and text color."
       >
         <div className="space-y-6">
           <ImageUploader
@@ -103,7 +103,7 @@ export default function BlogForm({ form, setForm, onSubmit, busy, mode = "create
           <BlogContentEditor
             blocks={form.contentBlocks}
             onChange={(value) => updateField("contentBlocks", value)}
-            helperText="Add paragraphs and photos in order. Each paragraph has formatting tools (bold, italic, H2, H3, color)."
+            helperText="Add paragraphs, photos, and external links in order. Each paragraph has formatting tools (bold, italic, H2, H3, color)."
           />
         </div>
       </CardSection>

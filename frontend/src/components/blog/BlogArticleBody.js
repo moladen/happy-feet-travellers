@@ -18,6 +18,14 @@ function renderParagraphText(text, keyPrefix) {
   ));
 }
 
+function displayHost(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
+
 function renderBlocks(blocks) {
   return blocks.map((block, index) => {
     if (block.type === 'image' && block.url) {
@@ -36,6 +44,39 @@ function renderBlocks(blocks) {
             </figcaption>
           ) : null}
         </figure>
+      );
+    }
+
+    if (block.type === 'link' && block.url) {
+      const title = block.title || displayHost(block.url);
+      return (
+        <aside
+          key={`block-link-${index}`}
+          className="blog-link-embed my-8 not-prose"
+        >
+          <a
+            href={block.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="blog-link-embed__card group flex flex-col gap-3 rounded-2xl border border-[#dceaf7] bg-gradient-to-br from-[#f8fbff] to-white p-5 shadow-sm transition hover:border-[#4fa3d1] hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-secondary">
+                External link · {displayHost(block.url)}
+              </p>
+              <p className="mt-1 font-display text-lg font-bold text-primary group-hover:text-secondary">
+                {title}
+              </p>
+              {block.description ? (
+                <p className="mt-1 text-sm leading-relaxed text-foreground/75">{block.description}</p>
+              ) : null}
+            </div>
+            <span className="inline-flex shrink-0 items-center justify-center rounded-xl bg-cta px-4 py-2.5 text-sm font-bold text-white transition group-hover:bg-cta-hover">
+              {block.label || 'Visit link'}
+              <span className="ml-2" aria-hidden>↗</span>
+            </span>
+          </a>
+        </aside>
       );
     }
 
