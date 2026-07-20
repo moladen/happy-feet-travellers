@@ -1,7 +1,14 @@
-import { looksLikeHtmlContent, normalizeBlogBody, prepareBlogHtml } from '@/lib/blogContent';
+import Link from 'next/link';
+import BlogRichHtml from '@/components/blog/BlogRichHtml';
+import {
+  isInternalAppPath,
+  looksLikeHtmlContent,
+  normalizeBlogBody,
+  prepareBlogHtml,
+} from '@/lib/blogContent';
 
 const PROSE_CLASS =
-  'blog-content prose prose-neutral max-w-none prose-headings:font-display prose-headings:text-primary prose-headings:font-bold prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-3 prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-2 prose-p:text-foreground prose-p:leading-relaxed prose-li:text-foreground prose-a:text-secondary prose-a:no-underline hover:prose-a:text-primary prose-strong:text-primary prose-strong:font-bold prose-em:italic [&_p]:my-4';
+  'blog-content prose prose-neutral max-w-none prose-headings:font-display prose-headings:text-primary prose-headings:font-bold prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-3 prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-2 prose-p:text-foreground prose-p:leading-relaxed prose-li:text-foreground prose-a:text-secondary prose-a:underline prose-a:underline-offset-2 hover:prose-a:text-primary prose-strong:text-primary prose-strong:font-bold prose-em:italic [&_p]:my-4';
 
 function renderParagraphText(text, keyPrefix) {
   const paragraphs = String(text || '')
@@ -19,11 +26,57 @@ function renderParagraphText(text, keyPrefix) {
 }
 
 function displayHost(url) {
+  if (isInternalAppPath(url)) {
+    return 'Happy Feet Travellers';
+  }
   try {
     return new URL(url).hostname.replace(/^www\./, '');
   } catch {
     return url;
   }
+}
+
+function LinkEmbedCard({ url, title, description, label }) {
+  const internal = isInternalAppPath(url);
+  const heading = title || (internal ? 'Explore this journey' : displayHost(url));
+  const className =
+    'blog-link-embed__card group flex flex-col gap-3 rounded-2xl border border-[#dceaf7] bg-gradient-to-br from-[#f8fbff] to-white p-5 shadow-sm transition hover:border-[#4fa3d1] hover:shadow-md sm:flex-row sm:items-center sm:justify-between';
+
+  const body = (
+    <>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-secondary">
+          {internal ? 'Tour / package' : `External link · ${displayHost(url)}`}
+        </p>
+        <p className="mt-1 font-display text-lg font-bold text-primary group-hover:text-secondary">
+          {heading}
+        </p>
+        {description ? (
+          <p className="mt-1 text-sm leading-relaxed text-foreground/75">{description}</p>
+        ) : null}
+      </div>
+      <span className="inline-flex shrink-0 items-center justify-center rounded-xl bg-cta px-4 py-2.5 text-sm font-bold text-white transition group-hover:bg-cta-hover">
+        {label || (internal ? 'View tour' : 'Visit link')}
+        <span className="ml-2" aria-hidden>
+          {internal ? '→' : '↗'}
+        </span>
+      </span>
+    </>
+  );
+
+  if (internal) {
+    return (
+      <Link href={url} className={className}>
+        {body}
+      </Link>
+    );
+  }
+
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className={className}>
+      {body}
+    </a>
+  );
 }
 
 function renderBlocks(blocks) {
@@ -48,34 +101,14 @@ function renderBlocks(blocks) {
     }
 
     if (block.type === 'link' && block.url) {
-      const title = block.title || displayHost(block.url);
       return (
-        <aside
-          key={`block-link-${index}`}
-          className="blog-link-embed my-8 not-prose"
-        >
-          <a
-            href={block.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="blog-link-embed__card group flex flex-col gap-3 rounded-2xl border border-[#dceaf7] bg-gradient-to-br from-[#f8fbff] to-white p-5 shadow-sm transition hover:border-[#4fa3d1] hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-secondary">
-                External link · {displayHost(block.url)}
-              </p>
-              <p className="mt-1 font-display text-lg font-bold text-primary group-hover:text-secondary">
-                {title}
-              </p>
-              {block.description ? (
-                <p className="mt-1 text-sm leading-relaxed text-foreground/75">{block.description}</p>
-              ) : null}
-            </div>
-            <span className="inline-flex shrink-0 items-center justify-center rounded-xl bg-cta px-4 py-2.5 text-sm font-bold text-white transition group-hover:bg-cta-hover">
-              {block.label || 'Visit link'}
-              <span className="ml-2" aria-hidden>↗</span>
-            </span>
-          </a>
+        <aside key={`block-link-${index}`} className="blog-link-embed my-8 not-prose">
+          <LinkEmbedCard
+            url={block.url}
+            title={block.title}
+            description={block.description}
+            label={block.label}
+          />
         </aside>
       );
     }
@@ -85,10 +118,10 @@ function renderBlocks(blocks) {
       if (!text) return null;
       if (looksLikeHtmlContent(text)) {
         return (
-          <div
+          <BlogRichHtml
             key={`block-paragraph-${index}`}
             className={`${PROSE_CLASS} blog-rich-block`}
-            dangerouslySetInnerHTML={{ __html: prepareBlogHtml(text) }}
+            html={prepareBlogHtml(text)}
           />
         );
       }
@@ -115,7 +148,7 @@ export default function BlogArticleBody({ content }) {
   }
 
   if (body.kind === 'html') {
-    return <div className={PROSE_CLASS} dangerouslySetInnerHTML={{ __html: body.html }} />;
+    return <BlogRichHtml className={PROSE_CLASS} html={body.html} />;
   }
 
   return (

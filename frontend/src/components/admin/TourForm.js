@@ -374,16 +374,27 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
                   trip to <strong>Active</strong> so it appears on the website.
                 </p>
               ) : null}
-              <div className="mt-5">
+              <div className="mt-5 space-y-5">
                 <Field
                   label="Personality tags"
-                  hint="One per line — e.g. Snow Lovers, Best for Couples, Adventure"
+                  hint="First tag shows on the homepage card. Examples: Desert Festival, History Lovers, Nature Escape, Snow Lovers, Adventure Special. Leave blank to auto-detect from title/destination."
                 >
                   <TextArea
                     rows={3}
                     value={form.tagsText}
                     onChange={(event) => updateField("tagsText", event.target.value)}
-                    placeholder={'Snow Lovers\nBest for Couples'}
+                    placeholder={'Desert Festival\nFamily Getaway'}
+                  />
+                </Field>
+                <Field
+                  label="Card teaser (optional)"
+                  hint="Short line under the title on homepage / departure cards. Leave blank to hide the line (no generic auto-copy)."
+                >
+                  <TextArea
+                    rows={2}
+                    value={form.cardTeaser || ""}
+                    onChange={(event) => updateField("cardTeaser", event.target.value)}
+                    placeholder="Salt flats, festival nights, and Kutchi culture — paced for comfort."
                   />
                 </Field>
               </div>

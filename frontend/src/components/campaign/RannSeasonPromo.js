@@ -45,25 +45,26 @@ export default function RannSeasonPromo({ variant = 'compact', className = '' })
           src={imageSrc}
           alt=""
           fill
-          priority={isPage}
+          priority
           unoptimized={imageSrc.includes('/uploads')}
           sizes={isPage ? '100vw' : '(max-width: 768px) 100vw, 960px'}
-          className="object-cover object-center transition duration-700 group-hover:scale-[1.02]"
+          className="object-cover object-center brightness-[1.12] contrast-[1.04] saturate-[1.06] transition duration-700 group-hover:scale-[1.02]"
         />
       ) : (
         <div className="absolute inset-0 bg-[#0f2844]" aria-hidden />
       )}
 
+      {/* Soft scrim — keeps type readable without hiding the photo */}
       <div
-        className="absolute inset-0 bg-gradient-to-r from-[#061525]/94 via-[#0f2844]/78 to-[#0f2844]/42"
+        className="absolute inset-0 bg-gradient-to-r from-[#061525]/72 via-[#0f2844]/45 to-[#0f2844]/18"
         aria-hidden
       />
       <div
-        className="absolute inset-0 bg-gradient-to-t from-[#061525]/88 via-[#061525]/20 to-[#061525]/35"
+        className="absolute inset-0 bg-gradient-to-t from-[#061525]/55 via-transparent to-[#061525]/12"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute -right-16 top-0 h-48 w-48 rounded-full bg-cta/20 blur-3xl"
+        className="pointer-events-none absolute -right-16 top-0 h-48 w-48 rounded-full bg-cta/15 blur-3xl"
         aria-hidden
       />
 
@@ -76,25 +77,25 @@ export default function RannSeasonPromo({ variant = 'compact', className = '' })
           {promo.badge}
         </span>
 
-        <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/72 sm:text-[11px]">
+        <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/85 sm:text-[11px]">
           {promo.eyebrow}
         </p>
 
         <h3
           id="rann-season-promo-title"
-          className={`mt-1.5 max-w-2xl font-display font-bold leading-[1.12] text-white ${
+          className={`mt-1.5 max-w-2xl font-display font-bold leading-[1.12] text-white drop-shadow-[0_2px_12px_rgba(6,21,37,0.45)] ${
             isPage ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'
           }`}
         >
           {promo.title}
         </h3>
 
-        <p className={`mt-1.5 font-semibold text-[#f4c4a8] ${isPage ? 'text-sm' : 'text-xs sm:text-sm'}`}>
+        <p className={`mt-1.5 font-semibold text-[#f4c4a8] drop-shadow-sm ${isPage ? 'text-sm' : 'text-xs sm:text-sm'}`}>
           {promo.subtitle}
         </p>
 
         <p
-          className={`mt-2.5 max-w-2xl leading-relaxed text-white/84 ${
+          className={`mt-2.5 max-w-2xl leading-relaxed text-white/92 drop-shadow-sm ${
             isPage ? 'text-sm md:text-[15px]' : 'text-xs sm:text-sm'
           }`}
         >
@@ -110,7 +111,7 @@ export default function RannSeasonPromo({ variant = 'compact', className = '' })
             {promo.tags.map((tag) => (
               <li
                 key={tag}
-                className="rounded-full border border-white/20 bg-white/12 px-3 py-1 font-medium text-white/90 backdrop-blur-md"
+                className="rounded-full border border-white/30 bg-black/25 px-3 py-1 font-medium text-white backdrop-blur-md"
               >
                 {tag}
               </li>

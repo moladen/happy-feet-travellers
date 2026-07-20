@@ -40,6 +40,7 @@ const createTourSchema = Joi.object({
   urgency: Joi.string().allow('', null),
   bookingDeposit: Joi.number().integer().min(0).allow(null),
   offers: Joi.string().allow('', null),
+  cardTeaser: Joi.string().allow('', null).max(200),
   meals: Joi.string().allow('', null),
   stayType: Joi.string().allow('', null),
   transport: Joi.string().allow('', null),

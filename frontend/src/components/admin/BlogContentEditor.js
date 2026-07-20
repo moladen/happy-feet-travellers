@@ -7,7 +7,8 @@ import {
   EMPTY_IMAGE_BLOCK,
   EMPTY_LINK_BLOCK,
   EMPTY_PARAGRAPH_BLOCK,
-  sanitizeExternalUrl,
+  isInternalAppPath,
+  sanitizeBlogUrl,
 } from "@/lib/blogContent";
 
 function updateBlock(blocks, index, patch) {
@@ -31,7 +32,7 @@ function resolveBlockType(block) {
 const BLOCK_LABELS = {
   paragraph: "Paragraph",
   image: "Photo",
-  link: "External link",
+  link: "Link",
 };
 
 export default function BlogContentEditor({ blocks, onChange, label = "Article body", helperText }) {
@@ -64,7 +65,7 @@ export default function BlogContentEditor({ blocks, onChange, label = "Article b
             onClick={() => onChange([...rows, { ...EMPTY_LINK_BLOCK }])}
             className="rounded-full border border-[#d5e1eb] px-3 py-1.5 text-sm font-semibold text-[#1f4e79] transition hover:border-[#4fa3d1]"
           >
-            + External link
+            + Link
           </button>
         </div>
       </div>
@@ -132,19 +133,22 @@ export default function BlogContentEditor({ blocks, onChange, label = "Article b
                 </div>
               ) : type === "link" ? (
                 <div className="space-y-4">
-                  <Field label="Link URL" hint="https://example.com or example.com">
+                  <Field
+                    label="Link URL"
+                    hint="Tour/package: /tour/your-tour-slug — External: https://example.com"
+                  >
                     <TextInput
                       value={block.url || ""}
                       onChange={(event) =>
                         onChange(updateBlock(rows, index, { url: event.target.value }))
                       }
                       onBlur={() => {
-                        const next = sanitizeExternalUrl(block.url);
+                        const next = sanitizeBlogUrl(block.url);
                         if (next && next !== block.url) {
                           onChange(updateBlock(rows, index, { url: next }));
                         }
                       }}
-                      placeholder="https://www.google.com/maps/..."
+                      placeholder="/tour/spiti-valley or https://…"
                     />
                   </Field>
                   <Field label="Link title">
@@ -153,7 +157,7 @@ export default function BlogContentEditor({ blocks, onChange, label = "Article b
                       onChange={(event) =>
                         onChange(updateBlock(rows, index, { title: event.target.value }))
                       }
-                      placeholder="Official Spiti Valley permit guide"
+                      placeholder="Spiti Valley departure"
                     />
                   </Field>
                   <Field label="Short description (optional)">
@@ -172,17 +176,21 @@ export default function BlogContentEditor({ blocks, onChange, label = "Article b
                       onChange={(event) =>
                         onChange(updateBlock(rows, index, { label: event.target.value }))
                       }
-                      placeholder="Visit link"
+                      placeholder="View tour"
                     />
                   </Field>
-                  {sanitizeExternalUrl(block.url) ? (
+                  {sanitizeBlogUrl(block.url) ? (
                     <div className="rounded-2xl border border-[#dceaf7] bg-[#f8fbff] p-4">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#6f8295]">Preview</p>
-                      <p className="mt-2 font-semibold text-[#17324d]">{block.title || "External link"}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#6f8295]">
+                        Preview · {isInternalAppPath(sanitizeBlogUrl(block.url)) ? "Internal" : "External"}
+                      </p>
+                      <p className="mt-2 font-semibold text-[#17324d]">
+                        {block.title || (isInternalAppPath(sanitizeBlogUrl(block.url)) ? "Tour link" : "External link")}
+                      </p>
                       {block.description ? (
                         <p className="mt-1 text-sm text-[#6f8295]">{block.description}</p>
                       ) : null}
-                      <p className="mt-2 truncate text-xs text-[#4fa3d1]">{sanitizeExternalUrl(block.url)}</p>
+                      <p className="mt-2 truncate text-xs text-[#4fa3d1]">{sanitizeBlogUrl(block.url)}</p>
                     </div>
                   ) : null}
                 </div>
@@ -191,7 +199,7 @@ export default function BlogContentEditor({ blocks, onChange, label = "Article b
                   <RichTextEditor
                     value={block.text || ""}
                     onChange={(html) => onChange(updateBlock(rows, index, { text: html }))}
-                    placeholder="Write your paragraph. Use the toolbar for bold, italic, headings, and text color."
+                    placeholder="Write your paragraph. Use Link in the toolbar for tour/package or external URLs."
                     minHeight={180}
                   />
                 </Field>

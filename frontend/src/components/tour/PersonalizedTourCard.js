@@ -25,12 +25,12 @@ export default function PersonalizedTourCard({ tour, variant = 'default' }) {
     setImageSrc(primarySrc);
   }, [primarySrc]);
   const detailHref = getTourDetailHref(tour);
-  const tags = getPersonalizedExperienceTags(tour, isExperience ? 2 : 1);
+  const startingPriceAmount = resolveTourPriceAmount(tour?.startingPrice, tour?.price);
+  const showPriceRibbon = isExperience && startingPriceAmount > 0;
+  const tags = getPersonalizedExperienceTags(tour, isExperience && !showPriceRibbon ? 2 : 1);
   const ctaLabel = isExperience ? 'Explore this journey' : tour?.ctaData?.primaryLabel || 'Explore journey';
   const duration = tour?.durationLabel || tour?.duration || 'Flexible pace';
   const teaser = isExperience ? getPersonalizedStoryTeaser(tour) : getDefaultTeaser(tour);
-  const startingPriceAmount = resolveTourPriceAmount(tour?.startingPrice, tour?.price);
-  const showPriceRibbon = isExperience && startingPriceAmount > 0;
 
   return (
     <Link
@@ -57,10 +57,16 @@ export default function PersonalizedTourCard({ tour, variant = 'default' }) {
               </span>
             </div>
           ) : null}
-          <div className="personalized-tour-card__tags" aria-label="Experience type">
+          <div
+            className={`personalized-tour-card__tags${showPriceRibbon ? ' personalized-tour-card__tags--with-price' : ''}`}
+            aria-label="Experience type"
+          >
             {tags.map((tag) => (
               <span key={`${tag.icon}-${tag.label}`} className="personalized-tour-card__tag">
-                <span aria-hidden>{tag.icon}</span> {tag.label}
+                <span className="personalized-tour-card__tag-icon" aria-hidden>
+                  {tag.icon}
+                </span>
+                <span className="personalized-tour-card__tag-label">{tag.label}</span>
               </span>
             ))}
           </div>

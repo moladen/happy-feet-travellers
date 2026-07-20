@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { sanitizeBlogUrl } from "@/lib/blogContent";
 
 const TEXT_COLORS = [
   { label: "Default", value: "" },
@@ -85,6 +86,26 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
     emitChange();
   };
 
+  const applyLink = () => {
+    const raw = window.prompt(
+      "Enter link URL\n\nTour/package: /tour/your-tour-slug\nExternal: https://example.com"
+    );
+    if (raw == null) return;
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      runCommand("unlink");
+      return;
+    }
+    const safe = sanitizeBlogUrl(trimmed);
+    if (!safe) {
+      window.alert(
+        "Enter a valid URL (https://…) or site path starting with / (e.g. /tour/spiti-valley)."
+      );
+      return;
+    }
+    runCommand("createLink", safe);
+  };
+
   return (
     <div className="overflow-hidden rounded-2xl border border-[#d5e1eb] bg-white">
       <div className="flex flex-wrap items-center gap-1.5 border-b border-[#e7eef4] bg-[#f8fbfe] px-3 py-2">
@@ -103,6 +124,13 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         </ToolbarButton>
         <ToolbarButton title="Normal paragraph" onClick={() => runCommand("formatBlock", "p")}>
           P
+        </ToolbarButton>
+        <span className="mx-1 h-6 w-px bg-[#d5e1eb]" aria-hidden />
+        <ToolbarButton title="Add link" onClick={applyLink}>
+          Link
+        </ToolbarButton>
+        <ToolbarButton title="Remove link" onClick={() => runCommand("unlink")}>
+          Unlink
         </ToolbarButton>
         <span className="mx-1 h-6 w-px bg-[#d5e1eb]" aria-hidden />
         <label className="flex items-center gap-1.5 text-xs font-semibold text-[#6f8295]">

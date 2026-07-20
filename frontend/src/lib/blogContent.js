@@ -35,25 +35,89 @@ export const EMPTY_LINK_BLOCK = {
   label: 'Visit link',
 };
 
-/** Normalise user-entered URLs to safe http(s) links. */
-export function sanitizeExternalUrl(url) {
+/** True for same-app paths like /tour/spiti-valley (not protocol-relative //…). */
+export function isInternalAppPath(url) {
   const raw = String(url || '').trim();
-  if (!raw) return '';
+  return raw.startsWith('/') && !raw.startsWith('//');
+}
+
+function siteOrigins() {
+  const origins = new Set();
+  const candidates = [
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.NEXT_PUBLIC_FRONTEND_URL,
+    process.env.NEXT_PUBLIC_APP_URL,
+  ];
+  for (const value of candidates) {
+    if (!value) continue;
+    try {
+      origins.add(new URL(value).origin);
+    } catch {
+      /* ignore bad env */
+    }
+  }
+  return origins;
+}
+
+/**
+ * Allowlist blog URLs:
+ * - Internal app paths (/tour/…, /blog/…, landing package paths)
+ * - Absolute http(s); same-site / localhost absolute URLs collapse to paths
+ */
+export function sanitizeBlogUrl(url) {
+  const raw = String(url || '').trim();
+  if (!raw || /[\u0000-\u001F<>"']/.test(raw)) return '';
+  if (/^(javascript|data|vbscript):/i.test(raw)) return '';
+  // Protocol-relative URLs are not allowed
+  if (raw.startsWith('//')) return '';
+
+  if (isInternalAppPath(raw)) {
+    return raw;
+  }
+
   try {
     const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
     const parsed = new URL(withProto);
     if (!['http:', 'https:'].includes(parsed.protocol)) return '';
+
+    const host = parsed.hostname.toLowerCase();
+    const isLocal = host === 'localhost' || host === '127.0.0.1';
+    if (isLocal || siteOrigins().has(parsed.origin)) {
+      return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/';
+    }
+
     return parsed.href;
   } catch {
     return '';
   }
 }
 
+/** Alias — accepts http(s) and internal app paths for blog link blocks. */
+export function sanitizeExternalUrl(url) {
+  return sanitizeBlogUrl(url);
+}
+
 export function looksLikeHtmlContent(value) {
   return typeof value === 'string' && HTML_TAG_RE.test(value.trim());
 }
 
-/** Strip noisy Word-export markup while keeping structure. */
+function rewriteAnchorTag(attrs) {
+  const hrefMatch = /\bhref\s*=\s*(["'])(.*?)\1/i.exec(attrs);
+  if (!hrefMatch) return null;
+  const safe = sanitizeBlogUrl(hrefMatch[2]);
+  if (!safe) return null;
+
+  let cleaned = attrs
+    .replace(/\bhref\s*=\s*(["']).*?\1/i, `href="${safe.replace(/"/g, '&quot;')}"`)
+    .replace(/\s(target|rel)\s*=\s*(["']).*?\2/gi, '');
+
+  if (isInternalAppPath(safe)) {
+    return `<a${cleaned}>`;
+  }
+  return `<a${cleaned} target="_blank" rel="noopener noreferrer">`;
+}
+
+/** Strip noisy Word-export markup while keeping structure and safe links. */
 export function prepareBlogHtml(html) {
   let out = String(html || '').trim();
   if (!out) return '';
@@ -63,6 +127,11 @@ export function prepareBlogHtml(html) {
   out = out.replace(/\sstyle="([^"]*)"/gi, (_, styles) => {
     const safe = sanitizeInlineColorStyle(styles);
     return safe ? ` style="${safe}"` : '';
+  });
+
+  out = out.replace(/<a\b([^>]*)>/gi, (full, attrs) => {
+    const rewritten = rewriteAnchorTag(attrs);
+    return rewritten || full.replace(/^<a/i, '<span').replace(/>$/, ' data-invalid-link="1">');
   });
 
   return out;
@@ -93,10 +162,6 @@ export function isBlogBlocksContent(content) {
   );
 }
 
-function htmlToPlainText(html) {
-  return stripHtmlToText(html);
-}
-
 export function normalizeBlock(block) {
   if (!block || typeof block !== 'object') return { ...EMPTY_PARAGRAPH_BLOCK };
   if (block.type === 'image') {
@@ -109,7 +174,7 @@ export function normalizeBlock(block) {
   if (block.type === 'link') {
     return {
       type: 'link',
-      url: sanitizeExternalUrl(block.url),
+      url: sanitizeBlogUrl(block.url),
       title: String(block.title || '').trim(),
       description: String(block.description || block.caption || '').trim(),
       label: String(block.label || block.buttonLabel || 'Visit link').trim() || 'Visit link',

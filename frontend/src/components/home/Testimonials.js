@@ -42,16 +42,10 @@ export default function Testimonials({ apiTestimonials = [] }) {
             <GoogleReviewsCarousel reviews={reviews} />
           ) : (
             <p className="mx-auto mt-8 max-w-xl text-center text-sm leading-relaxed text-foreground/70">
-              Traveller stories will appear here once you add them in Admin → Testimonials.
+              Traveller stories from recent journeys will appear here soon.
             </p>
           )}
         </div>
-
-        <p className="testimonials-section__footnote">
-          {hasReviews
-            ? 'Reviews curated from Admin → Testimonials'
-            : 'Google rating above — add guest stories from Admin → Testimonials'}
-        </p>
       </div>
     </motion.section>
   );

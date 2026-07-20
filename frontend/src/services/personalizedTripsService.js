@@ -36,6 +36,34 @@ async function pickPackages(data) {
   return normalisePackages(raw);
 }
 
+function tourMatchesExperience(tour, categoryValue) {
+  const c = String(categoryValue || '').trim().toLowerCase();
+  if (!c || c === 'customized' || c === 'upcoming') return true;
+
+  const keywords = {
+    honeymoon: ['honeymoon', 'romantic', 'anniversary', 'wedding'],
+    adventure: ['adventure', 'trek', 'trekking', 'expedition', 'himalaya'],
+    spiritual: ['spiritual', 'temple', 'pilgrim', 'ashram', 'meditation'],
+    family: ['family', 'kids', 'children', 'parents'],
+    wildlife: ['wildlife', 'safari'],
+    'road trips': ['road trip', 'roadtrip', 'self-drive'],
+    mountains: ['mountain', 'himalaya', 'hills', 'spiti', 'ladakh'],
+    beaches: ['beach', 'coastal', 'goa', 'andaman'],
+  }[c] || [c];
+
+  const pkg = String(tour.packageCategory || tour.experienceCategory || '').toLowerCase();
+  if (pkg === c || pkg.includes(c)) return true;
+
+  const tags = (Array.isArray(tour.tags) ? tour.tags : []).map((t) => String(t).toLowerCase());
+  if (tags.some((t) => t === c || keywords.some((k) => t.includes(k)))) return true;
+
+  const hay = [tour.title, tour.description, tour.suitableFor, tour.destination, tour.subCategory]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return keywords.some((k) => hay.includes(k));
+}
+
 function filterMock(params = {}) {
   let list = mockTours.filter((t) => t.category === 'customized');
   const q = String(params.q || params.search || '')
@@ -55,22 +83,24 @@ function filterMock(params = {}) {
     list = list.filter((t) => String(t.state || '').toLowerCase() === s);
   }
   if (params.packageCategory || params.category) {
-    const c = String(params.packageCategory || params.category).toLowerCase();
-    if (c !== 'customized' && c !== 'upcoming') {
-      list = list.filter(
-        (t) =>
-          String(t.packageCategory || t.subCategory || '').toLowerCase().includes(c)
-      );
-    }
+    list = list.filter((t) =>
+      tourMatchesExperience(t, params.packageCategory || params.category)
+    );
   }
   if (params.featured === 'true' || params.featured === true) {
     list = list.filter((t) => t.featured);
   }
+  const effectivePrice = (t) => {
+    const start = Number(t.startingPrice);
+    const price = Number(t.price);
+    if (Number.isFinite(start) && start > 0) return start;
+    return Number.isFinite(price) ? price : 0;
+  };
   if (params.minPrice) {
-    list = list.filter((t) => Number(t.price) >= Number(params.minPrice));
+    list = list.filter((t) => effectivePrice(t) >= Number(params.minPrice));
   }
   if (params.maxPrice) {
-    list = list.filter((t) => Number(t.price) <= Number(params.maxPrice));
+    list = list.filter((t) => effectivePrice(t) <= Number(params.maxPrice));
   }
   return normalisePackages(list);
 }

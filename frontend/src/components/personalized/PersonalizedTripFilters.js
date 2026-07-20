@@ -72,12 +72,12 @@ function PersonalizedTripFiltersForm({ initial }) {
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
         <label className="block">
-          <span className="mb-1 block text-sm font-semibold text-foreground/80">State / region</span>
+          <span className="mb-1 block text-sm font-semibold text-foreground/80">State / region / city</span>
           <input
             type="text"
             value={state}
             onChange={(e) => setState(e.target.value)}
-            placeholder="e.g. Kerala"
+            placeholder="e.g. Kerala, Mumbai, Hampi"
             className="w-full rounded-xl border border-[#dceaf7] px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </label>

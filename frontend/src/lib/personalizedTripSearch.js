@@ -1,5 +1,8 @@
 /** URL + API helpers for /customized-trips filters (backed by GET /api/personalized-trips). */
 
+import { resolveTourPriceAmount } from '@/lib/tourPrice';
+import { tourMatchesExperienceFilter } from '@/lib/personalizedTourExperience';
+
 export const PACKAGE_CATEGORY_OPTIONS = [
   { value: '', label: 'All experiences' },
   { value: 'Honeymoon', label: 'Honeymoon' },
@@ -39,37 +42,93 @@ export function parsePersonalizedSearchParams(params = {}) {
   };
 }
 
-/** Maps URL filters → GET /api/personalized-trips query */
+/**
+ * Maps URL filters → GET /api/personalized-trips query.
+ * Region / experience / budget / duration are applied client-side so partial
+ * matches work (e.g. "Mumbai" in departureCity, not only exact state name).
+ */
 export function buildApiPersonalizedQuery(search) {
-  const api = { limit: 50, sort: 'featured' };
+  const api = { limit: 100, sort: 'featured' };
   const q = String(search.q || '').trim();
   if (q) api.search = q;
-
-  const state = String(search.state || '').trim();
-  if (state) api.state = state;
-
-  const category = String(search.category || '').trim();
-  if (category) api.packageCategory = category;
-
   if (search.featured) api.featured = 'true';
-
-  const price = search.price;
-  if (price === 'under-20k') api.maxPrice = 19999;
-  else if (price === '20-40k') {
-    api.minPrice = 20000;
-    api.maxPrice = 40000;
-  } else if (price === '40k-plus') api.minPrice = 40001;
-
-  const duration = search.duration;
-  if (duration === '3-5') {
-    api.minDuration = 3;
-    api.maxDuration = 5;
-  } else if (duration === '6-8') {
-    api.minDuration = 6;
-    api.maxDuration = 8;
-  } else if (duration === '9plus') api.minDuration = 9;
-
   return api;
+}
+
+function matchesPriceFilter(tour, priceKey) {
+  if (!priceKey) return true;
+  const amount = resolveTourPriceAmount(tour?.startingPrice, tour?.price);
+  if (priceKey === 'under-20k') return amount > 0 && amount < 20000;
+  if (priceKey === '20-40k') return amount >= 20000 && amount <= 40000;
+  if (priceKey === '40k-plus') return amount >= 40000;
+  return true;
+}
+
+function resolveDurationDays(tour) {
+  const days = Number(tour?.duration);
+  if (Number.isFinite(days) && days > 0) return days;
+  const label = String(tour?.durationLabel || '');
+  const nightDay = label.match(/(\d+)\s*N\s*(\d+)\s*D/i);
+  if (nightDay) return Number(nightDay[2]);
+  const onlyDays = label.match(/(\d+)\s*D/i);
+  if (onlyDays) return Number(onlyDays[1]);
+  return 0;
+}
+
+function matchesDurationFilter(tour, durationKey) {
+  if (!durationKey) return true;
+  const days = resolveDurationDays(tour);
+  if (!days) return false;
+  if (durationKey === '3-5') return days >= 3 && days <= 5;
+  if (durationKey === '6-8') return days >= 6 && days <= 8;
+  if (durationKey === '9plus') return days >= 9;
+  return true;
+}
+
+/** Match state name, departure city, or destination (partial, case-insensitive). */
+function matchesRegionFilter(tour, regionValue) {
+  const needle = String(regionValue || '').trim().toLowerCase();
+  if (!needle) return true;
+  const hay = [tour?.state, tour?.departureCity, tour?.destination, tour?.title]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return hay.includes(needle);
+}
+
+/**
+ * All active filters are AND-ed:
+ * region + experience + budget + duration + featured + search.
+ */
+export function filterPersonalizedTours(tours, search) {
+  const list = Array.isArray(tours) ? tours : [];
+  const q = String(search?.q || '').trim().toLowerCase();
+
+  return list.filter((tour) => {
+    if (search?.featured && !tour.featured) return false;
+    if (!matchesRegionFilter(tour, search?.state)) return false;
+
+    if (q) {
+      const hay = [
+        tour.title,
+        tour.description,
+        tour.destination,
+        tour.state,
+        tour.departureCity,
+        tour.packageCategory,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+
+    if (!tourMatchesExperienceFilter(tour, search?.category)) return false;
+    if (!matchesPriceFilter(tour, search?.price)) return false;
+    if (!matchesDurationFilter(tour, search?.duration)) return false;
+
+    return true;
+  });
 }
 
 export function buildCustomizedTripsUrl(search) {

@@ -189,6 +189,7 @@ export const emptyTourForm = {
   urgency: "",
   bookingDeposit: "",
   offers: "",
+  cardTeaser: "",
   meals: "",
   stayType: "",
   transport: "",
@@ -568,6 +569,7 @@ export function buildTourPayload(form) {
       return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : null;
     })(),
     offers: (form.offers ?? "").trim(),
+    cardTeaser: (form.cardTeaser ?? "").trim() || null,
     meals: (form.meals ?? "").trim(),
     stayType: (form.stayType ?? "").trim(),
     transport: (form.transport ?? "").trim(),

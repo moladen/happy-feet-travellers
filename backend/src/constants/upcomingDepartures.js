@@ -7,16 +7,21 @@ const DEPARTURE_STATUS = {
 
 const DEPARTURE_STATUS_VALUES = Object.values(DEPARTURE_STATUS);
 
-/** Personality / experience tags shown on cards */
+/** Personality / experience tags shown on cards (set in Admin → Tour → Personality tags) */
 const DEPARTURE_PERSONALITY_TAGS = [
-  'Best for Couples',
+  'History Lovers',
+  'Desert Festival',
+  'Nature Escape',
+  'Honeymoon Escape',
   'Snow Lovers',
-  'Adventure',
-  'Scenic',
-  'Spiritual',
-  'Road Trip',
-  'Family Friendly',
-  'Wildlife',
+  'Adventure Special',
+  'Scenic Slow Travel',
+  'Coastal Retreat',
+  'Spiritual Sojourn',
+  'Family Getaway',
+  'Friends Getaway',
+  'Monsoon Escape',
+  'First-Timer Friendly',
 ];
 
 const UPCOMING_CATEGORY = 'upcoming';

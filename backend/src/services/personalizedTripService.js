@@ -117,10 +117,78 @@ function publicPackageWhere() {
   };
 }
 
+/** Keywords aligned with frontend card tags (personalizedTourExperience.js). */
+const EXPERIENCE_FILTER_KEYWORDS = {
+  honeymoon: ['honeymoon', 'romantic', 'anniversary', 'wedding'],
+  adventure: ['adventure', 'trek', 'trekking', 'expedition', 'himalaya'],
+  spiritual: ['spiritual', 'temple', 'pilgrim', 'ashram', 'meditation', 'varanasi', 'rishikesh'],
+  family: ['family', 'kids', 'children', 'parents'],
+  wildlife: ['wildlife', 'safari', 'national park'],
+  'road trips': ['road trip', 'roadtrip', 'self-drive', 'highway'],
+  mountains: ['mountain', 'himalaya', 'hills', 'spiti', 'ladakh'],
+  beaches: ['beach', 'coastal', 'goa', 'andaman', 'lakshadweep'],
+};
+
+function titleCase(word) {
+  return String(word || '')
+    .split(/\s+/)
+    .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : ''))
+    .join(' ');
+}
+
+/**
+ * Match Experience filter the same way cards show tags:
+ * packageCategory OR personality tags OR title/description keywords.
+ */
+function buildExperienceCategoryOr(pkgCat) {
+  const normalised = normalisePackageCategory(pkgCat);
+  const key = String(normalised || pkgCat || '')
+    .trim()
+    .toLowerCase();
+  if (!key) return null;
+
+  const keywords = EXPERIENCE_FILTER_KEYWORDS[key] || [key];
+  const or = [];
+
+  if (normalised) {
+    or.push({ packageCategory: { equals: normalised, mode: 'insensitive' } });
+  }
+  or.push({ packageCategory: { contains: key, mode: 'insensitive' } });
+
+  const tagVariants = new Set([
+    normalised,
+    titleCase(key),
+    ...keywords.map((k) => titleCase(k)),
+    ...keywords,
+  ].filter(Boolean));
+
+  if (key === 'honeymoon') {
+    tagVariants.add('Honeymoon Escape');
+    tagVariants.add('Best for Couples');
+  }
+  if (key === 'family') tagVariants.add('Family Time');
+  if (key === 'beaches') tagVariants.add('Coastal Escape');
+
+  for (const tag of tagVariants) {
+    or.push({ tags: { has: tag } });
+  }
+
+  for (const kw of keywords) {
+    or.push({ title: { contains: kw, mode: 'insensitive' } });
+    or.push({ description: { contains: kw, mode: 'insensitive' } });
+    or.push({ suitableFor: { contains: kw, mode: 'insensitive' } });
+    or.push({ destination: { contains: kw, mode: 'insensitive' } });
+  }
+
+  return or;
+}
+
 function buildListWhere(query, { admin = false } = {}) {
   const where = admin
     ? { category: PERSONALIZED_CATEGORY }
     : publicPackageWhere();
+
+  const and = [];
 
   if (admin) {
     if (query.includeDraft !== 'true') {
@@ -145,7 +213,8 @@ function buildListWhere(query, { admin = false } = {}) {
 
   const pkgCat = query.packageCategory || query.category;
   if (pkgCat && pkgCat !== 'customized' && pkgCat !== 'upcoming') {
-    where.packageCategory = { equals: normalisePackageCategory(pkgCat), mode: 'insensitive' };
+    const experienceOr = buildExperienceCategoryOr(pkgCat);
+    if (experienceOr?.length) and.push({ OR: experienceOr });
   }
 
   if (query.subCategory) {
@@ -157,9 +226,13 @@ function buildListWhere(query, { admin = false } = {}) {
   }
 
   if (query.minPrice || query.maxPrice) {
-    where.price = {};
-    if (query.minPrice) where.price.gte = parseFloat(query.minPrice);
-    if (query.maxPrice) where.price.lte = parseFloat(query.maxPrice);
+    const priceFilter = {};
+    if (query.minPrice) priceFilter.gte = parseFloat(query.minPrice);
+    if (query.maxPrice) priceFilter.lte = parseFloat(query.maxPrice);
+    // Match either list price or startingPrice (admin may fill either)
+    and.push({
+      OR: [{ price: priceFilter }, { startingPrice: priceFilter }],
+    });
   }
 
   if (query.minDuration || query.maxDuration) {
@@ -172,14 +245,18 @@ function buildListWhere(query, { admin = false } = {}) {
 
   const search = String(query.search || query.q || '').trim();
   if (search) {
-    where.OR = [
-      { title: { contains: search, mode: 'insensitive' } },
-      { description: { contains: search, mode: 'insensitive' } },
-      { destination: { contains: search, mode: 'insensitive' } },
-      { state: { contains: search, mode: 'insensitive' } },
-      { packageCategory: { contains: search, mode: 'insensitive' } },
-    ];
+    and.push({
+      OR: [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { destination: { contains: search, mode: 'insensitive' } },
+        { state: { contains: search, mode: 'insensitive' } },
+        { packageCategory: { contains: search, mode: 'insensitive' } },
+      ],
+    });
   }
+
+  if (and.length) where.AND = and;
 
   return where;
 }

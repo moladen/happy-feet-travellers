@@ -89,7 +89,7 @@ export default function DepartureTourCard({ tour, whatsappNumber, className = ''
             ) : null}
           </p>
 
-          <p className="departure-tour-card__teaser">{teaser}</p>
+          {teaser ? <p className="departure-tour-card__teaser">{teaser}</p> : null}
 
           <div className="departure-tour-card__footer">
             <p className="departure-tour-card__price">{priceLabel}</p>

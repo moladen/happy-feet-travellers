@@ -9,6 +9,7 @@ import SectionState from '@/components/common/SectionState';
 import { USER_MESSAGES } from '@/lib/userMessages';
 import {
   buildApiPersonalizedQuery,
+  filterPersonalizedTours,
   hasActivePersonalizedFilters,
   parsePersonalizedSearchParams,
 } from '@/lib/personalizedTripSearch';
@@ -29,7 +30,8 @@ export default function CustomizedTripsGrid() {
       try {
         const raw = await getPersonalizedTrips(buildApiPersonalizedQuery(search));
         if (cancelled) return;
-        setTours(Array.isArray(raw) ? raw : []);
+        const list = Array.isArray(raw) ? raw : [];
+        setTours(filterPersonalizedTours(list, search));
       } catch (error) {
         if (process.env.NODE_ENV !== 'production') {
           console.error('Error loading personalized tours:', error);

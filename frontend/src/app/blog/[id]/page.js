@@ -88,10 +88,13 @@ export default async function BlogArticlePage({ params }) {
         <div className="grid gap-12 lg:grid-cols-[1fr_300px]">
           <div className="min-w-0">
             <div className="overflow-hidden rounded-2xl border border-[#dceaf7] bg-white shadow-sm">
-              <div className="aspect-[21/9] max-h-80 w-full bg-section-alt">
-                <img src={blog.image} alt="" className="h-full w-full object-cover" />
-              </div>
-              <div className="p-8">
+              {blog.image ? (
+                <div className="blog-article-cover">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={blog.image} alt="" className="blog-article-cover__img" />
+                </div>
+              ) : null}
+              <div className="p-6 md:p-8">
                 <BlogArticleBody content={blog.content} />
               </div>
             </div>

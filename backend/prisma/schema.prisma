@@ -44,6 +44,7 @@ model Tour {
   urgency            String?
   bookingDeposit     Int?
   offers             String?
+  cardTeaser         String?
   meals              String?
   stayType           String?
   transport          String?
