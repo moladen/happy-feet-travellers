@@ -1,14 +1,9 @@
 import emailjs from '@emailjs/browser';
 import { USER_MESSAGES } from '@/lib/userMessages';
 
-export const EMAILJS_SERVICE_ID =
-  process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'service_o0uyeqc';
-
-export const EMAILJS_TEMPLATE_ID =
-  process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'template_15mvmga';
-
-export const EMAILJS_PUBLIC_KEY =
-  process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '5GPJMoKUFvtSf2ciu';
+export const EMAILJS_SERVICE_ID = String(process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '').trim();
+export const EMAILJS_TEMPLATE_ID = String(process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '').trim();
+export const EMAILJS_PUBLIC_KEY = String(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '').trim();
 
 /**
  * Send an enquiry email via EmailJS.
