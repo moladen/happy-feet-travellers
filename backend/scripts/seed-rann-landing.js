@@ -285,6 +285,16 @@ const payload = {
   testimonials: [],
 };
 
+function sanitizePackageSeed(pkg) {
+  const { category, detailContent, ...rest } = pkg;
+  const nextDetail = { ...(detailContent && typeof detailContent === 'object' ? detailContent : {}) };
+  if (category && !nextDetail.category) nextDetail.category = category;
+  return {
+    ...rest,
+    ...(Object.keys(nextDetail).length ? { detailContent: nextDetail } : {}),
+  };
+}
+
 async function ensureRannLandingPage(db = prisma) {
   const existing = await db.landingPage.findUnique({ where: { slug: SLUG } });
   if (existing) return { page: existing, created: false };
@@ -295,7 +305,7 @@ async function ensureRannLandingPage(db = prisma) {
     data: {
       ...pageData,
       publishedAt: new Date(),
-      packages: { create: packages },
+      packages: { create: packages.map(sanitizePackageSeed) },
       faqs: { create: faqs },
       testimonials: { create: testimonials },
     },
