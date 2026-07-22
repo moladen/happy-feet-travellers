@@ -1,3 +1,5 @@
+import { normaliseUploadUrl } from '@/lib/heroSlides';
+
 export const DEFAULT_PAYMENT_PAGE_CONTENT = {
   qrImageUrl: '',
   upiId: 'happyfeettravellers@icici',
@@ -46,6 +48,8 @@ export function normalisePaymentPageContent(raw) {
 
   if (base.qrImageUrl.startsWith('blob:')) {
     base.qrImageUrl = '';
+  } else if (base.qrImageUrl) {
+    base.qrImageUrl = normaliseUploadUrl(base.qrImageUrl);
   }
 
   return base;

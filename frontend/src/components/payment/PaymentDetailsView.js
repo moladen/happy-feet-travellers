@@ -2,7 +2,7 @@ import {
   buildBankTransferRows,
   resolvePaymentPageContent,
 } from '@/lib/paymentPageContent';
-import { resolveAdminPreviewSrc } from '@/lib/heroSlides';
+import { resolveHeroImageSrc } from '@/lib/heroSlides';
 import { whatsappHref } from '@/lib/siteContact';
 
 function DetailRow({ label, value, mono = false }) {
@@ -20,7 +20,7 @@ function DetailRow({ label, value, mono = false }) {
  */
 export default function PaymentDetailsView({ settings, className = '' }) {
   const payment = resolvePaymentPageContent(settings);
-  const qrSrc = resolveAdminPreviewSrc(payment.qrImageUrl);
+  const qrSrc = resolveHeroImageSrc(payment.qrImageUrl);
   const bankRows = buildBankTransferRows(payment);
   const waHelp = whatsappHref(
     settings?.whatsappNumber,

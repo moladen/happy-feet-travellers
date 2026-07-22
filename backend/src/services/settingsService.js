@@ -132,7 +132,10 @@ const trimOrNull = (value) => {
 
 function sanitiseImageUrl(value) {
   const url = trimOrNull(value);
-  return url && url.startsWith('blob:') ? null : url;
+  if (!url || url.startsWith('blob:')) return null;
+  const uploadMatch = url.match(/^https?:\/\/[^/]+(\/uploads\/.*)$/i);
+  if (uploadMatch) return uploadMatch[1];
+  return url;
 }
 
 async function upsertSettings(payload) {

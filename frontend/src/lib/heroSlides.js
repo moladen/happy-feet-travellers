@@ -74,13 +74,27 @@ export function isTemporaryImageUrl(path) {
   return String(path || '').trim().startsWith('blob:');
 }
 
+/** Strip absolute backend URLs to same-origin `/uploads/...` paths (avoids mixed content on HTTPS). */
+export function normaliseUploadUrl(path) {
+  const raw = String(path || '').trim();
+  if (!raw || isTemporaryImageUrl(raw)) return '';
+  const uploadMatch = raw.match(/^https?:\/\/[^/]+(\/uploads\/.*)$/i);
+  if (uploadMatch) return uploadMatch[1];
+  return raw;
+}
+
+function usesSameOriginApiProxy() {
+  const apiUrl = String(process.env.NEXT_PUBLIC_API_URL || API_BASE_URL || '').trim();
+  return apiUrl.startsWith('/');
+}
+
 /**
  * Resolve CMS paths, backend uploads, or site-relative assets for next/image.
  * Uploaded files use relative `/uploads/...` so Next.js rewrites proxy to the backend.
  */
 export function resolveHeroImageSrc(path) {
-  const raw = String(path || '').trim();
-  if (!raw || isTemporaryImageUrl(raw)) return '';
+  const raw = normaliseUploadUrl(path);
+  if (!raw) return '';
   if (/^https?:\/\//i.test(raw) || raw.startsWith('data:')) return raw;
   if (raw.startsWith('/uploads')) return raw;
   return raw;
@@ -90,6 +104,7 @@ export function resolveHeroImageSrc(path) {
 export function resolveHeroImageSrcForAdmin(path) {
   const resolved = resolveHeroImageSrc(path);
   if (!resolved || resolved.startsWith('http') || !resolved.startsWith('/uploads')) return resolved;
+  if (usesSameOriginApiProxy()) return resolved;
   return `${getApiOrigin()}${resolved}`;
 }
 
