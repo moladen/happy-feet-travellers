@@ -183,16 +183,16 @@ export default function TourDetails({ tour, whatsappNumber }) {
             <h2 className="mt-2 font-display text-2xl font-bold text-primary md:text-3xl">
               Moments you will remember
             </h2>
-            <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {tour.highlights.map((h, i) => (
                 <li
                   key={i}
-                  className="tour-highlight-card rounded-2xl border border-[#dceaf5] bg-gradient-to-br from-[#f8fbff] to-white p-4 shadow-sm"
+                  className="tour-highlight-card flex items-start gap-2 rounded-xl border border-[#dceaf5] bg-gradient-to-br from-[#f8fbff] to-white px-3 py-2 shadow-sm"
                 >
-                  <span className="text-lg" aria-hidden>
+                  <span className="mt-0.5 shrink-0 text-sm leading-none text-secondary" aria-hidden>
                     ✦
                   </span>
-                  <p className="mt-2 text-sm font-medium leading-relaxed text-foreground/88">{h}</p>
+                  <p className="min-w-0 text-sm font-medium leading-snug text-foreground/88">{h}</p>
                 </li>
               ))}
             </ul>

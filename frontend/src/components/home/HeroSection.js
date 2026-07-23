@@ -68,34 +68,6 @@ const HERO_AUTO_SLIDE = true;
 const HERO_CROSSFADE_S = 1.35;
 const HERO_EASE = [0.22, 1, 0.36, 1];
 
-function HeroWaveFooter() {
-  return (
-    <svg
-      className="hero-wave-footer pointer-events-none block w-full text-[#061525]"
-      viewBox="0 0 1440 320"
-      preserveAspectRatio="none"
-      aria-hidden
-    >
-      <defs>
-        <linearGradient id="heroWaveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#0f2844" stopOpacity="0" />
-          <stop offset="55%" stopColor="#0f2844" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="#030a12" stopOpacity="0.92" />
-        </linearGradient>
-      </defs>
-      <path
-        fill="url(#heroWaveGrad)"
-        d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,181.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L0,320Z"
-      />
-      <path
-        className="opacity-25"
-        fill="#1F4E79"
-        d="M0,288L60,272C120,256,240,224,360,213.3C480,203,600,213,720,229.3C840,245,960,267,1080,261.3C1200,256,1320,224,1380,208L1440,192L1440,320L0,320Z"
-      />
-    </svg>
-  );
-}
-
 function HeroSlideLayer({ item, isActive, reduceMotion, priority }) {
   return (
     <motion.div
@@ -232,7 +204,7 @@ export default function HeroSection() {
 
   return (
     <section className="hero-section hero-section--premium relative z-0 overflow-x-hidden bg-[#050d18]">
-      <div className="hero-stage relative flex min-h-0 flex-col overflow-x-hidden overflow-y-visible">
+      <div className="hero-stage relative flex min-h-0 flex-col overflow-hidden">
         <div className="hero-slides absolute inset-0 z-0" aria-hidden>
           {slides.map((item, index) => (
             <HeroSlideLayer
@@ -246,13 +218,13 @@ export default function HeroSection() {
         </div>
 
         <div className="hero-overlays hero-overlays--premium pointer-events-none absolute inset-0 z-[8]" aria-hidden>
-          <div className="absolute inset-0 bg-[#030712]/14" />
-          <div className="hero-overlay-left absolute inset-y-0 left-0 w-[min(100%,52rem)] bg-gradient-to-r from-[#010408]/68 via-[#02060c]/38 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0a1628]/22 via-transparent to-[#030712]/12" />
+          <div className="absolute inset-0 bg-[#030712]/10" />
+          <div className="hero-overlay-left absolute inset-y-0 left-0 w-[min(100%,52rem)] bg-gradient-to-r from-[#010408]/55 via-[#02060c]/28 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0a1628]/16 via-transparent to-[#030712]/08" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_75%_55%_at_18%_35%,rgba(231,111,81,0.08),transparent_62%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_88%_30%,rgba(126,200,227,0.1),transparent_58%)]" />
-          <div className="hero-bottom-scrim absolute inset-x-0 bottom-0 h-[38%] bg-gradient-to-t from-[#02060c]/55 via-[#02060c]/18 to-transparent" />
-          <div className="absolute inset-x-0 top-0 h-[18%] bg-gradient-to-b from-[#02060c]/32 to-transparent" />
+          <div className="hero-bottom-scrim absolute inset-x-0 bottom-0 h-[18%] bg-gradient-to-t from-[#02060c]/22 via-transparent to-transparent" />
+          <div className="absolute inset-x-0 top-0 h-[18%] bg-gradient-to-b from-[#02060c]/28 to-transparent" />
           <div className="hero-vignette hero-vignette--soft absolute inset-0" />
         </div>
 
@@ -456,10 +428,6 @@ export default function HeroSection() {
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="hero-wave-cap relative z-[5] shrink-0 leading-[0]" aria-hidden>
-        <HeroWaveFooter />
       </div>
     </section>
   );

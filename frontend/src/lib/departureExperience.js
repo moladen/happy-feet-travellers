@@ -1,4 +1,6 @@
 /** Curated personality labels — one distinctive identity per card */
+import { getPersonalizedStoryTeaser } from '@/lib/personalizedTourExperience';
+
 const PERSONALITY_RULES = [
   // Destination-specific first (high weight) so Rann ≠ Adventure, Hampi ≠ generic
   { label: 'Desert Festival', keys: ['rann', 'kutch', 'white rann', 'rann utsav', 'bhuj', 'dholavira'], weight: 14 },
@@ -334,16 +336,20 @@ export function formatDepartureDateLabel(tour) {
 }
 
 /**
- * Card teaser line under the title.
- * - Admin "Card teaser" wins when set.
- * - If blank: no auto generic line (avoids same copy on every card).
+ * Card teaser under the title — same behaviour as Personalized Tours:
+ * 1. Admin "Card teaser" wins when set
+ * 2. Else auto emotional line / description snippet
  */
 export function getDepartureStoryTeaser(tour, maxLen = 120) {
-  const raw = tour?.cardTeaser || tour?.experienceTeaser;
-  if (!raw || !String(raw).trim()) return '';
+  const manual = tour?.cardTeaser || tour?.experienceTeaser;
+  if (manual && String(manual).trim()) {
+    const s = String(manual).trim();
+    return s.length > maxLen ? `${s.slice(0, maxLen).trim()}…` : s;
+  }
 
-  const s = String(raw).trim();
-  return s.length > maxLen ? `${s.slice(0, maxLen).trim()}…` : s;
+  const auto = getPersonalizedStoryTeaser(tour);
+  if (!auto) return '';
+  return auto.length > maxLen ? `${auto.slice(0, maxLen).trim()}…` : auto;
 }
 
 /** Experience-first invite line */

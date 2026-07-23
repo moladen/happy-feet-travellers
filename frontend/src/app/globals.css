@@ -7658,9 +7658,7 @@ a.site-footer__contact-row:hover .site-footer__contact-value {
 }
 
 .hero-wave-cap {
-  flex-shrink: 0;
-  line-height: 0;
-  background: linear-gradient(180deg, #030a12 0%, #061525 100%);
+  display: none;
 }
 
 .homepage-main {
@@ -7685,35 +7683,14 @@ a.site-footer__contact-row:hover .site-footer__contact-value {
   isolation: isolate;
 }
 
-/* Bottom scrim — localized for text legibility without hiding the scene */
+/* Soft bottom edge — no white fog */
 .hero-bottom-scrim {
-  height: min(32vh, 260px);
-  max-height: 38%;
+  height: min(16vh, 140px);
+  max-height: 20%;
 }
 
-/* Wave transition at hero bottom edge — in-flow, does not cover next section */
 .hero-wave-footer {
-  display: block;
-  height: 64px;
-  min-height: 52px;
-  max-height: 80px;
-}
-
-@media (min-width: 768px) {
-  .hero-bottom-scrim {
-    height: min(32vh, 280px);
-  }
-
-  .hero-wave-footer {
-    height: 72px;
-    max-height: 88px;
-  }
-}
-
-@media (min-width: 1280px) {
-  .hero-wave-footer {
-    height: 80px;
-  }
+  display: none;
 }
 
 /* Hero — modern travel canvas */
@@ -8099,10 +8076,12 @@ a.site-footer__contact-row:hover .site-footer__contact-value {
 .hero-community--banner .hero-community__glass {
   border: none;
   border-radius: 0;
-  background: rgba(2, 8, 18, 0.48);
-  padding: 1.25rem 1.25rem 1.375rem;
+  background: rgba(2, 8, 18, 0.52);
+  padding: 0.85rem 1rem;
   align-items: center;
   text-align: center;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .hero-community--banner .hero-community__collage {
@@ -8117,14 +8096,14 @@ a.site-footer__contact-row:hover .site-footer__contact-value {
 .hero-community__glass {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  border-radius: 1.125rem;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  padding: 1rem 1.125rem;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 16px 40px -20px rgba(0, 0, 0, 0.45);
+  gap: 0.65rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(4, 12, 24, 0.42);
+  padding: 0.75rem 0.9rem;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 10px 28px -18px rgba(0, 0, 0, 0.55);
 }
 
 .hero-community__collage {
@@ -8165,17 +8144,17 @@ a.site-footer__contact-row:hover .site-footer__contact-value {
 
 .hero-community__quote {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  line-height: 1.65;
-  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
   font-style: italic;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
 }
 
 @media (min-width: 640px) {
   .hero-community__quote {
-    font-size: 1rem;
+    font-size: 0.875rem;
   }
 }
 

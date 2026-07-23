@@ -388,7 +388,7 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
                 </Field>
                 <Field
                   label="Card teaser (optional)"
-                  hint="Short line under the title on homepage / departure cards. Leave blank to hide the line (no generic auto-copy)."
+                  hint="Short line under the title on homepage / departure cards. Leave blank to auto-fill like Personalized Tours (from description / experience)."
                 >
                   <TextArea
                     rows={2}
