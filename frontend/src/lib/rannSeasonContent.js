@@ -36,7 +36,7 @@ const IMG = {
   hero: 'https://images.unsplash.com/photo-1516939884455-1445c8652f83?w=2400&h=1400&fit=crop',
   whiteDesert: 'https://images.unsplash.com/photo-1516939884455-1445c8652f83?w=1200&h=900&fit=crop',
   fullMoon: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=900&fit=crop',
-  dholavira: 'https://images.unsplash.com/photo-1524499982521-1ffd58dd89ea?w=1200&h=900&fit=crop',
+  dholavira: '/images/kutchi-folk-music.png',
   mandvi: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&h=900&fit=crop',
   bhunga: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=1200&h=900&fit=crop',
   road: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&h=900&fit=crop',
