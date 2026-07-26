@@ -46,7 +46,7 @@ const IMG = {
   bhuj: 'https://images.unsplash.com/photo-1625505826533-5c80aca7d157?w=1200&h=900&fit=crop',
   tent: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&h=900&fit=crop',
   family: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1200&h=900&fit=crop',
-  train: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&fit=crop&w=1200&q=80',
+  train: '/images/kutchi-campfire-night.png',
 };
 
 export const RANN_PLANNING_GUIDE = {
@@ -485,22 +485,10 @@ export const RANN_DHOLAVIRA = {
 
 export const RANN_VIDEOS = [
   {
-    id: 'rann-overview',
-    title: 'White Desert at Rann Utsav',
-    caption: 'Salt flats, festival lights, and moonlit horizons',
-    embedUrl: 'https://www.youtube.com/embed/Scxs7L0vhZ4',
-  },
-  {
-    id: 'kutch-culture',
-    title: 'Kutch Culture & Crafts',
-    caption: 'Village life, embroidery, and folk performances',
-    embedUrl: 'https://www.youtube.com/embed/1La4QzGe55I',
-  },
-  {
-    id: 'gujarat-travel',
-    title: 'Gujarat Desert Routes',
-    caption: 'Road journeys and heritage landscapes beyond the Rann',
-    embedUrl: 'https://www.youtube.com/embed/3qS3vAfXyYk',
+    id: 'rann-ki-kahaniya',
+    title: 'Rann ki Kahaniya',
+    caption: 'Stories from the White Desert — culture, festival, and Kutch life',
+    embedUrl: 'https://www.youtube.com/embed/1Ljd-H7rmZc',
   },
 ];
 
