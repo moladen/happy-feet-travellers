@@ -15,6 +15,7 @@ import { RANN_WA_GROUP_MESSAGE, RANN_WA_PRIORITY_MESSAGE } from '@/lib/rannSeaso
 import { whatsappHref } from '@/lib/siteContact';
 import LandingHeroPricingBadge from '@/components/landing/LandingHeroPricingBadge';
 import { resolveLandingHeroPricing } from '@/lib/landingHeroPricing';
+import { enrichBatchesWithTourLinks } from '@/lib/batchTourLinks';
 
 function FaqGroup({ title, items }) {
   if (!items?.length) return null;
@@ -39,15 +40,18 @@ function FaqGroup({ title, items }) {
 }
 
 /**
- * @param {{ page: object; settings: object }} props
+ * @param {{ page: object; settings: object; calendarTours?: object[] }} props
  */
-export default function LandingPageView({ page, settings }) {
+export default function LandingPageView({ page, settings, calendarTours = [] }) {
   const intro = page.introContent || {};
   const bestTime = page.bestTimeToVisit || {};
   const whyVisit = Array.isArray(page.whyVisit) ? page.whyVisit : [];
   const highlights = Array.isArray(page.destinationHighlights) ? page.destinationHighlights : [];
   const customBlocks = Array.isArray(page.customBlocks) ? page.customBlocks : [];
-  const groupBatches = Array.isArray(page.groupBatches) ? page.groupBatches : [];
+  const groupBatches = enrichBatchesWithTourLinks(
+    Array.isArray(page.groupBatches) ? page.groupBatches : [],
+    calendarTours
+  );
   const packages = Array.isArray(page.packages) ? page.packages : [];
   const faqGroups = groupFaqsByCategory(page.faqs || []);
   const pageTestimonials = Array.isArray(page.testimonials) ? page.testimonials : [];

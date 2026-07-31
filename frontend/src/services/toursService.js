@@ -5,6 +5,23 @@ import { sanitiseStockImageUrl, TRAVEL_FALLBACK_IMAGE } from '@/lib/stockImages'
 import { publicFetch, shouldUseMockFallback } from '@/lib/publicApi';
 import { isNotFoundError, withPublicDataFetch } from '@/lib/publicApiError';
 
+function looksLikeBatchDateList(text) {
+  return /batch\s*\d+\s*:/i.test(String(text || ''));
+}
+
+/** Prefer real duration text; never treat a batch date list as duration. */
+function resolveDisplayDuration(tour) {
+  const label = String(tour?.durationLabel || '').trim();
+  if (label && !looksLikeBatchDateList(label)) return label;
+  if (tour?.duration == null || tour.duration === '') return null;
+  if (looksLikeBatchDateList(tour.duration)) return null;
+  if (typeof tour.duration === 'number' && Number.isFinite(tour.duration)) {
+    return `${tour.duration} day${tour.duration === 1 ? '' : 's'}`;
+  }
+  const asText = String(tour.duration).trim();
+  return asText && !looksLikeBatchDateList(asText) ? asText : null;
+}
+
 function toQuery(params) {
   if (!params) return '';
   const sp = new URLSearchParams();
@@ -108,7 +125,8 @@ export const normaliseTour = (tour) => {
     image: cardImage,
     gallery,
     date: tour.date || tour.dateLabel || formatDateRange(tour.startDate, tour.endDate) || 'Dates on request',
-    duration: tour.durationLabel || tour.duration,
+    duration: resolveDisplayDuration(tour) || tour.duration,
+    durationLabel: tour.durationLabel || null,
     reviews: tour.reviews ?? tour.reviewsCount ?? 0,
     rating: tour.rating != null ? tour.rating : 4.8,
     tags: Array.isArray(tour.tags) ? tour.tags : [],

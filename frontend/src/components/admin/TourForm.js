@@ -524,7 +524,7 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
             </>
           ) : null}
 
-          <div className="mt-5 grid gap-5 md:grid-cols-3 md:items-end">
+          <div className="mt-5 grid gap-5 md:grid-cols-2 md:items-end">
             <Field
               label="Start date"
               hint={
@@ -546,11 +546,18 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
                 onChange={(event) => updateField("endDate", event.target.value)}
               />
             </Field>
-            <Field label="Date label">
-              <TextInput
+          </div>
+
+          <div className="mt-5">
+            <Field
+              label="Date label"
+              hint="Paste one batch/date per line. Example: Batch 1: 21 Aug 2026. Do not put this in Duration."
+            >
+              <TextArea
+                rows={8}
                 value={form.dateLabel}
                 onChange={(event) => updateField("dateLabel", event.target.value)}
-                placeholder="15 May - 20 May 2026"
+                placeholder={"Batch 1: 21 Aug 2026\nBatch 2: 21 Sep 2026\nBatch 3: 22 Sep 2026"}
               />
             </Field>
           </div>

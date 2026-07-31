@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatTourPriceLabel, getTourDetailHref } from '@/lib/tourDisplay';
+import { formatDepartureDateLabelCompact } from '@/lib/departureExperience';
 import { sanitiseStockImageUrl } from '@/lib/stockImages';
 
 const FALLBACK_IMAGE =
@@ -76,7 +77,9 @@ export default function RelatedToursSection({
             const href = tour.href || getTourDetailHref(tour);
             const image = sanitiseStockImageUrl(tour.coverImage || tour.image || FALLBACK_IMAGE);
             const duration = formatDuration(tour);
-            const meta = [tour.destination, tour.dateLabel, duration].filter(Boolean).join(' · ');
+            const meta = [tour.destination, formatDepartureDateLabelCompact(tour), duration]
+              .filter(Boolean)
+              .join(' · ');
 
             return (
               <li key={tour.id || tour.slug}>

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { getTourDetailHref } from '@/lib/tourDisplay';
 import {
-  formatDepartureDateLabel,
+  formatDepartureDateLabelCompact,
   getDepartureCardTheme,
   getDepartureEmotionalInvite,
   getDepartureExperienceTag,
@@ -30,7 +30,7 @@ export default function DepartureTourCard({ tour, whatsappNumber, className = ''
   const { slug: themeSlug } = getDepartureCardTheme(tour);
   const { icon: tagIcon, label: personalityLabel } = getDepartureExperienceTag(tour);
   const groupLabel = getDepartureGroupSizeLabel(tour);
-  const dateLabel = formatDepartureDateLabel(tour);
+  const dateLabel = formatDepartureDateLabelCompact(tour);
   const duration = tour?.durationLabel || tour?.duration || '';
   const amount = resolveTourPriceAmount(tour?.startingPrice, tour?.price);
   const priceLabel = amount > 0 ? `From ₹${amount.toLocaleString('en-IN')}` : 'Price on request';

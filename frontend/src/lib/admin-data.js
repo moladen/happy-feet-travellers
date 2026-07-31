@@ -2,6 +2,7 @@ import { parsePriceInput, resolveTourPriceAmount } from '@/lib/tourPrice';
 import {
   buildFullMoonCalendarEntries,
   FULL_MOON_SECTION,
+  RANN_GROUP_BATCHES,
   RANN_PLANNING_GUIDE,
   RANN_SLUG,
 } from '@/lib/rannSeasonContent';
@@ -823,6 +824,17 @@ export const emptyLandingWhyVisit = {
   image: "",
 };
 
+export const emptyLandingGroupBatch = {
+  batch: "",
+  dates: "",
+  departureName: "",
+  price: "",
+  category: "regular",
+  badge: "",
+  tourSlug: "",
+  tourId: "",
+};
+
 export const emptyLandingFaq = {
   category: "travel",
   question: "",
@@ -871,6 +883,7 @@ export const emptyLandingForm = {
   _packages: [],
   _gallerySlides: [],
   _whyVisit: [],
+  _groupBatches: [],
   _fullMoonCalendar: [],
   fullMoonEnabled: true,
   fullMoonEyebrow: "",
@@ -980,6 +993,26 @@ export function createLandingForm(record) {
     _packages: Array.isArray(record.packages) ? record.packages.map(mapLandingPackageForForm) : [],
     _gallerySlides: Array.isArray(gallery) ? gallery.map((slide) => ({ ...emptyLandingGallerySlide, ...slide })) : [],
     _whyVisit: Array.isArray(record.whyVisit) ? record.whyVisit.map((item) => ({ ...emptyLandingWhyVisit, ...item })) : [],
+    _groupBatches: (() => {
+      const fromPage = Array.isArray(record.groupBatches) ? record.groupBatches : null;
+      const fromBlocks = Array.isArray(blocks.groupBatches) ? blocks.groupBatches : null;
+      const rows = fromPage?.length ? fromPage : fromBlocks?.length ? fromBlocks : [];
+      const fallback =
+        record.slug === RANN_SLUG && !rows.length
+          ? RANN_GROUP_BATCHES
+          : rows;
+      return (fallback || []).map((item, index) => ({
+        ...emptyLandingGroupBatch,
+        batch: item.batch != null ? String(item.batch) : String(index + 1),
+        dates: item.dates || item.date || "",
+        departureName: item.departureName || item.highlight || "",
+        price: item.price || "",
+        category: item.category === "special" ? "special" : "regular",
+        badge: item.badge || "",
+        tourSlug: item.tourSlug || item.slug || "",
+        tourId: item.tourId || "",
+      }));
+    })(),
     _fullMoonCalendar: (() => {
       const rows = Array.isArray(record.fullMoonCalendar) ? record.fullMoonCalendar : [];
       const useDefaults = record.slug === RANN_SLUG;
@@ -1059,6 +1092,26 @@ export function buildLandingPayload(form) {
     successLede: (form.planningGuideSuccessLede || "").trim() || null,
     disclaimer: (form.planningGuideDisclaimer || "").trim() || null,
   };
+
+  const groupBatches = (form._groupBatches || [])
+    .filter((row) => String(row.dates || row.departureName || "").trim())
+    .map((row, index) => {
+      const tourSlug = String(row.tourSlug || "").trim();
+      const tourId = String(row.tourId || "").trim();
+      return {
+        batch: Number(row.batch) || index + 1,
+        dates: String(row.dates || "").trim(),
+        departureName: String(row.departureName || "").trim(),
+        price: String(row.price || "").trim(),
+        category: row.category === "special" ? "special" : "regular",
+        badge: String(row.badge || "").trim() || undefined,
+        ...(tourSlug ? { tourSlug } : {}),
+        ...(tourId ? { tourId } : {}),
+      };
+    });
+  if (groupBatches.length) {
+    customBlocks.groupBatches = groupBatches;
+  }
 
   const payload = {
     title: (form.title || "").trim(),

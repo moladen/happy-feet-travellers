@@ -314,10 +314,81 @@ export function getDepartureGroupSizeLabel(tour) {
   return variants[hashString(tourSeed(tour)) % variants.length];
 }
 
-/** @returns {string} */
+/** @returns {boolean} */
+export function looksLikeBatchDateList(text) {
+  return /batch\s*\d+\s*:/i.test(String(text || ''));
+}
+
+/**
+ * Split a date label into display lines.
+ * Supports real newlines and single-line "Batch 1: … Batch 2: …" pastes.
+ * @param {string} text
+ * @returns {string[]}
+ */
+export function splitTourDateLabelLines(text) {
+  const raw = String(text || '').replace(/\r\n/g, '\n').trim();
+  if (!raw) return [];
+
+  const byNewline = raw
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (byNewline.length > 1) return byNewline;
+
+  const one = byNewline[0] || raw;
+  if (looksLikeBatchDateList(one)) {
+    const byBatch = one
+      .split(/(?=\bBatch\s*\d+\s*:)/i)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    if (byBatch.length > 1) return byBatch;
+  }
+
+  return [one];
+}
+
+/**
+ * Resolve which text to treat as the tour's date / batch list for detail + PDF.
+ * If batches were pasted into durationLabel by mistake, still show them under Dates.
+ */
+export function resolveTourDatesText(tour) {
+  const dateLabel = String(tour?.dateLabel || '').trim();
+  const durationLabel = String(tour?.durationLabel || '').trim();
+  const date = String(tour?.date || '').trim();
+
+  if (looksLikeBatchDateList(durationLabel)) return durationLabel;
+  if (looksLikeBatchDateList(dateLabel)) return dateLabel;
+  if (looksLikeBatchDateList(date)) return date;
+  if (dateLabel) return dateLabel;
+  if (date && date !== durationLabel) return date;
+  return formatDepartureDateLabel(tour);
+}
+
+/** @returns {string[]} */
+export function getTourDateLabelLines(tour) {
+  return splitTourDateLabelLines(resolveTourDatesText(tour));
+}
+
+/** Duration for hero/meta — never show a batch list under the clock icon. */
+export function getTourDurationDisplay(tour) {
+  const label = String(tour?.durationLabel || '').trim();
+  if (label && !looksLikeBatchDateList(label)) return label;
+
+  const rawDuration = tour?.duration;
+  if (rawDuration == null || rawDuration === '') return null;
+  if (looksLikeBatchDateList(rawDuration)) return null;
+  if (typeof rawDuration === 'number' && Number.isFinite(rawDuration)) {
+    return `${rawDuration} day${rawDuration === 1 ? '' : 's'}`;
+  }
+  const asText = String(rawDuration).trim();
+  if (!asText || looksLikeBatchDateList(asText)) return null;
+  return asText;
+}
+
+/** @returns {string} Full date label (may include multiple lines). */
 export function formatDepartureDateLabel(tour) {
-  if (tour?.dateLabel) return tour.dateLabel;
-  if (tour?.date) return tour.date;
+  if (tour?.dateLabel) return String(tour.dateLabel);
+  if (tour?.date && !looksLikeBatchDateList(tour?.durationLabel)) return String(tour.date);
   if (tour?.startDate) {
     const start = new Date(tour.startDate);
     if (!Number.isNaN(start.getTime())) {
@@ -333,6 +404,14 @@ export function formatDepartureDateLabel(tour) {
     }
   }
   return 'Dates announced soon';
+}
+
+/** Single-line summary for cards / tight UI (first line only). */
+export function formatDepartureDateLabelCompact(tour) {
+  const lines = getTourDateLabelLines(tour);
+  if (!lines.length) return 'Dates announced soon';
+  if (lines.length === 1) return lines[0];
+  return `${lines[0]} (+${lines.length - 1} more)`;
 }
 
 /**

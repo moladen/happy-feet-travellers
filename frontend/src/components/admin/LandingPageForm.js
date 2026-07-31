@@ -8,6 +8,7 @@ import {
   LandingBestTimeSection,
   LandingFaqsSection,
   LandingGallerySection,
+  LandingGroupBatchesSection,
   LandingPackagesSection,
   LandingPlanningGuideSection,
   LandingTestimonialsSection,
@@ -120,6 +121,7 @@ export default function LandingPageForm({ form, setForm, onSubmit, busy, mode = 
 
       <LandingWhyVisitSection whyVisit={form._whyVisit} setForm={setForm} />
       <LandingBestTimeSection form={form} updateField={updateField} />
+      <LandingGroupBatchesSection groupBatches={form._groupBatches} setForm={setForm} />
       <LandingPackagesSection packages={form._packages} setForm={setForm} />
       <LandingGallerySection gallerySlides={form._gallerySlides} setForm={setForm} />
       <LandingFaqsSection faqs={form._faqs} setForm={setForm} />

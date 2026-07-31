@@ -11,6 +11,7 @@ import {
   formatReserveSeatLabel,
   isGroupDepartureTour,
 } from '@/lib/tourReserve';
+import { getTourDateLabelLines, getTourDurationDisplay } from '@/lib/departureExperience';
 import { whatsappHref } from '@/lib/siteContact';
 
 const SLIDE_INTERVAL_MS = 4800;
@@ -24,7 +25,9 @@ export default function TourExperienceHero({ tour, heroImage, heroImages = [], w
   const showReserve = isGroupDepartureTour(tour);
   const price = resolveTourPriceAmount(tour.startingPrice, tour.price);
   const startLocation = getStartingLocation(tour);
-  const dateLabel = tour.date || tour.dateLabel || tour.startDate || 'On request';
+  const dateLines = getTourDateLabelLines(tour);
+  const durationDisplay = getTourDurationDisplay(tour);
+  const dateLabelForMessage = dateLines.join(', ');
 
   const slides = useMemo(() => {
     const list = [...new Set([heroImage, ...heroImages].map((url) => sanitiseStockImageUrl(url)).filter(Boolean))];
@@ -44,7 +47,7 @@ export default function TourExperienceHero({ tour, heroImage, heroImages = [], w
 
   const waEnquiry = whatsappHref(
     whatsappNumber,
-    `Hi, I'm interested in: ${tour.title} (${dateLabel})`
+    `Hi, I'm interested in: ${tour.title} (${dateLabelForMessage})`
   );
   const reserveHref = buildReserveSeatHref(tour, whatsappNumber);
 
@@ -97,10 +100,25 @@ export default function TourExperienceHero({ tour, heroImage, heroImages = [], w
             </p>
 
             <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-white/95">
-              {tour.duration ? <li>⏱ {tour.duration}</li> : null}
+              {durationDisplay ? <li>⏱ {durationDisplay}</li> : null}
               <li>📍 Starts {startLocation}</li>
-              <li>📅 {dateLabel}</li>
             </ul>
+
+            {dateLines.length ? (
+              <div className="tour-experience-hero__dates mt-3 max-w-xl text-sm font-medium text-white/95">
+                <span className="tour-experience-hero__dates-icon" aria-hidden>
+                  📅
+                </span>
+                <div className="tour-experience-hero__dates-list">
+                  <p className="tour-experience-hero__dates-heading">Dates</p>
+                  <ul className="tour-experience-hero__dates-items">
+                    {dateLines.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ) : null}
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <div className="rounded-xl bg-white px-4 py-2.5 shadow-lg">

@@ -1,4 +1,5 @@
 import { formatItineraryDetailsHtml } from '@/lib/itineraryText';
+import { getTourDateLabelLines, getTourDurationDisplay } from '@/lib/departureExperience';
 import { resolveTourPriceAmount } from '@/lib/tourPrice';
 import { buildReserveSeatHref, isGroupDepartureTour } from '@/lib/tourReserve';
 import { whatsappHref } from '@/lib/siteContact';
@@ -21,11 +22,15 @@ function nl2br(s) {
 export function openTourItineraryPrint(tour, whatsappNumber) {
   if (typeof window === 'undefined') return;
 
+  const dateLines = getTourDateLabelLines(tour);
+  const datesHtml = dateLines.map((line) => esc(line)).join('<br/>');
+  const datesMessage = dateLines.join(', ');
+  const durationDisplay = getTourDurationDisplay(tour);
   const bookingUrl = isGroupDepartureTour(tour)
     ? buildReserveSeatHref(tour, whatsappNumber)
     : whatsappHref(
         whatsappNumber,
-        `Booking / enquiry: ${tour.title} (${tour.date || ''})`
+        `Booking / enquiry: ${tour.title} (${datesMessage})`
       );
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(bookingUrl)}`;
 
@@ -48,6 +53,7 @@ export function openTourItineraryPrint(tour, whatsappNumber) {
     body { font-family: Segoe UI, Arial, sans-serif; color: #1a1a1a; max-width: 800px; margin: 24px auto; padding: 0 16px; }
     h1 { color: #1F4E79; font-size: 22px; }
     .meta { margin: 12px 0 20px; font-size: 14px; color: #333; }
+    .dates { white-space: pre-line; margin-top: 2px; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px; }
     .grid { display: flex; gap: 24px; flex-wrap: wrap; margin: 24px 0; }
     .box { flex: 1; min-width: 200px; border: 1px solid #dceaf7; padding: 12px; border-radius: 8px; background: #f8fbff; }
@@ -58,8 +64,8 @@ export function openTourItineraryPrint(tour, whatsappNumber) {
 <body>
   <h1>${esc(tour.title)}</h1>
   <div class="meta">
-    <div><strong>Dates:</strong> ${esc(tour.date || tour.startDate || '')}</div>
-    <div><strong>Duration:</strong> ${esc(tour.duration)}</div>
+    <div><strong>Dates:</strong><div class="dates">${datesHtml || esc('On request')}</div></div>
+    <div><strong>Duration:</strong> ${esc(durationDisplay || tour.duration || '')}</div>
     ${tour.departureCity ? `<div><strong>Departure city:</strong> ${esc(tour.departureCity)}</div>` : ''}
     <div><strong>Price:</strong> ${tour.category === 'customized' ? 'Starting from ' : ''}₹${resolveTourPriceAmount(tour.startingPrice, tour.price).toLocaleString('en-IN')} ${tour.category === 'customized' ? '(contact to customise)' : 'per traveller'}</div>
   </div>

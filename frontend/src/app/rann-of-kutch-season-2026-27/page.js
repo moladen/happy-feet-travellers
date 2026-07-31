@@ -15,6 +15,7 @@ import {
   RANN_SEO_TITLE,
 } from '@/lib/rannSeasonContent';
 import { getPublicSettings } from '@/services/settingsService';
+import { getUpcomingDepartures } from '@/services/upcomingDeparturesService';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,10 +37,11 @@ export async function generateMetadata() {
 }
 
 export default async function RannSeasonPage() {
-  const [page, settings, related] = await Promise.all([
+  const [page, settings, related, calendarTours] = await Promise.all([
     fetchLandingPageBySlug(RANN_SLUG).catch(() => buildStaticRannPage()),
     getPublicSettings(),
     fetchRannRelatedContent(RANN_SLUG),
+    getUpcomingDepartures({ limit: 100, sort: 'startDate' }).catch(() => []),
   ]);
 
   const resolved = page?.slug ? page : buildStaticRannPage();
@@ -55,6 +57,7 @@ export default async function RannSeasonPage() {
         page={resolved}
         settings={settings}
         relatedBlogs={related.blogs}
+        calendarTours={calendarTours}
       />
     </>
   );

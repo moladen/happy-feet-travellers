@@ -1,19 +1,10 @@
+import Link from 'next/link';
 import RannSectionHeading from '@/components/rann/RannSectionHeading';
 import { getBatchDepartureName, resolveBatchPrice, splitBatchCalendar } from '@/lib/rannBatchThemes';
+import { resolveBatchTourHref, RANN_BATCH_LINK_HASH } from '@/lib/batchTourLinks';
 import { RANN_SEASON_PATH } from '@/lib/rannSeasonContent';
 
-/** Scroll target on the Rann landing page when a departure name is clicked. */
-export const RANN_BATCH_LINK_HASH = '#packages';
-
-function resolveBatchHref(batch, landingHref) {
-  const custom = String(batch?.href || batch?.url || '').trim();
-  if (custom) {
-    if (/^https?:\/\//i.test(custom)) return custom;
-    return custom.startsWith('/') ? custom : `/${custom}`;
-  }
-  const base = String(landingHref || RANN_SEASON_PATH).replace(/#.*$/, '');
-  return `${base}${RANN_BATCH_LINK_HASH}`;
-}
+export { RANN_BATCH_LINK_HASH };
 
 function CalendarIcon({ className = '' }) {
   return (
@@ -35,25 +26,30 @@ function CalendarIcon({ className = '' }) {
 function BatchTableRow({ batch, variant, landingHref }) {
   const name = getBatchDepartureName(batch);
   const badge = String(batch?.badge || '').trim();
-  const href = resolveBatchHref(batch, landingHref);
+  const href = resolveBatchTourHref(batch, landingHref);
   const price = resolveBatchPrice(batch, variant);
+  const goesToTour = Boolean(String(batch?.tourSlug || batch?.tourId || batch?.slug || '').trim());
 
   return (
-    <tr className={`rann-cal-row rann-cal-row--${variant}`}>
+    <tr className={`rann-cal-row rann-cal-row--${variant}${goesToTour ? ' rann-cal-row--linked' : ''}`}>
       <td className="rann-cal-row__dates">
-        <span className="rann-cal-row__date-inner">
-          <CalendarIcon className="rann-cal-row__cal-icon" />
-          <span>{batch.dates || batch.date}</span>
-          {badge ? <span className="rann-cal-row__badge">{badge}</span> : null}
-        </span>
+        <Link href={href} className="rann-cal-row__hit">
+          <span className="rann-cal-row__date-inner">
+            <CalendarIcon className="rann-cal-row__cal-icon" />
+            <span>{batch.dates || batch.date}</span>
+            {badge ? <span className="rann-cal-row__badge">{badge}</span> : null}
+          </span>
+        </Link>
       </td>
       <td className="rann-cal-row__name">
-        <a href={href} className="rann-cal-row__link">
+        <Link href={href} className="rann-cal-row__link">
           {name}
-        </a>
+        </Link>
       </td>
       <td className="rann-cal-row__price">
-        <span className={`rann-cal-price rann-cal-price--${variant}`}>{price}</span>
+        <Link href={href} className="rann-cal-row__hit rann-cal-row__hit--price">
+          <span className={`rann-cal-price rann-cal-price--${variant}`}>{price}</span>
+        </Link>
       </td>
     </tr>
   );
@@ -84,7 +80,12 @@ function SpecialDeparturesTable({ rows, landingHref }) {
           </thead>
           <tbody>
             {rows.map((batch) => (
-              <BatchTableRow key={batch.batch} batch={batch} variant="special" landingHref={landingHref} />
+              <BatchTableRow
+                key={batch.batch ?? `${batch.dates}-${batch.departureName}`}
+                batch={batch}
+                variant="special"
+                landingHref={landingHref}
+              />
             ))}
           </tbody>
         </table>
@@ -122,7 +123,12 @@ function RegularDeparturesTable({ rows, landingHref }) {
           </thead>
           <tbody>
             {rows.map((batch) => (
-              <BatchTableRow key={batch.batch} batch={batch} variant="regular" landingHref={landingHref} />
+              <BatchTableRow
+                key={batch.batch ?? `${batch.dates}-${batch.departureName}`}
+                batch={batch}
+                variant="regular"
+                landingHref={landingHref}
+              />
             ))}
           </tbody>
         </table>
@@ -133,7 +139,7 @@ function RegularDeparturesTable({ rows, landingHref }) {
 
 /**
  * @param {{
- *   batches?: Array<{ batch: number; dates: string; price: string; departureName?: string; highlight?: string; category?: string; badge?: string; href?: string }>;
+ *   batches?: Array<object>;
  *   landingHref?: string;
  * }} props
  */

@@ -6,6 +6,7 @@ import { CardSection, Field, SelectInput, TextArea, TextInput } from "@/componen
 import {
   emptyLandingFaq,
   emptyLandingGallerySlide,
+  emptyLandingGroupBatch,
   emptyLandingPackage,
   emptyLandingTestimonial,
   emptyLandingWhyVisit,
@@ -577,6 +578,123 @@ export function LandingPlanningGuideSection({ form, updateField }) {
           />
         </Field>
       </div>
+    </CardSection>
+  );
+}
+
+export function LandingGroupBatchesSection({ groupBatches, setForm }) {
+  return (
+    <CardSection
+      title="Season calendar batches"
+      description="Each row appears on the Batch Calendar. Set Tour slug (or ID) from Admin → Departures so the date opens that tour page. Multiple dates can share the same tour slug."
+    >
+      <SectionRepeater
+        label="Group batches"
+        rows={groupBatches}
+        emptyRow={emptyLandingGroupBatch}
+        addLabel="Add batch"
+        onChange={(next) => setForm((current) => ({ ...current, _groupBatches: next }))}
+        renderRow={(row, index) => (
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Batch #">
+              <TextInput
+                value={row.batch}
+                onChange={(e) =>
+                  setForm((c) => ({
+                    ...c,
+                    _groupBatches: updateList(c._groupBatches, index, { batch: e.target.value }),
+                  }))
+                }
+              />
+            </Field>
+            <Field label="Category">
+              <SelectInput
+                value={row.category || "regular"}
+                onChange={(e) =>
+                  setForm((c) => ({
+                    ...c,
+                    _groupBatches: updateList(c._groupBatches, index, { category: e.target.value }),
+                  }))
+                }
+              >
+                <option value="special">Special</option>
+                <option value="regular">Regular</option>
+              </SelectInput>
+            </Field>
+            <Field label="Batch dates" hint='e.g. 21 – 25 Nov 2026'>
+              <TextInput
+                value={row.dates}
+                onChange={(e) =>
+                  setForm((c) => ({
+                    ...c,
+                    _groupBatches: updateList(c._groupBatches, index, { dates: e.target.value }),
+                  }))
+                }
+              />
+            </Field>
+            <Field label="Price">
+              <TextInput
+                value={row.price}
+                onChange={(e) =>
+                  setForm((c) => ({
+                    ...c,
+                    _groupBatches: updateList(c._groupBatches, index, { price: e.target.value }),
+                  }))
+                }
+              />
+            </Field>
+            <Field label="Departure name">
+              <TextInput
+                value={row.departureName}
+                onChange={(e) =>
+                  setForm((c) => ({
+                    ...c,
+                    _groupBatches: updateList(c._groupBatches, index, { departureName: e.target.value }),
+                  }))
+                }
+              />
+            </Field>
+            <Field label="Badge (optional)">
+              <TextInput
+                value={row.badge}
+                onChange={(e) =>
+                  setForm((c) => ({
+                    ...c,
+                    _groupBatches: updateList(c._groupBatches, index, { badge: e.target.value }),
+                  }))
+                }
+                placeholder="NEW YEAR"
+              />
+            </Field>
+            <Field
+              label="Tour slug"
+              hint="From Upcoming Departures — opens /tour/{slug}. Same slug on many rows → same tour page."
+            >
+              <TextInput
+                value={row.tourSlug}
+                onChange={(e) =>
+                  setForm((c) => ({
+                    ...c,
+                    _groupBatches: updateList(c._groupBatches, index, { tourSlug: e.target.value }),
+                  }))
+                }
+                placeholder="rann-full-moon-nov-2026"
+              />
+            </Field>
+            <Field label="Tour ID (optional)" hint="Use if slug is missing; same ID can be reused on multiple dates.">
+              <TextInput
+                value={row.tourId}
+                onChange={(e) =>
+                  setForm((c) => ({
+                    ...c,
+                    _groupBatches: updateList(c._groupBatches, index, { tourId: e.target.value }),
+                  }))
+                }
+              />
+            </Field>
+          </div>
+        )}
+      />
     </CardSection>
   );
 }

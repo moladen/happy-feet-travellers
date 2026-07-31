@@ -37,6 +37,7 @@ import { SITE_WHATSAPP_GROUP_URL, whatsappHref } from '@/lib/siteContact';
 import { sanitiseStockImageUrl } from '@/lib/stockImages';
 import LandingHeroPricingBadge from '@/components/landing/LandingHeroPricingBadge';
 import { resolveLandingHeroPricing } from '@/lib/landingHeroPricing';
+import { enrichBatchesWithTourLinks } from '@/lib/batchTourLinks';
 
 function FaqGroup({ title, items }) {
   if (!items?.length) return null;
@@ -62,9 +63,9 @@ function FaqGroup({ title, items }) {
 
 /**
  * Master Rann season landing — section order matches client campaign brief.
- * @param {{ page: object; settings: object; relatedBlogs?: object[] }} props
+ * @param {{ page: object; settings: object; relatedBlogs?: object[]; calendarTours?: object[] }} props
  */
-export default function RannSeasonLandingView({ page, settings, relatedBlogs = [] }) {
+export default function RannSeasonLandingView({ page, settings, relatedBlogs = [], calendarTours = [] }) {
   const whyVisit = Array.isArray(page.whyVisit) ? page.whyVisit : [];
   const packages = Array.isArray(page.packages) ? page.packages : [];
   const faqGroups = groupFaqsByCategory(page.faqs || []);
@@ -76,10 +77,11 @@ export default function RannSeasonLandingView({ page, settings, relatedBlogs = [
     page.customBlocks && typeof page.customBlocks === 'object' ? page.customBlocks : {};
   const whyVisitHeading = customBlocks.whyVisitHeading || RANN_WHY_VISIT_HEADING;
   const bestTime = page.bestTimeToVisit || BEST_TIME_TO_VISIT;
-  const batches =
+  const rawBatches =
     Array.isArray(page.groupBatches) && page.groupBatches.length > 0
       ? page.groupBatches
       : RANN_GROUP_BATCHES;
+  const batches = enrichBatchesWithTourLinks(rawBatches, calendarTours);
   const addons = page.addOns || RANN_ADDONS;
   const trainInfo = page.trainInfo || RANN_TRAIN_INFO;
   const dholavira = page.dholaviraSection || RANN_DHOLAVIRA;

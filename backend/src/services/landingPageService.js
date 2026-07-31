@@ -2,6 +2,8 @@ const prisma = require('@/config/database');
 const AppError = require('@/utils/AppError');
 const { withDatabaseErrors } = require('@/utils/databaseErrors');
 const { generateSlug } = require('@/utils/slugGenerator');
+const { enrichGroupBatchesWithTours } = require('@/utils/groupBatchTourLinks');
+const { activeDepartureWhere } = require('@/utils/departureExpiry');
 
 const landingInclude = {
   packages: { orderBy: { sortOrder: 'asc' } },
@@ -194,6 +196,43 @@ function expandLandingPage(page) {
   };
 }
 
+async function loadCalendarLinkTours() {
+  return prisma.tour.findMany({
+    where: activeDepartureWhere(),
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      destination: true,
+      subCategory: true,
+      seriesSlug: true,
+      tags: true,
+      startDate: true,
+      endDate: true,
+      dateLabel: true,
+    },
+    take: 200,
+    orderBy: [{ startDate: 'asc' }],
+  });
+}
+
+async function expandLandingPageForPublic(page) {
+  const expanded = expandLandingPage(page);
+  if (!Array.isArray(expanded.groupBatches) || !expanded.groupBatches.length) {
+    return expanded;
+  }
+
+  try {
+    const tours = await loadCalendarLinkTours();
+    return {
+      ...expanded,
+      groupBatches: enrichGroupBatchesWithTours(expanded.groupBatches, tours),
+    };
+  } catch {
+    return expanded;
+  }
+}
+
 async function getLandingPage(idOrSlug, { admin = false } = {}) {
   return withDatabaseErrors(async () => {
     const where = { OR: [{ id: String(idOrSlug) }, { slug: String(idOrSlug) }] };
@@ -205,7 +244,7 @@ async function getLandingPage(idOrSlug, { admin = false } = {}) {
     if (!admin && page.status !== 'published') {
       throw AppError.notFound('Landing page not found');
     }
-    return admin ? page : expandLandingPage(page);
+    return admin ? page : expandLandingPageForPublic(page);
   });
 }
 

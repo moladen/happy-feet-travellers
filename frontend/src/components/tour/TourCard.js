@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { getTourDetailHref } from '@/lib/tourDisplay';
+import { formatDepartureDateLabelCompact } from '@/lib/departureExperience';
 import { resolveTourPriceAmount } from '@/lib/tourPrice';
 import {
   buildReserveSeatHref,
@@ -76,7 +77,7 @@ function CardBody({ tour, detailHref, rating }) {
         </Link>
       </h3>
       <div className="mb-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-foreground/90">
-        <span className="inline-flex items-center gap-1.5">📅 {tour.date || tour.dateLabel || 'Dates on request'}</span>
+        <span className="inline-flex items-center gap-1.5">📅 {formatDepartureDateLabelCompact(tour)}</span>
       </div>
       <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-foreground/85">
         <span>⏱️ {tour.durationLabel || tour.duration}</span>
