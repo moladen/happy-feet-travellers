@@ -3,6 +3,7 @@ import "./globals.css";
 import AppChrome from "@/components/common/AppChrome";
 import JsonLd from "@/components/seo/JsonLd";
 import { buildOrganizationSchema } from "@/lib/schema/organization";
+import { getSiteUrl } from "@/lib/schema/siteUrl";
 import { getPublicSettings } from "@/services/settingsService";
 
 const poppins = Poppins({
@@ -18,6 +19,7 @@ const oswald = Oswald({
 });
 
 export const metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: "Happy Feet Travellers — Curated Group Tours Across India & Beyond",
   description:
     "Experience-first group departures and carefully curated travel across India. Honest pricing, smaller groups, and support from enquiry to homecoming.",

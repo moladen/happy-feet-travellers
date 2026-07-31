@@ -6,6 +6,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { buildFaqSchema } from '@/lib/schema/faq';
 import { getSiteUrl } from '@/lib/schema/siteUrl';
 import { buildTourTravelPackageSchema } from '@/lib/schema/travelPackage';
+import { buildTourPageMetadata } from '@/lib/tourOpenGraph';
 import { getTourById, getTours, getPersonalizedTrips } from '@/services/api';
 import { getPublicSettings } from '@/services/settingsService';
 import SectionState from '@/components/common/SectionState';
@@ -16,19 +17,7 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const tour = await getTourById(id);
-  if (!tour) {
-    return {
-      title: 'Tour Details - Happy Feet Travellers',
-      description: 'View detailed information about this tour',
-    };
-  }
-  const description =
-    tour.seoDescription ||
-    (tour.description ? String(tour.description).trim().slice(0, 160) : '');
-  return {
-    title: tour.seoTitle || `${tour.title} - Happy Feet Travellers`,
-    description: description || 'View detailed information about this tour',
-  };
+  return buildTourPageMetadata(tour, id);
 }
 
 export default async function TourPage({ params }) {
