@@ -118,9 +118,6 @@ export function resolveBatchPrice(batch, variant = 'regular') {
 
 function parseBatchStartTime(batch) {
   const text = String(batch?.dates || batch?.date || '').trim();
-  const match = text.match(/(\d{1,2})\s*[–-]\s*\d{1,2}\s+([A-Za-z]+)\s+(\d{4})/);
-  if (!match) return Number(batch?.batch) || 0;
-
   const months = {
     jan: 0,
     feb: 1,
@@ -135,9 +132,30 @@ function parseBatchStartTime(batch) {
     nov: 10,
     dec: 11,
   };
-  const month = months[match[2].slice(0, 3).toLowerCase()];
-  if (month === undefined) return Number(batch?.batch) || 0;
-  return new Date(Number(match[3]), month, Number(match[1])).getTime();
+
+  // Same month: "5 – 9 Dec 2026"
+  const sameMonth = text.match(/^(\d{1,2})\s*[–\-]\s*\d{1,2}\s+([A-Za-z]+)\s+(\d{4})$/);
+  if (sameMonth) {
+    const month = months[sameMonth[2].slice(0, 3).toLowerCase()];
+    if (month !== undefined) {
+      return new Date(Number(sameMonth[3]), month, Number(sameMonth[1])).getTime();
+    }
+  }
+
+  // Cross month: "27 Feb – 3 Mar 2027"
+  const crossMonth = text.match(
+    /^(\d{1,2})\s+([A-Za-z]+)\s*[–\-]\s*\d{1,2}\s+([A-Za-z]+)\s+(\d{4})$/
+  );
+  if (crossMonth) {
+    const month = months[crossMonth[2].slice(0, 3).toLowerCase()];
+    if (month !== undefined) {
+      return new Date(Number(crossMonth[4]), month, Number(crossMonth[1])).getTime();
+    }
+  }
+
+  // Unknown format — keep relative order by batch number after dated rows
+  const batchNo = Number(batch?.batch);
+  return Number.isFinite(batchNo) ? Number.MAX_SAFE_INTEGER - 1000 + batchNo : Number.MAX_SAFE_INTEGER;
 }
 
 export function sortBatchesChronologically(batches = []) {
