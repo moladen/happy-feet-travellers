@@ -1,9 +1,12 @@
-import { TRAVEL_FALLBACK_IMAGE } from '@/lib/stockImages';
-import { getSiteUrl, toAbsoluteUrl } from '@/lib/schema/siteUrl';
+import {
+  getDefaultShareImageUrl,
+  getSiteUrl,
+  toAbsoluteUrl,
+} from '@/lib/schema/siteUrl';
+import { normaliseUploadUrl } from '@/lib/heroSlides';
 
 /**
  * Pick the tour hero/card image (same priority as the public tour page).
- * Prefer normalised `tour.image` from getTourById, then cover, gallery, fallback.
  * @param {object|null|undefined} tour
  * @returns {string}
  */
@@ -23,17 +26,19 @@ export function getTourHeroImageSrc(tour) {
     ).trim();
   };
 
-  return (
-    asSrc(tour?.image) ||
+  const raw =
     asSrc(tour?.coverImage) ||
+    asSrc(tour?.image) ||
     asSrc(Array.isArray(tour?.gallery) ? tour.gallery[0] : null) ||
     asSrc(Array.isArray(tour?.images) ? tour.images[0] : null) ||
-    ''
-  );
+    '';
+
+  return normaliseUploadUrl(raw) || raw;
 }
 
 /**
- * Absolute, publicly reachable image URL for Open Graph / Twitter cards.
+ * Absolute HTTPS image URL for Open Graph / Twitter cards.
+ * Always public-site origin for /uploads (never localhost or raw VPS http://).
  * @param {object|null|undefined} tour
  * @param {string} [siteUrl]
  * @returns {string}
@@ -41,8 +46,12 @@ export function getTourHeroImageSrc(tour) {
 export function getTourShareImageUrl(tour, siteUrl = getSiteUrl()) {
   const raw = getTourHeroImageSrc(tour);
   const absolute = toAbsoluteUrl(raw, siteUrl);
-  if (!absolute || /^(data:|blob:)/i.test(absolute)) {
-    return TRAVEL_FALLBACK_IMAGE;
+  if (!absolute || !/^https:\/\//i.test(absolute)) {
+    // Allow http only for local dev previews
+    if (absolute && /^http:\/\/localhost/i.test(absolute) && process.env.NODE_ENV !== 'production') {
+      return absolute;
+    }
+    return getDefaultShareImageUrl(siteUrl);
   }
   return absolute;
 }
@@ -51,17 +60,19 @@ export function getTourShareImageUrl(tour, siteUrl = getSiteUrl()) {
  * App Router metadata for a public tour detail page.
  * @param {object|null|undefined} tour
  * @param {string} [routeSegment] slug or id from the URL
+ * @param {{ siteUrl?: string }} [options]
  */
-export function buildTourPageMetadata(tour, routeSegment) {
-  const siteUrl = getSiteUrl();
+export function buildTourPageMetadata(tour, routeSegment, options = {}) {
+  const siteUrl = options.siteUrl || getSiteUrl();
   const key = encodeURIComponent(String(tour?.slug || tour?.id || routeSegment || '').trim());
   const pageUrl = `${siteUrl}/tour/${key}`;
+  const fallbackImage = getDefaultShareImageUrl(siteUrl);
 
   if (!tour) {
     const title = 'Tour Details - Happy Feet Travellers';
     const description = 'View detailed information about this tour';
-    const image = TRAVEL_FALLBACK_IMAGE;
     return {
+      metadataBase: new URL(siteUrl),
       title,
       description,
       openGraph: {
@@ -70,13 +81,22 @@ export function buildTourPageMetadata(tour, routeSegment) {
         url: pageUrl,
         type: 'website',
         siteName: 'Happy Feet Travellers',
-        images: [{ url: image, alt: title }],
+        images: [
+          {
+            url: fallbackImage,
+            secureUrl: fallbackImage,
+            width: 1200,
+            height: 630,
+            alt: title,
+            type: 'image/jpeg',
+          },
+        ],
       },
       twitter: {
         card: 'summary_large_image',
         title,
         description,
-        images: [image],
+        images: [fallbackImage],
       },
     };
   }
@@ -84,12 +104,13 @@ export function buildTourPageMetadata(tour, routeSegment) {
   const title = tour.seoTitle || `${tour.title} - Happy Feet Travellers`;
   const description =
     tour.seoDescription ||
-    (tour.description ? String(tour.description).trim().slice(0, 160) : '') ||
+    (tour.description ? String(tour.description).replace(/\s+/g, ' ').trim().slice(0, 160) : '') ||
     'View detailed information about this tour';
   const image = getTourShareImageUrl(tour, siteUrl);
   const imageAlt = tour.title || title;
 
   return {
+    metadataBase: new URL(siteUrl),
     title,
     description,
     alternates: {
@@ -101,9 +122,13 @@ export function buildTourPageMetadata(tour, routeSegment) {
       url: pageUrl,
       type: 'website',
       siteName: 'Happy Feet Travellers',
+      locale: 'en_IN',
       images: [
         {
           url: image,
+          secureUrl: image,
+          width: 1200,
+          height: 630,
           alt: imageAlt,
         },
       ],

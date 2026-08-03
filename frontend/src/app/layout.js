@@ -3,7 +3,6 @@ import "./globals.css";
 import AppChrome from "@/components/common/AppChrome";
 import JsonLd from "@/components/seo/JsonLd";
 import { buildOrganizationSchema } from "@/lib/schema/organization";
-import { getSiteUrl } from "@/lib/schema/siteUrl";
 import { getPublicSettings } from "@/services/settingsService";
 
 const poppins = Poppins({
@@ -19,12 +18,27 @@ const oswald = Oswald({
 });
 
 export const metadata = {
-  metadataBase: new URL(getSiteUrl()),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.SITE_URL ||
+      (process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : 'https://www.happyfeettravellers.com')
+  ),
   title: "Happy Feet Travellers — Curated Group Tours Across India & Beyond",
   description:
     "Experience-first group departures and carefully curated travel across India. Honest pricing, smaller groups, and support from enquiry to homecoming.",
   keywords:
     "group tours India, curated travel experiences, small group travel, customized holidays, tour operator India",
+  openGraph: {
+    type: 'website',
+    siteName: 'Happy Feet Travellers',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
   other: {
     "facebook-domain-verification": "c1dhxxrbj9tx9urr1yerednkmz3t3h",
   },

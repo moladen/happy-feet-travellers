@@ -17,6 +17,7 @@ If the site shows “Loading departures…”, the frontend is up but it cannot 
    |------|--------|
    | `API_PROXY_TARGET` | `http://YOUR_VPS_IP:5080` (no trailing slash) |
    | `NEXT_PUBLIC_API_URL` | `/api` |
+   | `NEXT_PUBLIC_SITE_URL` | `https://YOUR_LIVE_DOMAIN` (no trailing slash) — **required for WhatsApp/Facebook tour thumbnails** |
    | `NEXT_PUBLIC_GOOGLE_REVIEWS_URL` | Your Google Business profile URL (homepage reviews badge) |
 
    Browser calls same-origin `/api/...`; Vercel proxies to your VPS. Server-side pages use `API_PROXY_TARGET` automatically.
@@ -26,6 +27,7 @@ If the site shows “Loading departures…”, the frontend is up but it cannot 
    | Name | Value |
    |------|--------|
    | `NEXT_PUBLIC_API_URL` | `https://YOUR_API_HOST/api` |
+   | `NEXT_PUBLIC_SITE_URL` | `https://YOUR_LIVE_DOMAIN` (no trailing slash) |
    | `NEXT_PUBLIC_GOOGLE_REVIEWS_URL` | Your Google Business profile URL |
 
    Replace `YOUR_API_HOST` with your real API domain (HTTPS in production).

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { headers } from 'next/headers';
 import RelatedBlogsSection from '@/components/content/RelatedBlogsSection';
 import TourDetails from '@/components/tour/TourDetails';
 import RelatedToursScroll from '@/components/tour/RelatedToursScroll';
@@ -16,12 +17,16 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
+  const requestHeaders = await headers();
+  const siteUrl = getSiteUrl(requestHeaders);
   const tour = await getTourById(id);
-  return buildTourPageMetadata(tour, id);
+  return buildTourPageMetadata(tour, id, { siteUrl });
 }
 
 export default async function TourPage({ params }) {
   const { id } = await params;
+  const requestHeaders = await headers();
+  const siteUrl = getSiteUrl(requestHeaders);
   const [tour, settings] = await Promise.all([getTourById(id), getPublicSettings()]);
 
   if (!tour) {
@@ -54,7 +59,7 @@ export default async function TourPage({ params }) {
   const toursListHref = isCustomized ? '/customized-trips' : '/upcoming-departures';
   const toursListLabel = isCustomized ? 'Personalized tours' : 'Upcoming departures';
   const tourKey = tour.slug || tour.id;
-  const tourUrl = `${getSiteUrl()}/tour/${encodeURIComponent(tourKey)}`;
+  const tourUrl = `${siteUrl}/tour/${encodeURIComponent(tourKey)}`;
   const structuredData = [
     buildTourTravelPackageSchema(tour, tourUrl),
     buildFaqSchema(tour.faqs),
