@@ -16,13 +16,18 @@ import {
 
 /**
  * Absolute HTTPS share image for a landing page.
- * Prefers ogImage → heroBannerImage → Rann hero → site default.
+ * Match the on-page hero first (heroBannerImage), then optional ogImage override,
+ * then Rann static hero / site default.
  */
 export function getLandingShareImageUrl(page, siteUrl = getSiteUrl()) {
   const candidates = [
-    page?.ogImage,
     page?.heroBannerImage,
+    page?.ogImage,
     page?.slug === RANN_SLUG ? RANN_HERO_IMAGE : null,
+    // Same fallback the Rann hero UI uses when banner is empty
+    page?.slug === RANN_SLUG
+      ? 'https://images.unsplash.com/photo-1516939884455-1445c8652f83?w=2400&h=1400&fit=crop'
+      : null,
   ];
 
   for (const candidate of candidates) {
