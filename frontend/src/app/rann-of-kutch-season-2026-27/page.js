@@ -1,39 +1,26 @@
+import { headers } from 'next/headers';
 import RannSeasonLandingView from '@/components/rann/RannSeasonLandingView';
 import JsonLd from '@/components/seo/JsonLd';
 import { buildFaqSchema } from '@/lib/schema/faq';
 import { buildReviewSchema } from '@/lib/schema/reviews';
+import { getSiteUrl } from '@/lib/schema/siteUrl';
+import { buildLandingPageMetadata } from '@/lib/landingOpenGraph';
 import {
   buildStaticRannPage,
   fetchLandingPageBySlug,
   fetchRannRelatedContent,
   RANN_SLUG,
 } from '@/services/landingPageService';
-import {
-  RANN_SEASON_TITLE,
-  RANN_SEO_DESCRIPTION,
-  RANN_SEO_KEYWORDS,
-  RANN_SEO_TITLE,
-} from '@/lib/rannSeasonContent';
 import { getPublicSettings } from '@/services/settingsService';
 import { getUpcomingDepartures } from '@/services/upcomingDeparturesService';
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata() {
+  const requestHeaders = await headers();
+  const siteUrl = getSiteUrl(requestHeaders);
   const page = await fetchLandingPageBySlug(RANN_SLUG).catch(() => buildStaticRannPage());
-  const title = page?.seoTitle || RANN_SEO_TITLE;
-  const description = page?.seoDescription || RANN_SEO_DESCRIPTION;
-  return {
-    title,
-    description,
-    keywords: page?.seoKeywords || RANN_SEO_KEYWORDS,
-    openGraph: {
-      title: page?.seoTitle || page?.title || RANN_SEASON_TITLE,
-      description,
-      type: 'website',
-      images: page?.ogImage || page?.heroBannerImage ? [{ url: page.ogImage || page.heroBannerImage }] : undefined,
-    },
-  };
+  return buildLandingPageMetadata(page, { siteUrl, slug: RANN_SLUG });
 }
 
 export default async function RannSeasonPage() {

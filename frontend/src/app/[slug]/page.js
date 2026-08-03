@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import RannSeasonLandingView from '@/components/rann/RannSeasonLandingView';
@@ -6,6 +7,8 @@ import JsonLd from '@/components/seo/JsonLd';
 import { isReservedSlug } from '@/lib/reservedSlugs';
 import { buildFaqSchema } from '@/lib/schema/faq';
 import { buildReviewSchema } from '@/lib/schema/reviews';
+import { getSiteUrl } from '@/lib/schema/siteUrl';
+import { buildLandingPageMetadata } from '@/lib/landingOpenGraph';
 import {
   fetchLandingPageBySlug,
   fetchPublishedLandingSlugs,
@@ -24,19 +27,13 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
+  const requestHeaders = await headers();
+  const siteUrl = getSiteUrl(requestHeaders);
   const page = await fetchLandingPageBySlug(slug);
-  if (!page) return { title: 'Landing Page' };
-
-  return {
-    title: page.seoTitle || `${page.title} | Happy Feet Travellers`,
-    description: page.seoDescription || page.heroSubheading || undefined,
-    keywords: page.seoKeywords?.length ? page.seoKeywords : undefined,
-    openGraph: {
-      title: page.seoTitle || page.title,
-      description: page.seoDescription || undefined,
-      images: page.ogImage ? [{ url: page.ogImage }] : undefined,
-    },
-  };
+  if (!page) {
+    return buildLandingPageMetadata(null, { siteUrl, slug });
+  }
+  return buildLandingPageMetadata(page, { siteUrl, slug });
 }
 
 export default async function DynamicLandingPage({ params }) {
