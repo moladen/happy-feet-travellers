@@ -3,7 +3,7 @@
  * Prefer explicit tourSlug / tourId from CMS/DB; optionally enrich by matching departure dates.
  */
 
-import { getTourDetailHref } from '@/lib/tourDisplay';
+import { getTourDetailHref, normalizeTourKey } from '@/lib/tourDisplay';
 import { RANN_SEASON_PATH } from '@/lib/rannSeasonContent';
 
 /** Scroll target on the Rann landing page when no tour link is available. */
@@ -113,7 +113,7 @@ function isRannRelatedTour(tour) {
 }
 
 function explicitTourKey(batch) {
-  return String(batch?.tourSlug || batch?.tourId || batch?.slug || '').trim();
+  return normalizeTourKey(batch?.tourSlug || batch?.tourId || batch?.slug);
 }
 
 /**
@@ -199,7 +199,7 @@ export function enrichBatchesWithTourLinks(batches = [], tours = []) {
         : null;
       return {
         ...batch,
-        tourSlug: matched?.slug || batch.tourSlug || existingKey,
+        tourSlug: matched?.slug || existingKey,
         tourId: matched?.id || batch.tourId || undefined,
       };
     }

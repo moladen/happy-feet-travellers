@@ -8,6 +8,7 @@ import { buildFaqSchema } from '@/lib/schema/faq';
 import { getSiteUrl } from '@/lib/schema/siteUrl';
 import { buildTourTravelPackageSchema } from '@/lib/schema/travelPackage';
 import { buildTourPageMetadata } from '@/lib/tourOpenGraph';
+import { normalizeTourKey } from '@/lib/tourDisplay';
 import { getTourById, getTours, getPersonalizedTrips } from '@/services/api';
 import { getPublicSettings } from '@/services/settingsService';
 import SectionState from '@/components/common/SectionState';
@@ -16,7 +17,7 @@ import { USER_MESSAGES } from '@/lib/userMessages';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
-  const { id } = await params;
+  const id = normalizeTourKey((await params).id);
   const requestHeaders = await headers();
   const siteUrl = getSiteUrl(requestHeaders);
   const tour = await getTourById(id);
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function TourPage({ params }) {
-  const { id } = await params;
+  const id = normalizeTourKey((await params).id);
   const requestHeaders = await headers();
   const siteUrl = getSiteUrl(requestHeaders);
   const [tour, settings] = await Promise.all([getTourById(id), getPublicSettings()]);

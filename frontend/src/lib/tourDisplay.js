@@ -22,8 +22,29 @@ export function mapTourToPackageCard(tour) {
   };
 }
 
+/**
+ * Accept a bare slug/id or a pasted tour URL (e.g. "https://site.com/tour/my-slug?x=1")
+ * and return just the slug/id.
+ */
+export function normalizeTourKey(value) {
+  let key = String(value ?? '').trim();
+  if (!key) return '';
+  try {
+    key = decodeURIComponent(key);
+  } catch {
+    // keep as-is
+  }
+  key = key.replace(/[?#].*$/, '');
+  const match = key.match(/\/tour\/([^/]+)/i);
+  if (match) return match[1];
+  if (/^https?:\/\//i.test(key)) {
+    return key.replace(/\/+$/, '').split('/').pop() || '';
+  }
+  return key.replace(/^\/+|\/+$/g, '');
+}
+
 /** Public tour detail page (App Router: /tour/[id]) */
 export function getTourDetailHref(tourOrCard) {
-  const key = tourOrCard?.slug || tourOrCard?.id;
+  const key = normalizeTourKey(tourOrCard?.slug || tourOrCard?.id);
   return key ? `/tour/${encodeURIComponent(key)}` : '/contact';
 }

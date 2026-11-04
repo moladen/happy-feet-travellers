@@ -1,4 +1,5 @@
 import { parsePriceInput, resolveTourPriceAmount } from '@/lib/tourPrice';
+import { normalizeTourKey } from '@/lib/tourDisplay';
 import {
   buildFullMoonCalendarEntries,
   FULL_MOON_SECTION,
@@ -1096,8 +1097,8 @@ export function buildLandingPayload(form) {
   const groupBatches = (form._groupBatches || [])
     .filter((row) => String(row.dates || row.departureName || "").trim())
     .map((row, index) => {
-      const tourSlug = String(row.tourSlug || "").trim();
-      const tourId = String(row.tourId || "").trim();
+      const tourSlug = normalizeTourKey(row.tourSlug);
+      const tourId = normalizeTourKey(row.tourId);
       return {
         batch: Number(row.batch) || index + 1,
         dates: String(row.dates || "").trim(),

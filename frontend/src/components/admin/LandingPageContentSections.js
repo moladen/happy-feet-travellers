@@ -668,7 +668,7 @@ export function LandingGroupBatchesSection({ groupBatches, setForm }) {
             </Field>
             <Field
               label="Tour slug"
-              hint="From Upcoming Departures — opens /tour/{slug}. Same slug on many rows → same tour page."
+              hint="Slug or full tour URL (e.g. https://www.happyfeettravellers.com/tour/{slug}). Same slug on many rows → same tour page."
             >
               <TextInput
                 value={row.tourSlug}
