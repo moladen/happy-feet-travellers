@@ -105,7 +105,8 @@ const createPersonalizedTripSchema = createTourSchema
   .fork(['departureCity'], (s) => s.optional().default('India'));
 
 const schemas = {
-  createTour: createTourSchema,
+  // Admin edits every tour type via /tours — keep personalized fields or stripUnknown drops them.
+  createTour: createTourSchema.keys(personalizedTripExtras),
   createUpcomingDeparture: createUpcomingDepartureSchema,
   updateUpcomingDeparture: createUpcomingDepartureSchema.fork(
     ['title', 'description', 'duration', 'price', 'departureCity'],
@@ -116,7 +117,7 @@ const schemas = {
     ['title', 'description', 'duration', 'price', 'departureCity'],
     (s) => s.optional()
   ).min(1),
-  updateTour: createTourSchema.fork(
+  updateTour: createTourSchema.keys(personalizedTripExtras).fork(
     ['title', 'description', 'duration', 'price', 'departureCity', 'category'],
     (s) => s.optional()
   ).min(1),
