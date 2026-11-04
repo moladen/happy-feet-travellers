@@ -9,6 +9,7 @@ import DepartureToursScroll from '@/components/tour/DepartureToursScroll';
 import RannSeasonPromo from '@/components/campaign/RannSeasonPromo';
 import SectionState from '@/components/common/SectionState';
 import { USER_MESSAGES } from '@/lib/userMessages';
+import { filterUpcomingVisibleTours, getNextUpcomingDateKey } from '@/lib/departureMonth';
 
 const EASE = [0.22, 1, 0.36, 1];
 
@@ -120,11 +121,9 @@ export default function TripsCarousel() {
     };
   }, []);
 
-  const list = [...tours].sort((a, b) => {
-    const ta = a.startDate ? new Date(a.startDate).getTime() : 0;
-    const tb = b.startDate ? new Date(b.startDate).getTime() : 0;
-    return ta - tb;
-  });
+  const list = filterUpcomingVisibleTours(tours).sort((a, b) =>
+    getNextUpcomingDateKey(a).localeCompare(getNextUpcomingDateKey(b))
+  );
 
   const lede = loading
     ? 'Fixed-date journeys across India — intimate groups, honest pricing, and routes chosen for how they feel.'

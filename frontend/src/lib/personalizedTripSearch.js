@@ -24,9 +24,13 @@ const PRICE_OPTIONS = [
 
 const DURATION_OPTIONS = [
   { value: '', label: 'Any duration' },
-  { value: '3-5', label: '3–5 days' },
-  { value: '6-8', label: '6–8 days' },
-  { value: '9plus', label: '9+ days' },
+  { value: '1-2', label: '1-2 Days' },
+  { value: '2-3', label: '2-3 Days' },
+  { value: '3-4', label: '3-4 Days' },
+  { value: '4-5', label: '4-5 Days' },
+  { value: '5-6', label: '5-6 Days' },
+  { value: '6-7', label: '6-7 Days' },
+  { value: '7plus', label: '7+ Days' },
 ];
 
 export { PRICE_OPTIONS, DURATION_OPTIONS };
@@ -79,10 +83,10 @@ function matchesDurationFilter(tour, durationKey) {
   if (!durationKey) return true;
   const days = resolveDurationDays(tour);
   if (!days) return false;
-  if (durationKey === '3-5') return days >= 3 && days <= 5;
-  if (durationKey === '6-8') return days >= 6 && days <= 8;
-  if (durationKey === '9plus') return days >= 9;
-  return true;
+  if (durationKey === '7plus' || durationKey === '9plus') return days >= 7;
+  const match = String(durationKey).match(/^(\d+)-(\d+)$/);
+  if (!match) return true;
+  return days >= Number(match[1]) && days <= Number(match[2]);
 }
 
 /** Match state name, departure city, or destination (partial, case-insensitive). */

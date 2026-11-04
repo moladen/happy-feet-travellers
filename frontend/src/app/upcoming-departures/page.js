@@ -14,6 +14,7 @@ import { getPublicSettings } from '@/services/settingsService';
 import RannSeasonPromo from '@/components/campaign/RannSeasonPromo';
 import SectionState from '@/components/common/SectionState';
 import { USER_MESSAGES } from '@/lib/userMessages';
+import { groupUpcomingToursByMonth } from '@/lib/departureMonth';
 
 export const metadata = {
   title: 'Upcoming Departures - Happy Feet Travellers',
@@ -52,15 +53,8 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
     .filter((tour) => String(tour.category ?? '').trim().toLowerCase() === 'upcoming')
     .filter((tour) => tourMatchesDepartureSearch(tour, search));
 
-  const groupedTours = upcomingTours.reduce((acc, tour) => {
-    const date = tour.startDate ? new Date(tour.startDate) : new Date();
-    const monthYear = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-    if (!acc[monthYear]) {
-      acc[monthYear] = [];
-    }
-    acc[monthYear].push(tour);
-    return acc;
-  }, {});
+  const groupedTours = groupUpcomingToursByMonth(upcomingTours);
+  const visibleCount = groupedTours.reduce((count, group) => count + group.tours.length, 0);
 
   const hasFilters = Boolean(
     search.q?.trim() ||
@@ -95,11 +89,11 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
         </Suspense>
 
         <div className="upcoming-departures-page__months space-y-10 md:space-y-12">
-          {Object.entries(groupedTours).map(([monthYear, monthTours]) => (
-            <section key={monthYear} className="upcoming-departures-page__month">
+          {groupedTours.map(({ month, tours: monthTours }) => (
+            <section key={month} className="upcoming-departures-page__month">
               <div className="upcoming-departures-page__month-head mb-5 flex items-center gap-3 md:mb-6">
                 <span className="hidden h-px flex-1 bg-gradient-to-r from-transparent via-[#d4c4a8] to-transparent sm:block" />
-                <h2 className="shrink-0 font-display text-xl font-bold text-primary md:text-2xl">{monthYear}</h2>
+                <h2 className="shrink-0 font-display text-xl font-bold text-primary md:text-2xl">{month}</h2>
                 <span className="hidden h-px flex-1 bg-gradient-to-r from-transparent via-[#d4c4a8] to-transparent sm:block" />
               </div>
               {monthTours.length > 0 ? (
@@ -120,7 +114,7 @@ export default async function UpcomingDeparturesPage({ searchParams }) {
           />
         )}
 
-        {!apiError && upcomingTours.length === 0 && (
+        {!apiError && visibleCount === 0 && (
           <SectionState
             type="empty"
             className="py-4"

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { buildDeparturesUrl, parseDepartureSearchParams } from '@/lib/departureSearch';
+import { buildDeparturesUrl, DURATION_OPTIONS, parseDepartureSearchParams } from '@/lib/departureSearch';
 
 const SUB_OPTIONS = [
   { value: '', label: 'All Categories' },
@@ -17,13 +17,6 @@ const PRICE_OPTIONS = [
   { value: 'under-10k', label: 'Under ₹10,000' },
   { value: '10-20k', label: '₹10,000 - ₹20,000' },
   { value: '20k-plus', label: '₹20,000+' },
-];
-
-const DURATION_OPTIONS = [
-  { value: '', label: 'Any Duration' },
-  { value: '3-4', label: '3-4 Days' },
-  { value: '5-6', label: '5-6 Days' },
-  { value: '7plus', label: '7+ Days' },
 ];
 
 export default function DepartureFilters() {

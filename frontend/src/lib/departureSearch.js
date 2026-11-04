@@ -16,6 +16,35 @@ const MONTH_LABELS = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
+export const DURATION_OPTIONS = [
+  { value: '', label: 'Any Duration' },
+  { value: '1-2', label: '1-2 Days' },
+  { value: '2-3', label: '2-3 Days' },
+  { value: '3-4', label: '3-4 Days' },
+  { value: '4-5', label: '4-5 Days' },
+  { value: '5-6', label: '5-6 Days' },
+  { value: '6-7', label: '6-7 Days' },
+  { value: '7plus', label: '7+ Days' },
+];
+
+/** @returns {{ min: number, max: number } | null} */
+export function durationFilterRange(durationKey) {
+  const key = String(durationKey || '').trim();
+  if (!key) return null;
+  if (key === '7plus') return { min: 7, max: Infinity };
+  const match = key.match(/^(\d+)-(\d+)$/);
+  if (!match) return null;
+  return { min: Number(match[1]), max: Number(match[2]) };
+}
+
+export function tourMatchesDurationKey(days, durationKey) {
+  const range = durationFilterRange(durationKey);
+  if (!range) return true;
+  const n = Number(days);
+  if (!Number.isFinite(n) || n <= 0) return false;
+  return n >= range.min && n <= range.max;
+}
+
 /** `2026-05` → `May 2026` for departures URL / API */
 export function monthInputToLabel(value) {
   if (!value || !/^\d{4}-\d{2}$/.test(value)) return '';
@@ -75,14 +104,11 @@ export function buildApiTourQuery(search) {
     api.maxPrice = 20000;
   } else if (price === '20k-plus') api.minPrice = 20001;
 
-  const duration = search.duration;
-  if (duration === '3-4') {
-    api.minDuration = 3;
-    api.maxDuration = 4;
-  } else if (duration === '5-6') {
-    api.minDuration = 5;
-    api.maxDuration = 6;
-  } else if (duration === '7plus') api.minDuration = 7;
+  const durationRange = durationFilterRange(search.duration);
+  if (durationRange) {
+    api.minDuration = durationRange.min;
+    if (Number.isFinite(durationRange.max)) api.maxDuration = durationRange.max;
+  }
 
   const monthRaw = normaliseSearch(search.month);
   if (monthRaw) {
@@ -118,6 +144,7 @@ export function tourMatchesDepartureSearch(tour, search) {
     tour.duration,
     tour.durationLabel,
     monthLabel(tour.startDate),
+    tour.dateLabel,
     ...(Array.isArray(tour.highlights) ? tour.highlights : []),
     ...(Array.isArray(tour.tags) ? tour.tags : []),
   ]
@@ -138,10 +165,7 @@ export function tourMatchesDepartureSearch(tour, search) {
   else if (price === '20k-plus') priceMatch = amount > 20000;
 
   const days = parseInt(tour.duration, 10);
-  let durationMatch = true;
-  if (duration === '3-4') durationMatch = days >= 3 && days <= 4;
-  else if (duration === '5-6') durationMatch = days >= 5 && days <= 6;
-  else if (duration === '7plus') durationMatch = days >= 7;
+  const durationMatch = tourMatchesDurationKey(days, duration);
 
   return queryMatch && monthMatch && subMatch && priceMatch && durationMatch;
 }

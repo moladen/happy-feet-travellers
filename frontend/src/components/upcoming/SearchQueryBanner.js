@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { buildDeparturesUrl, parseDepartureSearchParams } from '@/lib/departureSearch';
+import { buildDeparturesUrl, DURATION_OPTIONS, parseDepartureSearchParams } from '@/lib/departureSearch';
 
 const PRICE_LABELS = {
   'under-10k': 'Under ₹10,000',
@@ -10,11 +10,9 @@ const PRICE_LABELS = {
   '20k-plus': '₹20,000+',
 };
 
-const DURATION_LABELS = {
-  '3-4': '3–4 days',
-  '5-6': '5–6 days',
-  '7plus': '7+ days',
-};
+const DURATION_LABELS = Object.fromEntries(
+  DURATION_OPTIONS.filter((opt) => opt.value).map((opt) => [opt.value, opt.label])
+);
 
 const SUB_LABELS = {
   beaches: 'Beaches',
