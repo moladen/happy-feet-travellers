@@ -154,6 +154,9 @@ export default function TourDetails({ tour, whatsappNumber }) {
   const itinerary = tour.itinerary || [];
   const terms = tour.terms || [];
   const supplements = tour.supplements || [];
+  const pickupPoints = (Array.isArray(tour.pickupPoints) ? tour.pickupPoints : []).filter(
+    (p) => String(p?.name || '').trim() || String(p?.detail || '').trim()
+  );
   const isCustomized = tour.category === 'customized';
   const showReserve = isGroupDepartureTour(tour);
   const reserveDeposit = resolveReserveDepositAmount(tour);
@@ -274,6 +277,24 @@ export default function TourDetails({ tour, whatsappNumber }) {
                   ) : null}
                 </ul>
               </PanelBlock>
+
+              {pickupPoints.length > 0 ? (
+                <PanelBlock title="Pickup points">
+                  <ul className="space-y-2">
+                    {pickupPoints.map((p, i) => (
+                      <li key={`${p.name}-${i}`} className="flex gap-2 rounded-xl border border-[#eaf4fb] bg-[#f8fbff] p-3">
+                        <span className="mt-0.5 shrink-0" aria-hidden>
+                          📍
+                        </span>
+                        <div className="min-w-0">
+                          {p.name ? <p className="text-sm font-semibold text-primary">{p.name}</p> : null}
+                          {p.detail ? <p className="mt-0.5 text-xs text-foreground/75">{p.detail}</p> : null}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </PanelBlock>
+              ) : null}
 
               <PanelBlock title="Available offers" tone="sand">
                 <ul className="space-y-2 text-sm text-foreground/85">
