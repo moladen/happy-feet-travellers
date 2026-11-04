@@ -25,7 +25,14 @@ const WHY_SPECIAL = [
     vibes: ['Expedition energy', 'Remote landscapes', 'Adventure-first pacing'],
   },
   {
-    keys: ['kerala', 'backwater', 'houseboat', 'alleppey', 'munnar'],
+    keys: ['bhigwan', 'flamingo', 'birdwatching', 'bird watching', 'ujani'],
+    headline: 'Flamingo flocks, Ujani backwaters, and a golden-hour birding escape from Pune.',
+    story:
+      'Early-morning boat rides among migratory birds, wide wetland views, and a slow nature day that feels miles away from the city.',
+    vibes: ['Flamingo spotting', 'Birdwatching', 'Easy day trip'],
+  },
+  {
+    keys: ['kerala', 'houseboat', 'alleppey', 'munnar'],
     headline: 'Slow Kerala rhythms — backwaters, misty hills, and unhurried couple time.',
     story:
       'Think gentle houseboat mornings, spice-scented air, and experiences designed for connection rather than checklist tourism.',
