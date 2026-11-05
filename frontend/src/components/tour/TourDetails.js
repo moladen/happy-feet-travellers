@@ -219,6 +219,30 @@ export default function TourDetails({ tour, whatsappNumber }) {
           <p className="mt-4 max-w-3xl text-base leading-relaxed text-foreground/82">{overview}</p>
         </section>
 
+        {/* Pickup points */}
+        {pickupPoints.length > 0 ? (
+          <section>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-secondary">Pickup points</p>
+            <h2 className="mt-2 font-display text-2xl font-bold text-primary md:text-3xl">Where we pick you up</h2>
+            <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {pickupPoints.map((p, i) => (
+                <li
+                  key={`${p.name}-${i}`}
+                  className="flex items-start gap-2 rounded-xl border border-[#dceaf5] bg-gradient-to-br from-[#f8fbff] to-white px-3 py-2 shadow-sm"
+                >
+                  <span className="mt-0.5 shrink-0 text-sm leading-none" aria-hidden>
+                    📍
+                  </span>
+                  <div className="min-w-0">
+                    {p.name ? <p className="text-sm font-semibold leading-snug text-primary">{p.name}</p> : null}
+                    {p.detail ? <p className="mt-0.5 text-xs leading-snug text-foreground/75">{p.detail}</p> : null}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         {/* Itinerary + side panel */}
         <section id="itinerary" className="scroll-mt-24 pb-12 md:pb-14">
           <div className="mb-8">
@@ -277,24 +301,6 @@ export default function TourDetails({ tour, whatsappNumber }) {
                   ) : null}
                 </ul>
               </PanelBlock>
-
-              {pickupPoints.length > 0 ? (
-                <PanelBlock title="Pickup points">
-                  <ul className="space-y-2">
-                    {pickupPoints.map((p, i) => (
-                      <li key={`${p.name}-${i}`} className="flex gap-2 rounded-xl border border-[#eaf4fb] bg-[#f8fbff] p-3">
-                        <span className="mt-0.5 shrink-0" aria-hidden>
-                          📍
-                        </span>
-                        <div className="min-w-0">
-                          {p.name ? <p className="text-sm font-semibold text-primary">{p.name}</p> : null}
-                          {p.detail ? <p className="mt-0.5 text-xs text-foreground/75">{p.detail}</p> : null}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </PanelBlock>
-              ) : null}
 
               <PanelBlock title="Available offers" tone="sand">
                 <ul className="space-y-2 text-sm text-foreground/85">
