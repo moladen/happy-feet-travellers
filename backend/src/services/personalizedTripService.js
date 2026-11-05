@@ -24,7 +24,6 @@ const JSON_FIELDS = [
   'faqs',
   'pickupPoints',
   'supplements',
-  'priceTiers',
   'terms',
   'ctaData',
 ];

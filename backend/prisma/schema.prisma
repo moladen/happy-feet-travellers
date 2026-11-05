@@ -59,7 +59,6 @@ model Tour {
   thingsToCarry      String[]
   pickupPoints       Json?
   supplements        Json?
-  priceTiers         Json?
   cancellationPolicy String?   @db.Text
   terms              Json?
   bankDetails        String?   @db.Text

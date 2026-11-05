@@ -133,7 +133,7 @@ const ARRAY_FIELDS = [
   'topicKeys',
   'relatedBlogSlugs',
 ];
-const JSON_FIELDS = ['itinerary', 'faqs', 'pickupPoints', 'supplements', 'priceTiers', 'terms'];
+const JSON_FIELDS = ['itinerary', 'faqs', 'pickupPoints', 'supplements', 'terms'];
 
 function normaliseTourPayload(payload) {
   const data = { ...payload };

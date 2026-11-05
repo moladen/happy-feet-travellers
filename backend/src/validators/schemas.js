@@ -57,7 +57,6 @@ const createTourSchema = Joi.object({
   faqs: Joi.any(),
   pickupPoints: Joi.any(),
   supplements: Joi.any(),
-  priceTiers: Joi.any(),
   terms: Joi.any(),
   destination: Joi.string().allow('', null),
   tags: Joi.array().items(Joi.string().trim()).max(16),
