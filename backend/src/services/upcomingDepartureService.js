@@ -25,7 +25,7 @@ const MONTHS = [
 ];
 
 const ARRAY_FIELDS = ['images', 'highlights', 'inclusions', 'exclusions', 'thingsToCarry', 'tags', 'topicKeys', 'relatedBlogSlugs'];
-const JSON_FIELDS = ['itinerary', 'faqs', 'pickupPoints', 'supplements', 'terms'];
+const JSON_FIELDS = ['itinerary', 'faqs', 'pickupPoints', 'supplements', 'priceTiers', 'terms'];
 
 function normaliseTags(tags) {
   if (!tags) return [];

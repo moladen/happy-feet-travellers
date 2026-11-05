@@ -222,6 +222,7 @@ export const emptyTourForm = {
   faqs: [{ question: "", answer: "" }],
   pickupPoints: [{ name: "", detail: "" }],
   supplements: [{ name: "", price: "", note: "" }],
+  priceTiers: [{ label: "", price: "" }],
 };
 
 export const emptyBlogForm = {
@@ -589,6 +590,7 @@ export function buildTourPayload(form) {
     faqs: cleanObjectList(form.faqs),
     pickupPoints: cleanObjectList(form.pickupPoints),
     supplements: cleanObjectList(form.supplements),
+    priceTiers: cleanObjectList(form.priceTiers),
   };
 }
 
@@ -650,6 +652,9 @@ export function createTourForm(record) {
     supplements: Array.isArray(record.supplements) && record.supplements.length
       ? record.supplements
       : emptyTourForm.supplements,
+    priceTiers: Array.isArray(record.priceTiers) && record.priceTiers.length
+      ? record.priceTiers
+      : emptyTourForm.priceTiers,
   };
 }
 

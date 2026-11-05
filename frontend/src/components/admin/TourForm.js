@@ -460,6 +460,18 @@ export default function TourForm({ form, setForm, onSubmit, busy, mode = "create
                 </Field>
               </div>
               <div className="mt-5">
+                <Repeater
+                  label="Group pricing (per person)"
+                  rows={form.priceTiers}
+                  onChange={(value) => updateField("priceTiers", value)}
+                  addLabel="Add price option"
+                  fields={[
+                    { key: "label", label: "Group size (e.g. 2 People, 7–10 People)" },
+                    { key: "price", label: "Price per person (₹)" },
+                  ]}
+                />
+              </div>
+              <div className="mt-5">
                 <Field
                   label="Emotional / mood tags"
                   hint="One per line — e.g. Backwaters, Houseboat, Tea estates"
